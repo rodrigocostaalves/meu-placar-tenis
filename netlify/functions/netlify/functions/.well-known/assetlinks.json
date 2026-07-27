@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.netlify.soft_alfajores_822898.twa",
+        "sha256_cert_fingerprints": ["6C:2F:5C:BC:A7:1C:75:DB:F5:F8:AC:DA:D8:08:34:E0:03:E9:96:60:04:0B:26:DC:1F:69:E8:B8:8F:4F:91:E3"]
+      }
+    }]
