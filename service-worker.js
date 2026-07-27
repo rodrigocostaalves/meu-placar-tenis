@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meu-placar-v11';
+const CACHE_NAME = 'meu-placar-v12';
 const APP_SHELL = [
   './index.html',
   './manifest.json',

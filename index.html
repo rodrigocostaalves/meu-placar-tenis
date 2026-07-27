@@ -349,6 +349,9 @@
     color:var(--muted); border-radius:8px; padding:8px 14px; font-size:13px;
     cursor:pointer; margin-top:4px; font-family:inherit;
   }
+  .add-set-btn.active{
+    background: rgba(215,242,5,0.15); border:1px solid var(--ball); color: var(--ball);
+  }
 
   .stats-list{ display:flex; flex-direction:column; }
   .stat-row{
@@ -920,6 +923,8 @@ let leagues = [];
 let currentLeagueId = null;
 let newLeaguePlayers = [];
 let schedulingMode = false;
+let wantsInvite = false;
+let wantsSendResult = false;
 let pushSubscription = null;
 
 const VAPID_PUBLIC_KEY = 'BCI8BNk4OfxVGIXzb1zGK8NAKyqUBhqrEhLTuA2RobM-d-pV1XSqRDtWNuQhkOsR5-3zovQEjpP1_oMkDplugi4';
@@ -1046,6 +1051,16 @@ async function cancelScheduledMatch(matchId){
 // ---------- Inbox: Invites + Pending Results ----------
 let pendingInvites = [];
 let pendingResults = [];
+
+function toggleWantsInvite(){
+  wantsInvite = !wantsInvite;
+  $('inviteBtn').classList.toggle('active', wantsInvite);
+}
+
+function toggleWantsSendResult(){
+  wantsSendResult = !wantsSendResult;
+  $('sendResultBtn').classList.toggle('active', wantsSendResult);
+}
 
 async function sendInvite(){
   const date = $('fDate').value;
@@ -1598,6 +1613,10 @@ function openMatchSheet(matchToEdit, isScheduling){
   }
   $('inviteBtn').style.display = schedulingMode ? 'block' : 'none';
   $('sendResultBtn').style.display = schedulingMode ? 'none' : 'block';
+  wantsInvite = false;
+  wantsSendResult = false;
+  $('inviteBtn').classList.remove('active');
+  $('sendResultBtn').classList.remove('active');
   renderSetsUI();
   updateMatchSheetTexts();
   updateMatchPhotoUI();
@@ -1674,6 +1693,12 @@ function handleSave(){
       syncScheduledMatch(savedMatch);
     } else if(wasScheduled){
       cancelScheduledMatch(savedMatch.id);
+    }
+    if(wantsInvite){
+      sendInvite();
+    }
+    if(wantsSendResult){
+      sendResult();
     }
   }
 }
@@ -2158,8 +2183,8 @@ $('filterLeague').addEventListener('click', () => setTypeFilter('liga'));
 $('filterChampionship').addEventListener('click', () => setTypeFilter('campeonato'));
 
 $('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); openSheet('menuSheet'); });
-$('inviteBtn').addEventListener('click', sendInvite);
-$('sendResultBtn').addEventListener('click', sendResult);
+$('inviteBtn').addEventListener('click', toggleWantsInvite);
+$('sendResultBtn').addEventListener('click', toggleWantsSendResult);
 $('closeMenuBtn').addEventListener('click', closeAllSheets);
 $('saveProfileBtn').addEventListener('click', saveProfile);
 $('langPt').addEventListener('click', () => setLanguage('pt'));
