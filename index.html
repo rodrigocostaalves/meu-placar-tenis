@@ -97,6 +97,11 @@
   .streak-line .streak-val{ font-weight: 700; text-transform: none; letter-spacing: 0; }
   .streak-line .streak-val.win{ color: var(--win); }
   .streak-line .streak-val.loss{ color: var(--loss); }
+  .activity-line{ display:flex; gap:10px; margin-top:10px; }
+  .activity-chip{
+    background: var(--panel); border:1px solid var(--panel-line); color:var(--chalk);
+    border-radius:20px; padding:7px 14px; font-size:12.5px; cursor:pointer; font-family:inherit;
+  }
 
   main{ padding: 18px 16px 0; }
 
@@ -335,6 +340,17 @@
   .stats-empty{ color:var(--muted); font-size:13px; padding:8px 0; }
   .tournament-row{ cursor:pointer; }
 
+  .invite-row{ padding:10px 0; border-bottom:1px dashed var(--panel-line); }
+  .invite-row:last-child{ border-bottom:none; }
+  .invite-text{ font-size:13px; margin-bottom:8px; }
+  .invite-actions{ display:flex; gap:8px; }
+  .invite-actions button{
+    flex:1; padding:8px; border-radius:8px; border:none; font-size:13px;
+    font-family:'Bebas Neue', sans-serif; letter-spacing:0.5px; cursor:pointer;
+  }
+  .invite-accept{ background: var(--win); color: var(--court-deep); }
+  .invite-dismiss{ background: var(--panel); color: var(--muted); border:1px solid var(--panel-line); }
+
   .photo-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .avatar-preview, .avatar-placeholder{
     width:56px; height:56px; border-radius:50%; object-fit:cover;
@@ -377,6 +393,10 @@
     <div class="record-item pct"><span class="num" id="pctNum">0%</span><span class="lbl" data-i18n="pctLabel">Aproveitamento</span></div>
   </div>
   <div class="streak-line"><span data-i18n="streakLabel">Sequência</span>: <span class="streak-val" id="streakVal">-</span></div>
+  <div class="activity-line">
+    <button type="button" class="activity-chip" id="tournamentsShortcut">🏆 <span data-i18n="chipTournament">Torneio</span></button>
+    <button type="button" class="activity-chip" id="leaguesShortcut">🏅 <span data-i18n="chipLeague">Liga</span></button>
+  </div>
 </header>
 
 <main>
@@ -390,7 +410,7 @@
       <button type="button" data-f="todos" id="filterAll" class="active" data-i18n="filterAll">Todos</button>
       <button type="button" data-f="amistoso" id="filterFriendly" data-i18n="btnFriendly">Amistoso</button>
       <button type="button" data-f="liga" id="filterLeague" data-i18n="btnLeague">Liga</button>
-      <button type="button" data-f="campeonato" id="filterChampionship" data-i18n="btnChampionship">Campeonato</button>
+      <button type="button" data-f="campeonato" id="filterChampionship" data-i18n="btnChampionship">Torneio</button>
     </div>
   </div>
   <div id="matchList"></div>
@@ -416,6 +436,11 @@
   <div class="field">
     <label data-i18n="labelOpponent">Adversário (opcional)</label>
     <input type="text" id="fOpponent" data-i18n-ph="placeholderOpponent" placeholder="Ex: João">
+  </div>
+  <div class="field" id="opponentEmailWrap">
+    <label data-i18n="labelOpponentEmail">E-mail do Adversário (opcional)</label>
+    <input type="email" id="fOpponentEmail">
+    <button type="button" class="add-set-btn" id="inviteBtn" style="margin-top:8px" data-i18n="btnInvite">Convidar por notificação</button>
   </div>
   <div class="field">
     <label data-i18n="labelFormat">Formato</label>
@@ -446,7 +471,7 @@
     <div class="toggle-group type">
       <button type="button" data-t="amistoso" id="btnFriendly" data-i18n="btnFriendly">Amistoso</button>
       <button type="button" data-t="liga" id="btnLeague" data-i18n="btnLeague">Liga</button>
-      <button type="button" data-t="campeonato" id="btnChampionship" data-i18n="btnChampionship">Campeonato</button>
+      <button type="button" data-t="campeonato" id="btnChampionship" data-i18n="btnChampionship">Torneio</button>
     </div>
   </div>
   <div class="field">
@@ -523,14 +548,11 @@
     <button class="btn-save" id="saveProfileBtn" style="flex:1" data-i18n="btnSaveProfile">Salvar Perfil</button>
   </div>
 
+  <h3 data-i18n="menuInvites">Convites Recebidos</h3>
+  <div class="stats-list" id="invitesContainer"></div>
+
   <h3 data-i18n="statsTitle">Estatísticas por Adversário</h3>
   <div class="stats-list" id="statsContainer"></div>
-
-  <h3 data-i18n="menuTournaments">Campeonatos</h3>
-  <div class="stats-list" id="tournamentsContainer"></div>
-  <div class="sheet-actions">
-    <button class="btn-save" id="newTournamentBtn" style="flex:1" data-i18n="btnNewTournament">+ Novo Campeonato</button>
-  </div>
 
   <h3 data-i18n="dataTitle">Dados</h3>
   <div class="sheet-actions">
@@ -552,9 +574,9 @@
 </div>
 
 <div class="sheet" id="tournamentSheet">
-  <h2 data-i18n="tournamentSheetTitle">Novo Campeonato</h2>
+  <h2 data-i18n="tournamentSheetTitle">Novo Torneio</h2>
   <div class="field">
-    <label data-i18n="labelTournamentName">Nome do Campeonato</label>
+    <label data-i18n="labelTournamentName">Nome do Torneio</label>
     <input type="text" id="tName">
   </div>
   <div class="field">
@@ -572,11 +594,89 @@
 </div>
 
 <div class="sheet" id="bracketSheet">
-  <h2 id="bracketTitle">Campeonato</h2>
+  <h2 id="bracketTitle">Torneio</h2>
   <div id="bracketContent"></div>
   <div class="sheet-actions">
-    <button class="btn-cancel" id="deleteTournamentBtn" data-i18n="btnDeleteTournament">Excluir Campeonato</button>
+    <button class="btn-cancel" id="deleteTournamentBtn" data-i18n="btnDeleteTournament">Excluir Torneio</button>
     <button class="btn-cancel" id="backFromBracketBtn" data-i18n="btnBack">Voltar</button>
+  </div>
+</div>
+
+<div class="sheet" id="tournamentsListSheet">
+  <h2 data-i18n="menuTournaments">Torneios</h2>
+  <div class="stats-list" id="tournamentsContainer"></div>
+  <div class="sheet-actions">
+    <button class="btn-save" id="newTournamentBtn" data-i18n="btnNewTournament">+ Novo Torneio</button>
+    <button class="btn-cancel" id="closeTournamentsListBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
+<div class="sheet" id="leaguesListSheet">
+  <h2 data-i18n="menuLeagues">Ligas</h2>
+  <div class="stats-list" id="leaguesContainer"></div>
+  <div class="sheet-actions">
+    <button class="btn-save" id="newLeagueBtn" data-i18n="btnNewLeague">+ Nova Liga</button>
+    <button class="btn-cancel" id="closeLeaguesListBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
+<div class="sheet" id="leagueCreateSheet">
+  <h2 data-i18n="leagueCreateTitle">Nova Liga</h2>
+  <div class="field">
+    <label data-i18n="labelLeagueName">Nome da Liga</label>
+    <input type="text" id="lgName">
+  </div>
+  <div class="field">
+    <label data-i18n="labelPlayerName">Nome do Jogador</label>
+    <input type="text" id="lgPlayerName">
+  </div>
+  <div class="field">
+    <label data-i18n="labelPlayerEmail">E-mail (opcional)</label>
+    <input type="email" id="lgPlayerEmail">
+  </div>
+  <button type="button" class="add-set-btn" id="addLeaguePlayerBtn" data-i18n="btnAddPlayer">+ Adicionar</button>
+  <div class="field">
+    <div class="stats-list" id="lgPlayersList"></div>
+    <div class="stats-empty" id="lgPlayersCount">0/100</div>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="cancelLeagueCreateBtn" data-i18n="btnCancel">Cancelar</button>
+    <button class="btn-save" id="createLeagueBtn" data-i18n="btnCreateLeague">Criar Liga</button>
+  </div>
+</div>
+
+<div class="sheet" id="leagueDetailSheet">
+  <h2 id="leagueDetailTitle">Liga</h2>
+  <button type="button" class="add-set-btn" id="registerLeagueMatchBtn" data-i18n="btnRegisterLeagueMatch">+ Registrar Partida</button>
+  <h3 data-i18n="labelClassification">Classificação</h3>
+  <div class="stats-list" id="leagueClassification"></div>
+  <h3 data-i18n="labelMatchLog">Jogos Registrados</h3>
+  <div class="stats-list" id="leagueMatchLog"></div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="deleteLeagueBtn" data-i18n="btnDeleteLeague">Excluir Liga</button>
+    <button class="btn-cancel" id="backFromLeagueBtn" data-i18n="btnBack">Voltar</button>
+  </div>
+</div>
+
+<div class="sheet" id="leagueMatchSheet">
+  <h2 data-i18n="leagueMatchTitle">Registrar Partida</h2>
+  <div class="field">
+    <label data-i18n="labelPlayer1">Jogador 1</label>
+    <select id="lmP1"></select>
+  </div>
+  <div class="field">
+    <label data-i18n="labelPlayer2">Jogador 2</label>
+    <select id="lmP2"></select>
+  </div>
+  <div class="field">
+    <label data-i18n="labelWinner">Quem venceu?</label>
+    <div class="toggle-group">
+      <button type="button" id="lmWinP1"></button>
+      <button type="button" id="lmWinP2"></button>
+    </div>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="cancelLeagueMatchBtn" data-i18n="btnCancel">Cancelar</button>
   </div>
 </div>
 
@@ -587,12 +687,19 @@ const TRANSLATIONS = {
     emptyState: "Nenhuma partida registrada ainda.", emptyStateHint: 'Toque em "+ Nova Partida" para começar.',
     addBtn: "+ Nova Partida", sheetTitle: "Nova Partida", editMatchTitle: "Editar Partida",
     labelDate: "Data", labelTime: "Hora (opcional)", labelOpponent: "Adversário (opcional)", placeholderOpponent: "Ex: João",
+    labelOpponentEmail: "E-mail do Adversário (opcional)", btnInvite: "Convidar por notificação",
+    inviteNeedInfo: "Preencha data e e-mail do adversário pra convidar.", inviteSentNotified: "Convite enviado! Ele(a) vai receber uma notificação.",
+    inviteSentNoAccount: "Convite salvo, mas esse e-mail ainda não usa o app — avise por fora dessa vez.",
+    inviteError: "Não foi possível enviar o convite agora.",
+    menuInvites: "Convites Recebidos", invitesEmptyState: "Nenhum convite no momento.",
+    inviteFromLabel: "convidou você para", btnAcceptInvite: "Aceitar", btnDismissInvite: "Recusar",
+    inviteAccepted: "Partida adicionada aos seus próximos jogos!",
     btnSchedule: "+ Agendar", scheduleTitle: "Agendar Partida", btnScheduleSave: "Agendar",
     upcomingTitle: "Próximos Jogos", upcomingTag: "AGENDADA",
     labelFormat: "Formato", btnSingles: "Individual", btnDoubles: "Duplas",
     labelPartner: "Parceiro", labelOpponent2: "Adversário 2 (opcional)",
     labelResult: "Resultado", btnWin: "Vitória", btnLoss: "Derrota",
-    labelMatchType: "Tipo de Partida", btnFriendly: "Amistoso", btnLeague: "Liga", btnChampionship: "Campeonato",
+    labelMatchType: "Tipo de Partida", btnFriendly: "Amistoso", btnLeague: "Liga", btnChampionship: "Torneio",
     labelSurface: "Tipo de Quadra", btnClay: "Saibro", btnHard: "Rápida", btnGrass: "Grama",
     streakLabel: "Sequência",
     labelSets: "Placar (sets)", setLabel: "Set", addSet: "+ Set",
@@ -611,13 +718,25 @@ const TRANSLATIONS = {
     importError: "Arquivo inválido.",
     searchPlaceholder: "Buscar adversário...", filterAll: "Todos", noResultsFilter: "Nenhuma partida encontrada.",
     languageTitle: "Idioma", btnClose: "Fechar", profileSaved: "Perfil salvo!",
-    menuTournaments: "Campeonatos", btnNewTournament: "+ Novo Campeonato",
-    tournamentSheetTitle: "Novo Campeonato", labelTournamentName: "Nome do Campeonato",
+    menuTournaments: "Torneios", btnNewTournament: "+ Novo Torneio",
+    chipTournament: "Torneio", chipLeague: "Liga", menuLeagues: "Ligas",
+    leaguesEmptyState: "Nenhuma liga criada ainda.", btnNewLeague: "+ Nova Liga",
+    leagueCreateTitle: "Nova Liga", labelLeagueName: "Nome da Liga",
+    labelPlayerName: "Nome do Jogador", labelPlayerEmail: "E-mail (opcional)", btnAddPlayer: "+ Adicionar",
+    btnCreateLeague: "Criar Liga", alertLeagueNeedName: "Digite um nome para a liga.",
+    alertLeagueNeedPlayers: "Adicione pelo menos 2 jogadores.", alertLeagueMax100: "Máximo de 100 jogadores.",
+    alertPlayerNeedName: "Digite o nome do jogador.",
+    labelClassification: "Classificação", labelMatchLog: "Jogos Registrados",
+    btnRegisterLeagueMatch: "+ Registrar Partida", leagueMatchTitle: "Registrar Partida",
+    labelPlayer1: "Jogador 1", labelPlayer2: "Jogador 2", labelWinner: "Quem venceu?",
+    leagueSamePlayer: "Escolha dois jogadores diferentes.", deleteLeagueConfirm: "Excluir esta liga?",
+    btnDeleteLeague: "Excluir Liga", leagueMatchLogEmpty: "Nenhuma partida registrada ainda.", wonLabel: "venceu",
+    tournamentSheetTitle: "Novo Torneio", labelTournamentName: "Nome do Torneio",
     labelParticipants: "Participantes (16 nomes, um por linha)", btnGenerateBracket: "Gerar Chaveamento",
     alertNeed16: "Digite exatamente 16 nomes, um por linha.",
     roundR16: "Oitavas de Final", roundQF: "Quartas de Final", roundSF: "Semifinal", roundFinal: "Final",
-    championLabel: "Campeão:", tournamentEmptyState: "Nenhum campeonato criado ainda.",
-    btnDeleteTournament: "Excluir Campeonato", deleteTournamentConfirm: "Excluir este campeonato?",
+    championLabel: "Campeão:", tournamentEmptyState: "Nenhum torneio criado ainda.",
+    btnDeleteTournament: "Excluir Torneio", deleteTournamentConfirm: "Excluir este torneio?",
     statusInProgress: "Em andamento", btnBack: "Voltar", tbdLabel: "A definir"
   },
   en: {
@@ -625,6 +744,13 @@ const TRANSLATIONS = {
     emptyState: "No matches recorded yet.", emptyStateHint: 'Tap "+ New Match" to get started.',
     addBtn: "+ New Match", sheetTitle: "New Match", editMatchTitle: "Edit Match",
     labelDate: "Date", labelTime: "Time (optional)", labelOpponent: "Opponent (optional)", placeholderOpponent: "E.g. John",
+    labelOpponentEmail: "Opponent Email (optional)", btnInvite: "Invite via notification",
+    inviteNeedInfo: "Fill in the date and opponent email to invite.", inviteSentNotified: "Invite sent! They'll get a notification.",
+    inviteSentNoAccount: "Invite saved, but that email hasn't used the app yet — let them know another way this time.",
+    inviteError: "Couldn't send the invite right now.",
+    menuInvites: "Received Invites", invitesEmptyState: "No invites right now.",
+    inviteFromLabel: "invited you to", btnAcceptInvite: "Accept", btnDismissInvite: "Dismiss",
+    inviteAccepted: "Match added to your upcoming matches!",
     btnSchedule: "+ Schedule", scheduleTitle: "Schedule Match", btnScheduleSave: "Schedule",
     upcomingTitle: "Upcoming Matches", upcomingTag: "SCHEDULED",
     labelFormat: "Format", btnSingles: "Singles", btnDoubles: "Doubles",
@@ -650,6 +776,18 @@ const TRANSLATIONS = {
     searchPlaceholder: "Search opponent...", filterAll: "All", noResultsFilter: "No matches found.",
     languageTitle: "Language", btnClose: "Close", profileSaved: "Profile saved!",
     menuTournaments: "Tournaments", btnNewTournament: "+ New Tournament",
+    chipTournament: "Tournament", chipLeague: "League", menuLeagues: "Leagues",
+    leaguesEmptyState: "No leagues created yet.", btnNewLeague: "+ New League",
+    leagueCreateTitle: "New League", labelLeagueName: "League Name",
+    labelPlayerName: "Player Name", labelPlayerEmail: "Email (optional)", btnAddPlayer: "+ Add",
+    btnCreateLeague: "Create League", alertLeagueNeedName: "Enter a name for the league.",
+    alertLeagueNeedPlayers: "Add at least 2 players.", alertLeagueMax100: "Maximum of 100 players.",
+    alertPlayerNeedName: "Enter the player's name.",
+    labelClassification: "Standings", labelMatchLog: "Match Log",
+    btnRegisterLeagueMatch: "+ Record Match", leagueMatchTitle: "Record Match",
+    labelPlayer1: "Player 1", labelPlayer2: "Player 2", labelWinner: "Who won?",
+    leagueSamePlayer: "Choose two different players.", deleteLeagueConfirm: "Delete this league?",
+    btnDeleteLeague: "Delete League", leagueMatchLogEmpty: "No matches recorded yet.", wonLabel: "beat",
     tournamentSheetTitle: "New Tournament", labelTournamentName: "Tournament Name",
     labelParticipants: "Participants (16 names, one per line)", btnGenerateBracket: "Generate Bracket",
     alertNeed16: "Enter exactly 16 names, one per line.",
@@ -663,12 +801,19 @@ const TRANSLATIONS = {
     emptyState: "Aún no hay partidos registrados.", emptyStateHint: 'Toca en "+ Nuevo Partido" para empezar.',
     addBtn: "+ Nuevo Partido", sheetTitle: "Nuevo Partido", editMatchTitle: "Editar Partido",
     labelDate: "Fecha", labelTime: "Hora (opcional)", labelOpponent: "Rival (opcional)", placeholderOpponent: "Ej: Juan",
+    labelOpponentEmail: "Correo del Rival (opcional)", btnInvite: "Invitar por notificación",
+    inviteNeedInfo: "Completa la fecha y el correo del rival para invitar.", inviteSentNotified: "¡Invitación enviada! Recibirá una notificación.",
+    inviteSentNoAccount: "Invitación guardada, pero ese correo aún no usa la app — avísale por otro medio esta vez.",
+    inviteError: "No se pudo enviar la invitación ahora.",
+    menuInvites: "Invitaciones Recibidas", invitesEmptyState: "No hay invitaciones por ahora.",
+    inviteFromLabel: "te invitó a", btnAcceptInvite: "Aceptar", btnDismissInvite: "Rechazar",
+    inviteAccepted: "¡Partido agregado a tus próximos partidos!",
     btnSchedule: "+ Agendar", scheduleTitle: "Agendar Partido", btnScheduleSave: "Agendar",
     upcomingTitle: "Próximos Partidos", upcomingTag: "AGENDADO",
     labelFormat: "Formato", btnSingles: "Individual", btnDoubles: "Dobles",
     labelPartner: "Compañero", labelOpponent2: "Rival 2 (opcional)",
     labelResult: "Resultado", btnWin: "Victoria", btnLoss: "Derrota",
-    labelMatchType: "Tipo de Partido", btnFriendly: "Amistoso", btnLeague: "Liga", btnChampionship: "Campeonato",
+    labelMatchType: "Tipo de Partido", btnFriendly: "Amistoso", btnLeague: "Liga", btnChampionship: "Torneio",
     labelSurface: "Tipo de Cancha", btnClay: "Arcilla", btnHard: "Rápida", btnGrass: "Césped",
     streakLabel: "Racha",
     labelSets: "Marcador (sets)", setLabel: "Set", addSet: "+ Set",
@@ -687,13 +832,25 @@ const TRANSLATIONS = {
     importError: "Archivo inválido.",
     searchPlaceholder: "Buscar rival...", filterAll: "Todos", noResultsFilter: "No se encontraron partidos.",
     languageTitle: "Idioma", btnClose: "Cerrar", profileSaved: "¡Perfil guardado!",
-    menuTournaments: "Campeonatos", btnNewTournament: "+ Nuevo Campeonato",
-    tournamentSheetTitle: "Nuevo Campeonato", labelTournamentName: "Nombre del Campeonato",
+    menuTournaments: "Torneios", btnNewTournament: "+ Nuevo Torneio",
+    chipTournament: "Torneo", chipLeague: "Liga", menuLeagues: "Ligas",
+    leaguesEmptyState: "Aún no hay ligas creadas.", btnNewLeague: "+ Nueva Liga",
+    leagueCreateTitle: "Nueva Liga", labelLeagueName: "Nombre de la Liga",
+    labelPlayerName: "Nombre del Jugador", labelPlayerEmail: "Correo (opcional)", btnAddPlayer: "+ Añadir",
+    btnCreateLeague: "Crear Liga", alertLeagueNeedName: "Ingresa un nombre para la liga.",
+    alertLeagueNeedPlayers: "Agrega al menos 2 jugadores.", alertLeagueMax100: "Máximo de 100 jugadores.",
+    alertPlayerNeedName: "Ingresa el nombre del jugador.",
+    labelClassification: "Clasificación", labelMatchLog: "Partidos Registrados",
+    btnRegisterLeagueMatch: "+ Registrar Partido", leagueMatchTitle: "Registrar Partido",
+    labelPlayer1: "Jugador 1", labelPlayer2: "Jugador 2", labelWinner: "¿Quién ganó?",
+    leagueSamePlayer: "Elige dos jugadores diferentes.", deleteLeagueConfirm: "¿Eliminar esta liga?",
+    btnDeleteLeague: "Eliminar Liga", leagueMatchLogEmpty: "Aún no hay partidos registrados.", wonLabel: "venció",
+    tournamentSheetTitle: "Nuevo Torneio", labelTournamentName: "Nombre del Torneio",
     labelParticipants: "Participantes (16 nombres, uno por línea)", btnGenerateBracket: "Generar Cuadro",
     alertNeed16: "Ingresa exactamente 16 nombres, uno por línea.",
     roundR16: "Octavos de Final", roundQF: "Cuartos de Final", roundSF: "Semifinal", roundFinal: "Final",
-    championLabel: "Campeón:", tournamentEmptyState: "Aún no hay campeonatos creados.",
-    btnDeleteTournament: "Eliminar Campeonato", deleteTournamentConfirm: "¿Eliminar este campeonato?",
+    championLabel: "Campeón:", tournamentEmptyState: "Aún no hay torneos creados.",
+    btnDeleteTournament: "Eliminar Torneio", deleteTournamentConfirm: "¿Eliminar este torneio?",
     statusInProgress: "En curso", btnBack: "Volver", tbdLabel: "Por definir"
   }
 };
@@ -702,6 +859,8 @@ const MATCHES_KEY = 'tennis_matches_v1';
 const PROFILE_KEY = 'tennis_profile_v1';
 const LANG_KEY = 'tennis_lang_v1';
 const TOURNAMENTS_KEY = 'tennis_tournaments_v1';
+const PLAYER_ID_KEY = 'tennis_player_id_v1';
+const LEAGUES_KEY = 'tennis_leagues_v1';
 
 let matches = [];
 let tournaments = [];
@@ -717,6 +876,9 @@ let typeFilterVal = 'todos';
 let currentMatchPhoto = null;
 let currentProfilePhoto = null;
 let currentTournamentId = null;
+let leagues = [];
+let currentLeagueId = null;
+let newLeaguePlayers = [];
 let schedulingMode = false;
 let pushSubscription = null;
 
@@ -841,7 +1003,117 @@ async function cancelScheduledMatch(matchId){
   }
 }
 
-// ---------- Matches ----------
+// ---------- Invites ----------
+async function sendInvite(){
+  const date = $('fDate').value;
+  const toEmail = $('fOpponentEmail').value.trim();
+  if(!date || !toEmail){ alert(t('inviteNeedInfo')); return; }
+  try{
+    const profileRaw = localStorage.getItem(PROFILE_KEY);
+    const profile = profileRaw ? JSON.parse(profileRaw) : {};
+    const localDateTime = new Date(`${date}T${$('fTime').value || '09:00'}:00`);
+    const res = await fetch('/.netlify/functions/send-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fromName: profile.name || t('defaultOpponent'),
+        fromEmail: profile.email || '',
+        toEmail,
+        dateTime: localDateTime.toISOString(),
+        opponent: $('fOpponent').value.trim()
+      })
+    });
+    const data = await res.json();
+    if(data.notified){
+      alert(t('inviteSentNotified'));
+    } else {
+      alert(t('inviteSentNoAccount'));
+    }
+  }catch(e){
+    console.log('Send invite error:', e);
+    alert(t('inviteError'));
+  }
+}
+
+async function loadInvites(){
+  try{
+    const profileRaw = localStorage.getItem(PROFILE_KEY);
+    const profile = profileRaw ? JSON.parse(profileRaw) : {};
+    if(!profile.email){
+      $('invitesContainer').innerHTML = `<div class="stats-empty">${t('invitesEmptyState')}</div>`;
+      return;
+    }
+    const res = await fetch('/.netlify/functions/get-invites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    renderInvites(Array.isArray(data.invites) ? data.invites : []);
+  }catch(e){
+    console.log('Load invites error:', e);
+    $('invitesContainer').innerHTML = `<div class="stats-empty">${t('invitesEmptyState')}</div>`;
+  }
+}
+
+function renderInvites(invites){
+  const container = $('invitesContainer');
+  if(invites.length === 0){
+    container.innerHTML = `<div class="stats-empty">${t('invitesEmptyState')}</div>`;
+    return;
+  }
+  container.innerHTML = invites.map(inv => {
+    const d = new Date(inv.dateTime);
+    const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
+    return `
+    <div class="invite-row" data-id="${inv.id}">
+      <div class="invite-text"><strong>${esc(inv.fromName || '')}</strong> ${t('inviteFromLabel')} ${esc(dateStr)}</div>
+      <div class="invite-actions">
+        <button class="invite-accept" data-id="${inv.id}" data-action="accepted">${t('btnAcceptInvite')}</button>
+        <button class="invite-dismiss" data-id="${inv.id}" data-action="dismissed">${t('btnDismissInvite')}</button>
+      </div>
+    </div>
+  `;
+  }).join('');
+
+  container.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => respondInvite(btn.dataset.id, btn.dataset.action, invites));
+  });
+}
+
+async function respondInvite(inviteId, response, invites){
+  try{
+    await fetch('/.netlify/functions/respond-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inviteId, response })
+    });
+    if(response === 'accepted'){
+      const inv = invites.find(i => i.id === inviteId);
+      if(inv){
+        const d = new Date(inv.dateTime);
+        const newMatch = {
+          id: Date.now().toString(),
+          date: isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10),
+          time: isNaN(d.getTime()) ? '' : d.toTimeString().slice(0,5),
+          opponent: inv.fromName || '',
+          format: 'individual', partner: '', opponent2: '',
+          result: null, matchType: 'amistoso', surface: 'rapida', sets: [],
+          location: '', notes: '', photo: null
+        };
+        matches.push(newMatch);
+        saveMatches();
+        render();
+        alert(t('inviteAccepted'));
+      }
+    }
+    loadInvites();
+  }catch(e){
+    console.log('Respond invite error:', e);
+  }
+}
+
+
 function loadMatches(){
   try{
     const raw = localStorage.getItem(MATCHES_KEY);
@@ -894,6 +1166,36 @@ function saveProfile(){
   };
   localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
   alert(t('profileSaved'));
+  syncPlayerProfile(p);
+  loadInvites();
+}
+
+function getPlayerId(){
+  let id = localStorage.getItem(PLAYER_ID_KEY);
+  if(!id){
+    id = 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem(PLAYER_ID_KEY, id);
+  }
+  return id;
+}
+
+async function syncPlayerProfile(profile){
+  if(!profile.email) return;
+  try{
+    const sub = await ensurePushSubscription();
+    await fetch('/.netlify/functions/save-player', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        playerId: getPlayerId(),
+        name: profile.name || '',
+        email: profile.email,
+        subscription: sub ? (sub.toJSON ? sub.toJSON() : sub) : null
+      })
+    });
+  }catch(e){
+    console.log('Sync player profile error:', e);
+  }
 }
 
 function formatDate(iso){
@@ -1133,6 +1435,7 @@ function openMatchSheet(matchToEdit, isScheduling){
     $('fDate').value = matchToEdit.date || '';
     $('fTime').value = matchToEdit.time || '';
     $('fOpponent').value = matchToEdit.opponent || '';
+    $('fOpponentEmail').value = matchToEdit.opponentEmail || '';
     $('fPartner').value = matchToEdit.partner || '';
     $('fOpponent2').value = matchToEdit.opponent2 || '';
     $('fLocation').value = matchToEdit.location || '';
@@ -1150,6 +1453,7 @@ function openMatchSheet(matchToEdit, isScheduling){
     $('fDate').value = new Date().toISOString().slice(0,10);
     $('fTime').value = '';
     $('fOpponent').value = '';
+    $('fOpponentEmail').value = '';
     $('fPartner').value = '';
     $('fOpponent2').value = '';
     $('fLocation').value = '';
@@ -1161,6 +1465,7 @@ function openMatchSheet(matchToEdit, isScheduling){
     currentSets = [{a:'', b:''}];
     currentMatchPhoto = null;
   }
+  $('inviteBtn').style.display = schedulingMode ? 'block' : 'none';
   renderSetsUI();
   updateMatchSheetTexts();
   updateMatchPhotoUI();
@@ -1205,6 +1510,7 @@ function handleSave(){
     date,
     time: $('fTime').value,
     opponent: $('fOpponent').value.trim(),
+    opponentEmail: $('fOpponentEmail').value.trim(),
     format: selectedFormat,
     partner: selectedFormat === 'duplas' ? $('fPartner').value.trim() : '',
     opponent2: selectedFormat === 'duplas' ? $('fOpponent2').value.trim() : '',
@@ -1248,6 +1554,7 @@ function setLanguage(lang){
   renderSetsUI();
   renderStats();
   renderTournamentsList();
+  renderLeaguesList();
   render();
 }
 
@@ -1478,12 +1785,177 @@ function renderBracket(){
   });
 }
 
-function backToMenuFromBracket(){
+function backToTournamentsList(){
   closeAllSheets();
-  loadProfile();
-  renderStats();
   renderTournamentsList();
-  openSheet('menuSheet');
+  openSheet('tournamentsListSheet');
+}
+
+// ---------- Leagues ----------
+function loadLeagues(){
+  try{
+    const raw = localStorage.getItem(LEAGUES_KEY);
+    leagues = raw ? JSON.parse(raw) : [];
+  }catch(e){
+    leagues = [];
+  }
+}
+function saveLeagues(){
+  try{
+    localStorage.setItem(LEAGUES_KEY, JSON.stringify(leagues));
+  }catch(e){
+    alert('Storage error.');
+  }
+}
+
+function pointsForRank(rank){
+  if(rank <= 10) return 50 - (rank - 1);
+  const bands = [[20,35],[30,28],[40,22],[50,17],[60,13],[70,10],[80,7],[90,5],[100,3]];
+  for(const [maxRank, pts] of bands){
+    if(rank <= maxRank) return pts;
+  }
+  return 3;
+}
+
+function getLeagueRanking(league){
+  return [...league.players].sort((a,b) => b.points - a.points);
+}
+
+function renderLeaguesList(){
+  const container = $('leaguesContainer');
+  if(leagues.length === 0){
+    container.innerHTML = `<div class="stats-empty">${t('leaguesEmptyState')}</div>`;
+    return;
+  }
+  container.innerHTML = leagues.map(lg => `
+    <div class="stat-row tournament-row" data-id="${lg.id}">
+      <span class="stat-name">${esc(lg.name)}</span>
+      <span class="stat-record">${lg.players.length}</span>
+    </div>
+  `).join('');
+  container.querySelectorAll('.tournament-row').forEach(row => {
+    row.addEventListener('click', () => openLeagueDetail(row.dataset.id));
+  });
+}
+
+function renderNewLeaguePlayers(){
+  $('lgPlayersList').innerHTML = newLeaguePlayers.map((p,i) => `
+    <div class="stat-row">
+      <span class="stat-name">${esc(p.name)}</span>
+      <button type="button" class="del" data-idx="${i}" style="position:static">✕</button>
+    </div>
+  `).join('');
+  $('lgPlayersCount').textContent = `${newLeaguePlayers.length}/100`;
+  $('lgPlayersList').querySelectorAll('.del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      newLeaguePlayers.splice(parseInt(btn.dataset.idx, 10), 1);
+      renderNewLeaguePlayers();
+    });
+  });
+}
+
+function addLeaguePlayer(){
+  const name = $('lgPlayerName').value.trim();
+  const email = $('lgPlayerEmail').value.trim();
+  if(!name){ alert(t('alertPlayerNeedName')); return; }
+  if(newLeaguePlayers.length >= 100){ alert(t('alertLeagueMax100')); return; }
+  newLeaguePlayers.push({name, email});
+  $('lgPlayerName').value = '';
+  $('lgPlayerEmail').value = '';
+  renderNewLeaguePlayers();
+}
+
+function createLeague(){
+  const name = $('lgName').value.trim();
+  if(!name){ alert(t('alertLeagueNeedName')); return; }
+  if(newLeaguePlayers.length < 2){ alert(t('alertLeagueNeedPlayers')); return; }
+  const league = {
+    id: Date.now().toString(),
+    name,
+    createdAt: new Date().toISOString(),
+    players: newLeaguePlayers.map((p, i) => ({
+      id: 'pl_' + i + '_' + Date.now().toString(36),
+      name: p.name, email: p.email || '', points: 0
+    })),
+    matchLog: []
+  };
+  leagues.push(league);
+  saveLeagues();
+  closeAllSheets();
+  openLeagueDetail(league.id);
+}
+
+function openLeagueDetail(id){
+  currentLeagueId = id;
+  renderLeagueDetail();
+  closeAllSheets();
+  openSheet('leagueDetailSheet');
+}
+
+function renderLeagueDetail(){
+  const lg = leagues.find(x => x.id === currentLeagueId);
+  if(!lg) return;
+  $('leagueDetailTitle').textContent = lg.name;
+  const ranked = getLeagueRanking(lg);
+  $('leagueClassification').innerHTML = ranked.map((p, i) => `
+    <div class="stat-row"><span class="stat-name">${i+1}. ${esc(p.name)}</span><span class="stat-record">${p.points} pts</span></div>
+  `).join('');
+  const log = [...lg.matchLog].reverse();
+  $('leagueMatchLog').innerHTML = log.length
+    ? log.map(m => `
+      <div class="stat-row">
+        <span class="stat-name">${esc(m.winnerName)}</span>
+        <span class="stat-record"><span class="sw">${t('wonLabel')}</span> ${esc(m.loserName)} · +${m.points}</span>
+      </div>
+    `).join('')
+    : `<div class="stats-empty">${t('leagueMatchLogEmpty')}</div>`;
+}
+
+function openLeagueMatchSheet(){
+  const lg = leagues.find(x => x.id === currentLeagueId);
+  if(!lg || lg.players.length < 2) return;
+  const options = lg.players.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  $('lmP1').innerHTML = options;
+  $('lmP2').innerHTML = options;
+  $('lmP2').selectedIndex = 1;
+  updateLeagueWinnerButtons();
+  closeAllSheets();
+  openSheet('leagueMatchSheet');
+}
+
+function updateLeagueWinnerButtons(){
+  const lg = leagues.find(x => x.id === currentLeagueId);
+  if(!lg) return;
+  const p1 = lg.players.find(p => p.id === $('lmP1').value);
+  const p2 = lg.players.find(p => p.id === $('lmP2').value);
+  $('lmWinP1').textContent = p1 ? p1.name : '';
+  $('lmWinP2').textContent = p2 ? p2.name : '';
+}
+
+function recordLeagueMatch(winnerSlot){
+  const lg = leagues.find(x => x.id === currentLeagueId);
+  if(!lg) return;
+  const p1Id = $('lmP1').value, p2Id = $('lmP2').value;
+  if(p1Id === p2Id){ alert(t('leagueSamePlayer')); return; }
+  const ranked = getLeagueRanking(lg);
+  const rankOf = (id) => ranked.findIndex(p => p.id === id) + 1;
+  const winnerId = winnerSlot === 1 ? p1Id : p2Id;
+  const loserId = winnerSlot === 1 ? p2Id : p1Id;
+  const loserRank = rankOf(loserId);
+  const pts = pointsForRank(loserRank);
+  const winner = lg.players.find(p => p.id === winnerId);
+  const loser = lg.players.find(p => p.id === loserId);
+  winner.points += pts;
+  lg.matchLog.push({
+    id: Date.now().toString(),
+    date: new Date().toISOString().slice(0,10),
+    winnerId, loserId,
+    winnerName: winner.name, loserName: loser.name,
+    points: pts
+  });
+  saveLeagues();
+  closeAllSheets();
+  openLeagueDetail(currentLeagueId);
 }
 
 // Event bindings
@@ -1553,7 +2025,8 @@ $('filterFriendly').addEventListener('click', () => setTypeFilter('amistoso'));
 $('filterLeague').addEventListener('click', () => setTypeFilter('liga'));
 $('filterChampionship').addEventListener('click', () => setTypeFilter('campeonato'));
 
-$('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); renderTournamentsList(); openSheet('menuSheet'); });
+$('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); loadInvites(); openSheet('menuSheet'); });
+$('inviteBtn').addEventListener('click', sendInvite);
 $('closeMenuBtn').addEventListener('click', closeAllSheets);
 $('saveProfileBtn').addEventListener('click', saveProfile);
 $('langPt').addEventListener('click', () => setLanguage('pt'));
@@ -1563,6 +2036,11 @@ $('exportBtn').addEventListener('click', exportData);
 $('importBtn').addEventListener('click', () => $('importFile').click());
 $('importFile').addEventListener('change', (e) => { importData(e.target.files[0]); e.target.value = ''; });
 
+$('tournamentsShortcut').addEventListener('click', () => {
+  renderTournamentsList();
+  openSheet('tournamentsListSheet');
+});
+$('closeTournamentsListBtn').addEventListener('click', closeAllSheets);
 $('newTournamentBtn').addEventListener('click', () => {
   closeAllSheets();
   $('tName').value = '';
@@ -1570,19 +2048,63 @@ $('newTournamentBtn').addEventListener('click', () => {
   $('tParticipants').value = '';
   openSheet('tournamentSheet');
 });
-$('cancelTournamentBtn').addEventListener('click', backToMenuFromBracket);
+$('cancelTournamentBtn').addEventListener('click', backToTournamentsList);
 $('generateBracketBtn').addEventListener('click', createTournament);
 $('deleteTournamentBtn').addEventListener('click', () => {
   if(!confirm(t('deleteTournamentConfirm'))) return;
   tournaments = tournaments.filter(x => x.id !== currentTournamentId);
   saveTournaments();
-  backToMenuFromBracket();
+  backToTournamentsList();
 });
-$('backFromBracketBtn').addEventListener('click', backToMenuFromBracket);
+$('backFromBracketBtn').addEventListener('click', backToTournamentsList);
+
+$('leaguesShortcut').addEventListener('click', () => {
+  renderLeaguesList();
+  openSheet('leaguesListSheet');
+});
+$('closeLeaguesListBtn').addEventListener('click', closeAllSheets);
+$('newLeagueBtn').addEventListener('click', () => {
+  newLeaguePlayers = [];
+  $('lgName').value = '';
+  $('lgPlayerName').value = '';
+  $('lgPlayerEmail').value = '';
+  renderNewLeaguePlayers();
+  closeAllSheets();
+  openSheet('leagueCreateSheet');
+});
+$('cancelLeagueCreateBtn').addEventListener('click', () => {
+  closeAllSheets();
+  openSheet('leaguesListSheet');
+});
+$('addLeaguePlayerBtn').addEventListener('click', addLeaguePlayer);
+$('createLeagueBtn').addEventListener('click', createLeague);
+$('registerLeagueMatchBtn').addEventListener('click', openLeagueMatchSheet);
+$('deleteLeagueBtn').addEventListener('click', () => {
+  if(!confirm(t('deleteLeagueConfirm'))) return;
+  leagues = leagues.filter(x => x.id !== currentLeagueId);
+  saveLeagues();
+  closeAllSheets();
+  renderLeaguesList();
+  openSheet('leaguesListSheet');
+});
+$('backFromLeagueBtn').addEventListener('click', () => {
+  closeAllSheets();
+  renderLeaguesList();
+  openSheet('leaguesListSheet');
+});
+$('lmP1').addEventListener('change', updateLeagueWinnerButtons);
+$('lmP2').addEventListener('change', updateLeagueWinnerButtons);
+$('lmWinP1').addEventListener('click', () => recordLeagueMatch(1));
+$('lmWinP2').addEventListener('click', () => recordLeagueMatch(2));
+$('cancelLeagueMatchBtn').addEventListener('click', () => {
+  closeAllSheets();
+  openSheet('leagueDetailSheet');
+});
 
 // Init
 loadMatches();
 loadTournaments();
+loadLeagues();
 applyLanguage();
 updateMatchSheetTexts();
 render();
