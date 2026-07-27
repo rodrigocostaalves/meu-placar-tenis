@@ -243,6 +243,10 @@
   }
   .invite-accept{ background: var(--win); color: var(--court-deep); }
   .invite-dismiss{ background: var(--court); color: var(--muted); border:1px solid var(--panel-line); }
+  .inbox-empty{
+    border-left-color: var(--ball); cursor:pointer; text-align:center;
+  }
+  .inbox-empty .inbox-text{ margin-bottom:0; color: var(--chalk); }
 
   .overlay{
     position: fixed; inset:0; background: rgba(0,0,0,0.5);
@@ -702,6 +706,8 @@ const TRANSLATIONS = {
     resultSentNoAccount: "Resultado salvo, mas esse e-mail ainda não usa o app.",
     resultError: "Não foi possível enviar o resultado agora.",
     inboxTitle: "Caixa de Entrada", inviteTag: "CONVITE", resultTag: "RESULTADO",
+    inboxEmptyState: "Caixa vazia! Vamos jogar? Convide um amigo para jogar.",
+    noUpcomingMatches: "Não há partidas agendadas.",
     claimedWin: "registrou uma vitória contra você", claimedLoss: "registrou uma derrota para você",
     resultAccepted: "Partida adicionada ao seu histórico!", resultRejectedPush: "recusou o resultado que você enviou",
     inviteNeedInfo: "Preencha data e e-mail do adversário pra convidar.", inviteSentNotified: "Convite enviado! Ele(a) vai receber uma notificação.",
@@ -766,6 +772,8 @@ const TRANSLATIONS = {
     resultSentNoAccount: "Result saved, but that email hasn't used the app yet.",
     resultError: "Couldn't send the result right now.",
     inboxTitle: "Inbox", inviteTag: "INVITE", resultTag: "RESULT",
+    inboxEmptyState: "Empty inbox! Let's play? Invite a friend to play.",
+    noUpcomingMatches: "No matches scheduled.",
     claimedWin: "recorded a win against you", claimedLoss: "recorded a loss to you",
     resultAccepted: "Match added to your history!", resultRejectedPush: "declined the result you sent",
     inviteNeedInfo: "Fill in the date and opponent email to invite.", inviteSentNotified: "Invite sent! They'll get a notification.",
@@ -830,6 +838,8 @@ const TRANSLATIONS = {
     resultSentNoAccount: "Resultado guardado, pero ese correo aún no usa la app.",
     resultError: "No se pudo enviar el resultado ahora.",
     inboxTitle: "Bandeja de Entrada", inviteTag: "INVITACIÓN", resultTag: "RESULTADO",
+    inboxEmptyState: "¡Bandeja vacía! ¿Jugamos? Invita a un amigo a jugar.",
+    noUpcomingMatches: "No hay partidos agendados.",
     claimedWin: "registró una victoria contra ti", claimedLoss: "registró una derrota ante ti",
     resultAccepted: "¡Partido agregado a tu historial!", resultRejectedPush: "rechazó el resultado que enviaste",
     inviteNeedInfo: "Completa la fecha y el correo del rival para invitar.", inviteSentNotified: "¡Invitación enviada! Recibirá una notificación.",
@@ -1125,13 +1135,13 @@ async function refreshInbox(){
 
 function renderInbox(){
   const section = $('inboxSection');
+  section.style.display = 'block';
   const total = pendingInvites.length + pendingResults.length;
   if(total === 0){
-    section.style.display = 'none';
-    $('inboxList').innerHTML = '';
+    $('inboxList').innerHTML = `<div class="inbox-card inbox-empty" id="inboxEmptyCard"><div class="inbox-text">${t('inboxEmptyState')}</div></div>`;
+    $('inboxEmptyCard').addEventListener('click', () => openMatchSheet(null, true));
     return;
   }
-  section.style.display = 'block';
   let html = '';
   pendingInvites.forEach(inv => {
     const d = new Date(inv.dateTime);
@@ -1451,12 +1461,11 @@ function render(){
 function renderUpcoming(){
   const upcoming = matches.filter(m => !m.result);
   const section = $('upcomingSection');
+  section.style.display = 'block';
   if(upcoming.length === 0){
-    section.style.display = 'none';
-    $('upcomingList').innerHTML = '';
+    $('upcomingList').innerHTML = `<div class="stats-empty">${t('noUpcomingMatches')}</div>`;
     return;
   }
-  section.style.display = 'block';
   const sorted = [...upcoming].sort((a,b) => {
     const da = `${a.date || ''}T${a.time || '00:00'}`;
     const db = `${b.date || ''}T${b.time || '00:00'}`;
