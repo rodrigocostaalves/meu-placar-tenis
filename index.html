@@ -806,8 +806,12 @@ async function syncScheduledMatch(match){
   try{
     const sub = await ensurePushSubscription();
     if(!sub) return;
-    const dateTime = match.time ? `${match.date}T${match.time}:00` : `${match.date}T09:00:00`;
-    await fetch('/.netlify/functions/schedule-match', {
+    // Build the Date using the browser's LOCAL timezone, then convert
+    // to a proper UTC ISO string so the server (which runs in UTC)
+    // interprets the exact same moment in time.
+    const localDateTime = new Date(`${match.date}T${match.time || '09:00'}:00`);
+    const dateTime = localDateTime.toISOString();
+    const res = await fetch('/.netlify/functions/schedule-match', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -817,6 +821,9 @@ async function syncScheduledMatch(match){
         opponent: match.opponent || ''
       })
     });
+    if(!res.ok){
+      console.log('Schedule-match responded with error:', res.status, await res.text());
+    }
   }catch(e){
     console.log('Sync scheduled match error:', e);
   }
@@ -1481,7 +1488,10 @@ function backToMenuFromBracket(){
 
 // Event bindings
 $('addBtn').addEventListener('click', () => openMatchSheet(null, false));
-$('scheduleBtn').addEventListener('click', () => openMatchSheet(null, true));
+$('scheduleBtn').addEventListener('click', () => {
+  ensurePushSubscription();
+  openMatchSheet(null, true);
+});
 $('cancelBtn').addEventListener('click', closeAllSheets);
 $('overlay').addEventListener('click', closeAllSheets);
 $('saveBtn').addEventListener('click', handleSave);
