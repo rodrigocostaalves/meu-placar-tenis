@@ -226,6 +226,24 @@
     white-space:nowrap;
   }
 
+  .inbox-card{
+    background: var(--panel); border-left:5px solid var(--win); border-radius:10px;
+    padding:14px; margin-bottom:12px;
+  }
+  .inbox-tag{
+    display:inline-block; font-family:'Bebas Neue', sans-serif; font-size:11px; letter-spacing:1px;
+    padding:2px 9px; border-radius:20px; background: rgba(95,203,141,0.15); color:var(--win);
+    margin-bottom:8px;
+  }
+  .inbox-text{ font-size:13.5px; margin-bottom:10px; }
+  .invite-actions{ display:flex; gap:8px; }
+  .invite-actions button{
+    flex:1; padding:9px; border-radius:8px; border:none; font-size:13px;
+    font-family:'Bebas Neue', sans-serif; letter-spacing:0.5px; cursor:pointer;
+  }
+  .invite-accept{ background: var(--win); color: var(--court-deep); }
+  .invite-dismiss{ background: var(--court); color: var(--muted); border:1px solid var(--panel-line); }
+
   .overlay{
     position: fixed; inset:0; background: rgba(0,0,0,0.5);
     opacity:0; pointer-events:none; transition: opacity 0.2s;
@@ -340,17 +358,6 @@
   .stats-empty{ color:var(--muted); font-size:13px; padding:8px 0; }
   .tournament-row{ cursor:pointer; }
 
-  .invite-row{ padding:10px 0; border-bottom:1px dashed var(--panel-line); }
-  .invite-row:last-child{ border-bottom:none; }
-  .invite-text{ font-size:13px; margin-bottom:8px; }
-  .invite-actions{ display:flex; gap:8px; }
-  .invite-actions button{
-    flex:1; padding:8px; border-radius:8px; border:none; font-size:13px;
-    font-family:'Bebas Neue', sans-serif; letter-spacing:0.5px; cursor:pointer;
-  }
-  .invite-accept{ background: var(--win); color: var(--court-deep); }
-  .invite-dismiss{ background: var(--panel); color: var(--muted); border:1px solid var(--panel-line); }
-
   .photo-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .avatar-preview, .avatar-placeholder{
     width:56px; height:56px; border-radius:50%; object-fit:cover;
@@ -400,6 +407,10 @@
 </header>
 
 <main>
+  <div id="inboxSection" style="display:none">
+    <h3 class="upcoming-title" data-i18n="inboxTitle">Caixa de Entrada</h3>
+    <div id="inboxList"></div>
+  </div>
   <div id="upcomingSection" style="display:none">
     <h3 class="upcoming-title" data-i18n="upcomingTitle">Próximos Jogos</h3>
     <div id="upcomingList"></div>
@@ -441,6 +452,7 @@
     <label data-i18n="labelOpponentEmail">E-mail do Adversário (opcional)</label>
     <input type="email" id="fOpponentEmail">
     <button type="button" class="add-set-btn" id="inviteBtn" style="margin-top:8px" data-i18n="btnInvite">Convidar por notificação</button>
+    <button type="button" class="add-set-btn" id="sendResultBtn" style="margin-top:8px; display:none" data-i18n="btnSendResult">Enviar Resultado para Confirmação</button>
   </div>
   <div class="field">
     <label data-i18n="labelFormat">Formato</label>
@@ -547,9 +559,6 @@
   <div class="sheet-actions">
     <button class="btn-save" id="saveProfileBtn" style="flex:1" data-i18n="btnSaveProfile">Salvar Perfil</button>
   </div>
-
-  <h3 data-i18n="menuInvites">Convites Recebidos</h3>
-  <div class="stats-list" id="invitesContainer"></div>
 
   <h3 data-i18n="statsTitle">Estatísticas por Adversário</h3>
   <div class="stats-list" id="statsContainer"></div>
@@ -688,6 +697,13 @@ const TRANSLATIONS = {
     addBtn: "+ Nova Partida", sheetTitle: "Nova Partida", editMatchTitle: "Editar Partida",
     labelDate: "Data", labelTime: "Hora (opcional)", labelOpponent: "Adversário (opcional)", placeholderOpponent: "Ex: João",
     labelOpponentEmail: "E-mail do Adversário (opcional)", btnInvite: "Convidar por notificação",
+    btnSendResult: "Enviar Resultado para Confirmação",
+    resultSentNotified: "Resultado enviado! Ele(a) vai receber uma notificação pra confirmar.",
+    resultSentNoAccount: "Resultado salvo, mas esse e-mail ainda não usa o app.",
+    resultError: "Não foi possível enviar o resultado agora.",
+    inboxTitle: "Caixa de Entrada", inviteTag: "CONVITE", resultTag: "RESULTADO",
+    claimedWin: "registrou uma vitória contra você", claimedLoss: "registrou uma derrota para você",
+    resultAccepted: "Partida adicionada ao seu histórico!", resultRejectedPush: "recusou o resultado que você enviou",
     inviteNeedInfo: "Preencha data e e-mail do adversário pra convidar.", inviteSentNotified: "Convite enviado! Ele(a) vai receber uma notificação.",
     inviteSentNoAccount: "Convite salvo, mas esse e-mail ainda não usa o app — avise por fora dessa vez.",
     inviteError: "Não foi possível enviar o convite agora.",
@@ -745,6 +761,13 @@ const TRANSLATIONS = {
     addBtn: "+ New Match", sheetTitle: "New Match", editMatchTitle: "Edit Match",
     labelDate: "Date", labelTime: "Time (optional)", labelOpponent: "Opponent (optional)", placeholderOpponent: "E.g. John",
     labelOpponentEmail: "Opponent Email (optional)", btnInvite: "Invite via notification",
+    btnSendResult: "Send Result for Confirmation",
+    resultSentNotified: "Result sent! They'll get a notification to confirm.",
+    resultSentNoAccount: "Result saved, but that email hasn't used the app yet.",
+    resultError: "Couldn't send the result right now.",
+    inboxTitle: "Inbox", inviteTag: "INVITE", resultTag: "RESULT",
+    claimedWin: "recorded a win against you", claimedLoss: "recorded a loss to you",
+    resultAccepted: "Match added to your history!", resultRejectedPush: "declined the result you sent",
     inviteNeedInfo: "Fill in the date and opponent email to invite.", inviteSentNotified: "Invite sent! They'll get a notification.",
     inviteSentNoAccount: "Invite saved, but that email hasn't used the app yet — let them know another way this time.",
     inviteError: "Couldn't send the invite right now.",
@@ -802,6 +825,13 @@ const TRANSLATIONS = {
     addBtn: "+ Nuevo Partido", sheetTitle: "Nuevo Partido", editMatchTitle: "Editar Partido",
     labelDate: "Fecha", labelTime: "Hora (opcional)", labelOpponent: "Rival (opcional)", placeholderOpponent: "Ej: Juan",
     labelOpponentEmail: "Correo del Rival (opcional)", btnInvite: "Invitar por notificación",
+    btnSendResult: "Enviar Resultado para Confirmación",
+    resultSentNotified: "¡Resultado enviado! Recibirá una notificación para confirmar.",
+    resultSentNoAccount: "Resultado guardado, pero ese correo aún no usa la app.",
+    resultError: "No se pudo enviar el resultado ahora.",
+    inboxTitle: "Bandeja de Entrada", inviteTag: "INVITACIÓN", resultTag: "RESULTADO",
+    claimedWin: "registró una victoria contra ti", claimedLoss: "registró una derrota ante ti",
+    resultAccepted: "¡Partido agregado a tu historial!", resultRejectedPush: "rechazó el resultado que enviaste",
     inviteNeedInfo: "Completa la fecha y el correo del rival para invitar.", inviteSentNotified: "¡Invitación enviada! Recibirá una notificación.",
     inviteSentNoAccount: "Invitación guardada, pero ese correo aún no usa la app — avísale por otro medio esta vez.",
     inviteError: "No se pudo enviar la invitación ahora.",
@@ -1003,7 +1033,10 @@ async function cancelScheduledMatch(matchId){
   }
 }
 
-// ---------- Invites ----------
+// ---------- Inbox: Invites + Pending Results ----------
+let pendingInvites = [];
+let pendingResults = [];
+
 async function sendInvite(){
   const date = $('fDate').value;
   const toEmail = $('fOpponentEmail').value.trim();
@@ -1024,64 +1057,118 @@ async function sendInvite(){
       })
     });
     const data = await res.json();
-    if(data.notified){
-      alert(t('inviteSentNotified'));
-    } else {
-      alert(t('inviteSentNoAccount'));
-    }
+    alert(data.notified ? t('inviteSentNotified') : t('inviteSentNoAccount'));
   }catch(e){
     console.log('Send invite error:', e);
     alert(t('inviteError'));
   }
 }
 
-async function loadInvites(){
+async function sendResult(){
+  const toEmail = $('fOpponentEmail').value.trim();
+  if(!toEmail || !selectedResult){ alert(t('inviteNeedInfo')); return; }
   try{
     const profileRaw = localStorage.getItem(PROFILE_KEY);
     const profile = profileRaw ? JSON.parse(profileRaw) : {};
-    if(!profile.email){
-      $('invitesContainer').innerHTML = `<div class="stats-empty">${t('invitesEmptyState')}</div>`;
-      return;
-    }
-    const res = await fetch('/.netlify/functions/get-invites', {
+    const sets = currentSets.filter(s => s.a !== '' && s.b !== '').map(s => ({a: Number(s.a), b: Number(s.b)}));
+    const res = await fetch('/.netlify/functions/send-result', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: profile.email })
+      body: JSON.stringify({
+        fromName: profile.name || t('defaultOpponent'),
+        fromEmail: profile.email || '',
+        toEmail,
+        date: $('fDate').value,
+        result: selectedResult,
+        sets,
+        matchType: selectedType,
+        surface: selectedSurface
+      })
     });
     const data = await res.json();
-    renderInvites(Array.isArray(data.invites) ? data.invites : []);
+    alert(data.notified ? t('resultSentNotified') : t('resultSentNoAccount'));
   }catch(e){
-    console.log('Load invites error:', e);
-    $('invitesContainer').innerHTML = `<div class="stats-empty">${t('invitesEmptyState')}</div>`;
+    console.log('Send result error:', e);
+    alert(t('resultError'));
   }
 }
 
-function renderInvites(invites){
-  const container = $('invitesContainer');
-  if(invites.length === 0){
-    container.innerHTML = `<div class="stats-empty">${t('invitesEmptyState')}</div>`;
+async function refreshInbox(){
+  const profileRaw = localStorage.getItem(PROFILE_KEY);
+  const profile = profileRaw ? JSON.parse(profileRaw) : {};
+  if(!profile.email){
+    pendingInvites = [];
+    pendingResults = [];
+    renderInbox();
     return;
   }
-  container.innerHTML = invites.map(inv => {
+  try{
+    const [invRes, resRes] = await Promise.all([
+      fetch('/.netlify/functions/get-invites', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: profile.email })
+      }),
+      fetch('/.netlify/functions/get-pending-results', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: profile.email })
+      })
+    ]);
+    const invData = await invRes.json();
+    const resData = await resRes.json();
+    pendingInvites = Array.isArray(invData.invites) ? invData.invites : [];
+    pendingResults = Array.isArray(resData.results) ? resData.results : [];
+  }catch(e){
+    console.log('Refresh inbox error:', e);
+  }
+  renderInbox();
+}
+
+function renderInbox(){
+  const section = $('inboxSection');
+  const total = pendingInvites.length + pendingResults.length;
+  if(total === 0){
+    section.style.display = 'none';
+    $('inboxList').innerHTML = '';
+    return;
+  }
+  section.style.display = 'block';
+  let html = '';
+  pendingInvites.forEach(inv => {
     const d = new Date(inv.dateTime);
     const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
-    return `
-    <div class="invite-row" data-id="${inv.id}">
-      <div class="invite-text"><strong>${esc(inv.fromName || '')}</strong> ${t('inviteFromLabel')} ${esc(dateStr)}</div>
+    html += `
+    <div class="inbox-card">
+      <div class="inbox-tag">${t('inviteTag')}</div>
+      <div class="inbox-text"><strong>${esc(inv.fromName || '')}</strong> ${t('inviteFromLabel')} ${esc(dateStr)}</div>
       <div class="invite-actions">
-        <button class="invite-accept" data-id="${inv.id}" data-action="accepted">${t('btnAcceptInvite')}</button>
-        <button class="invite-dismiss" data-id="${inv.id}" data-action="dismissed">${t('btnDismissInvite')}</button>
+        <button data-kind="invite" data-id="${inv.id}" data-action="accepted" class="invite-accept">${t('btnAcceptInvite')}</button>
+        <button data-kind="invite" data-id="${inv.id}" data-action="dismissed" class="invite-dismiss">${t('btnDismissInvite')}</button>
       </div>
-    </div>
-  `;
-  }).join('');
-
-  container.querySelectorAll('button[data-action]').forEach(btn => {
-    btn.addEventListener('click', () => respondInvite(btn.dataset.id, btn.dataset.action, invites));
+    </div>`;
+  });
+  pendingResults.forEach(r => {
+    const scoreStr = (r.sets && r.sets.length) ? r.sets.map(s => `${s.a}-${s.b}`).join(', ') : '';
+    const claim = r.result === 'V' ? t('claimedWin') : t('claimedLoss');
+    html += `
+    <div class="inbox-card">
+      <div class="inbox-tag">${t('resultTag')}</div>
+      <div class="inbox-text"><strong>${esc(r.fromName || '')}</strong> ${claim}${scoreStr ? ' (' + esc(scoreStr) + ')' : ''}</div>
+      <div class="invite-actions">
+        <button data-kind="result" data-id="${r.id}" data-action="accepted" class="invite-accept">${t('btnAcceptInvite')}</button>
+        <button data-kind="result" data-id="${r.id}" data-action="dismissed" class="invite-dismiss">${t('btnDismissInvite')}</button>
+      </div>
+    </div>`;
+  });
+  $('inboxList').innerHTML = html;
+  $('inboxList').querySelectorAll('button[data-kind="invite"]').forEach(btn => {
+    btn.addEventListener('click', () => respondInvite(btn.dataset.id, btn.dataset.action));
+  });
+  $('inboxList').querySelectorAll('button[data-kind="result"]').forEach(btn => {
+    btn.addEventListener('click', () => respondResult(btn.dataset.id, btn.dataset.action));
   });
 }
 
-async function respondInvite(inviteId, response, invites){
+async function respondInvite(inviteId, response){
   try{
     await fetch('/.netlify/functions/respond-invite', {
       method: 'POST',
@@ -1089,7 +1176,7 @@ async function respondInvite(inviteId, response, invites){
       body: JSON.stringify({ inviteId, response })
     });
     if(response === 'accepted'){
-      const inv = invites.find(i => i.id === inviteId);
+      const inv = pendingInvites.find(i => i.id === inviteId);
       if(inv){
         const d = new Date(inv.dateTime);
         const newMatch = {
@@ -1097,6 +1184,7 @@ async function respondInvite(inviteId, response, invites){
           date: isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10),
           time: isNaN(d.getTime()) ? '' : d.toTimeString().slice(0,5),
           opponent: inv.fromName || '',
+          opponentEmail: inv.fromEmail || '',
           format: 'individual', partner: '', opponent2: '',
           result: null, matchType: 'amistoso', surface: 'rapida', sets: [],
           location: '', notes: '', photo: null
@@ -1107,9 +1195,43 @@ async function respondInvite(inviteId, response, invites){
         alert(t('inviteAccepted'));
       }
     }
-    loadInvites();
+    refreshInbox();
   }catch(e){
     console.log('Respond invite error:', e);
+  }
+}
+
+async function respondResult(resultId, response){
+  try{
+    await fetch('/.netlify/functions/respond-result', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resultId, response })
+    });
+    if(response === 'accepted'){
+      const r = pendingResults.find(x => x.id === resultId);
+      if(r){
+        const mirroredResult = r.result === 'V' ? 'D' : 'V';
+        const mirroredSets = (r.sets || []).map(s => ({a: s.b, b: s.a}));
+        const newMatch = {
+          id: Date.now().toString(),
+          date: r.date || new Date().toISOString().slice(0,10),
+          time: '',
+          opponent: r.fromName || '',
+          opponentEmail: r.fromEmail || '',
+          format: 'individual', partner: '', opponent2: '',
+          result: mirroredResult, matchType: r.matchType || 'amistoso', surface: r.surface || 'rapida',
+          sets: mirroredSets, location: '', notes: '', photo: null
+        };
+        matches.push(newMatch);
+        saveMatches();
+        render();
+        alert(t('resultAccepted'));
+      }
+    }
+    refreshInbox();
+  }catch(e){
+    console.log('Respond result error:', e);
   }
 }
 
@@ -1167,7 +1289,7 @@ function saveProfile(){
   localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
   alert(t('profileSaved'));
   syncPlayerProfile(p);
-  loadInvites();
+  refreshInbox();
 }
 
 function getPlayerId(){
@@ -1466,6 +1588,7 @@ function openMatchSheet(matchToEdit, isScheduling){
     currentMatchPhoto = null;
   }
   $('inviteBtn').style.display = schedulingMode ? 'block' : 'none';
+  $('sendResultBtn').style.display = schedulingMode ? 'none' : 'block';
   renderSetsUI();
   updateMatchSheetTexts();
   updateMatchPhotoUI();
@@ -2025,8 +2148,9 @@ $('filterFriendly').addEventListener('click', () => setTypeFilter('amistoso'));
 $('filterLeague').addEventListener('click', () => setTypeFilter('liga'));
 $('filterChampionship').addEventListener('click', () => setTypeFilter('campeonato'));
 
-$('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); loadInvites(); openSheet('menuSheet'); });
+$('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); openSheet('menuSheet'); });
 $('inviteBtn').addEventListener('click', sendInvite);
+$('sendResultBtn').addEventListener('click', sendResult);
 $('closeMenuBtn').addEventListener('click', closeAllSheets);
 $('saveProfileBtn').addEventListener('click', saveProfile);
 $('langPt').addEventListener('click', () => setLanguage('pt'));
@@ -2105,6 +2229,7 @@ $('cancelLeagueMatchBtn').addEventListener('click', () => {
 loadMatches();
 loadTournaments();
 loadLeagues();
+refreshInbox();
 applyLanguage();
 updateMatchSheetTexts();
 render();
