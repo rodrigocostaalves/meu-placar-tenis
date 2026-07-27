@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Meu Placar de Tênis</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0A2B3D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Meu Placar">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --court: #0A2B3D;
+    --court-deep: #061D29;
+    --panel: #123A52;
+    --panel-line: #1E4C68;
+    --chalk: #F3F6F2;
+    --muted: #8FADBE;
+    --ball: #D7F205;
+    --win: #5FCB8D;
+    --loss: #E06B4E;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  body{
+    margin:0; min-height:100vh;
+    background: var(--court);
+    font-family:'Inter',sans-serif;
+    color: var(--chalk);
+    padding-bottom: 100px;
+  }
+  header.scoreboard{
+    background: linear-gradient(180deg, var(--court-deep), var(--court));
+    padding: 22px 20px 22px;
+    position: relative;
+    border-bottom: 2px dashed rgba(243,246,242,0.25);
+  }
+  .header-top{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 18px;
+  }
+  header.scoreboard h1{
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 34px;
+    letter-spacing: 1.5px;
+    margin: 0;
+    display:flex; align-items:center; gap:10px;
+  }
+  header.scoreboard h1 .ball{
+    width:16px; height:16px; border-radius:50%;
+    background: var(--ball);
+    box-shadow: 0 0 10px rgba(215,242,5,0.6);
+    display:inline-block;
+  }
+  .menu-btn{
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 10px;
+    width: 42px; height: 42px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .menu-btn span, .menu-btn span::before, .menu-btn span::after{
+    content:''; display:block; width:18px; height:2px;
+    background: var(--chalk); position:relative;
+  }
+  .menu-btn span::before{ position:absolute; top:-6px; }
+  .menu-btn span::after{ position:absolute; top:6px; }
+  .record{
+    display:flex; gap:22px; align-items:flex-end;
+  }
+  .record-item{
+    display:flex; flex-direction:column; align-items:flex-start;
+  }
+  .record-item .num{
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 40px;
+    line-height:1;
+  }
+  .record-item .lbl{
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .record-item.wins .num{ color: var(--win); }
+  .record-item.losses .num{ color: var(--loss); }
+  .record-item.pct .num{ color: var(--ball); font-size: 28px; }
+  .streak-line{
+    margin-top: 12px; font-size: 13px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .streak-line .streak-val{ font-weight: 700; text-transform: none; letter-spacing: 0; }
+  .streak-line .streak-val.win{ color: var(--win); }
+  .streak-line .streak-val.loss{ color: var(--loss); }
+
+  main{ padding: 18px 16px 0; }
+
+  .filters{
+    display:flex; flex-direction:column; gap:10px;
+    margin-bottom: 16px;
+  }
+  .search-input{
+    width:100%; background: var(--panel);
+    border: 1px solid var(--panel-line);
+    color: var(--chalk);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .toggle-group.filter-type{ flex-wrap: wrap; }
+  .toggle-group.filter-type button{ font-size: 12.5px; padding: 9px 4px; flex: 1 1 40%; }
+  .toggle-group.filter-type button.active{
+    background: rgba(215,242,5,0.15); border-color: var(--ball); color: var(--ball);
+  }
+
+  .empty{
+    text-align:center;
+    margin-top: 60px;
+    color: var(--muted);
+  }
+  .empty .ball-big{
+    font-size: 40px; margin-bottom: 10px;
+  }
+
+  .card{
+    background: var(--panel);
+    border-left: 5px solid var(--win);
+    border-radius: 10px;
+    padding: 14px 14px 12px;
+    margin-bottom: 12px;
+    position: relative;
+    cursor: pointer;
+  }
+  .card.loss{ border-left-color: var(--loss); }
+  .card .row1{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap: 10px;
+  }
+  .card .opponent{
+    font-weight:600; font-size:15px;
+  }
+  .card .date{
+    font-size:12px; color: var(--muted); margin-top:2px;
+  }
+  .card .result-tag{
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(95,203,141,0.15);
+    color: var(--win);
+    white-space:nowrap;
+  }
+  .card.loss .result-tag{
+    background: rgba(224,107,78,0.15);
+    color: var(--loss);
+  }
+  .card .score{
+    font-family:'Space Mono', monospace;
+    font-size: 18px;
+    margin-top: 10px;
+    letter-spacing: 1px;
+  }
+  .card .meta{
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .card .del{
+    position:absolute; top:10px; right:10px;
+    background:none; border:none; color: var(--muted);
+    font-size: 18px; cursor:pointer; padding: 4px 8px;
+  }
+  .card-photo{ width:100%; max-height:140px; object-fit:cover; border-radius:8px; margin-top:10px; display:block; }
+
+  .fab{
+    position: fixed; bottom: 24px; left:50%; transform:translateX(-50%);
+    background: var(--ball);
+    color: var(--court-deep);
+    border:none; border-radius: 30px;
+    padding: 14px 26px;
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 16px; letter-spacing: 1px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    cursor:pointer;
+  }
+  .fab-row{
+    position: fixed; bottom: 24px; left:16px; right:16px;
+    display:flex; gap:10px; justify-content:center; z-index:9;
+  }
+  .fab-row .fab{
+    position: static; transform:none; flex:1; text-align:center;
+    padding: 14px 10px; font-size:14px; white-space:nowrap;
+  }
+  .fab-secondary{
+    background: var(--panel); color: var(--chalk); border:1px solid var(--panel-line);
+  }
+  #upcomingSection{ margin-bottom: 22px; }
+  .upcoming-title{
+    font-family:'Bebas Neue', sans-serif; font-size:16px; letter-spacing:1px;
+    color:var(--muted); text-transform:uppercase; margin:0 0 10px;
+  }
+  .upcoming-card{
+    background: var(--panel); border-left:5px solid var(--ball); border-radius:10px;
+    padding:14px; margin-bottom:12px; position:relative; cursor:pointer;
+  }
+  .upcoming-card .del{
+    position:absolute; top:10px; right:10px; background:none; border:none;
+    color:var(--muted); font-size:18px; cursor:pointer; padding:4px 8px;
+  }
+  .upcoming-tag{
+    font-family:'Bebas Neue', sans-serif; font-size:12px; letter-spacing:1px;
+    padding:3px 10px; border-radius:20px; background: rgba(215,242,5,0.15); color:var(--ball);
+    white-space:nowrap;
+  }
+
+  .overlay{
+    position: fixed; inset:0; background: rgba(0,0,0,0.5);
+    opacity:0; pointer-events:none; transition: opacity 0.2s;
+    z-index: 10;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+
+  .sheet{
+    position: fixed; left:0; right:0; bottom:0;
+    background: var(--court-deep);
+    border-radius: 18px 18px 0 0;
+    padding: 20px 20px 24px;
+    transform: translateY(105%);
+    transition: transform 0.25s ease;
+    z-index: 11;
+    max-height: 85vh;
+    overflow-y:auto;
+  }
+  .sheet.show{ transform: translateY(0); }
+  .sheet h2{
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 24px; letter-spacing:1px; margin: 0 0 16px;
+  }
+  .sheet h3{
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 16px; letter-spacing:1px; margin: 22px 0 12px;
+    color: var(--muted);
+    border-top: 1px dashed var(--panel-line);
+    padding-top: 18px;
+  }
+  .sheet h3:first-of-type{ border-top:none; padding-top:0; margin-top:4px; }
+  .field{ margin-bottom: 14px; }
+  .field label{
+    display:block; font-size:12px; color: var(--muted);
+    text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;
+  }
+  .field input, .field textarea{
+    width:100%; background: var(--panel);
+    border: 1px solid var(--panel-line);
+    color: var(--chalk);
+    border-radius: 8px;
+    padding: 11px 12px;
+    font-size: 15px;
+    font-family: inherit;
+  }
+  .field textarea{ resize: vertical; min-height: 50px; }
+  .toggle-group{ display:flex; gap:10px; }
+  .toggle-group button{
+    flex:1; padding: 12px; border-radius: 8px;
+    border: 1px solid var(--panel-line);
+    background: var(--panel);
+    color: var(--muted);
+    font-family:'Bebas Neue', sans-serif;
+    font-size:16px; letter-spacing:1px;
+    cursor:pointer;
+  }
+  .toggle-group.type button{ font-size: 13px; padding: 10px 4px; }
+  .toggle-group button.active[data-v="V"]{
+    background: rgba(95,203,141,0.2); border-color: var(--win); color: var(--win);
+  }
+  .toggle-group button.active[data-v="D"]{
+    background: rgba(224,107,78,0.2); border-color: var(--loss); color: var(--loss);
+  }
+  .toggle-group.type button.active{
+    background: rgba(215,242,5,0.15); border-color: var(--ball); color: var(--ball);
+  }
+  .lang-group{ display:flex; flex-direction:column; gap:8px; }
+  .lang-group button{
+    text-align:left;
+    padding: 12px 14px; border-radius: 8px;
+    border: 1px solid var(--panel-line);
+    background: var(--panel);
+    color: var(--chalk);
+    font-size:15px;
+    cursor:pointer;
+  }
+  .lang-group button.active{
+    border-color: var(--ball); color: var(--ball);
+  }
+  .sheet-actions{
+    display:flex; gap:10px; margin-top: 18px;
+  }
+  .sheet-actions button{
+    flex:1; padding: 13px; border-radius: 8px; border:none;
+    font-family:'Bebas Neue', sans-serif; font-size:15px; letter-spacing:1px;
+    cursor:pointer;
+  }
+  .btn-cancel{ background: var(--panel); color: var(--muted); }
+  .btn-save{ background: var(--ball); color: var(--court-deep); }
+
+  .sets-wrap{ display:flex; flex-direction:column; gap:8px; }
+  .set-row{ display:flex; align-items:center; gap:8px; }
+  .set-row .set-num{ font-size:12px; color:var(--muted); width:44px; flex-shrink:0; }
+  .set-row input{ width:56px; text-align:center; padding:9px 6px; }
+  .set-row .sep{ color:var(--muted); }
+  .set-remove{ background:none; border:none; color:var(--muted); font-size:16px; cursor:pointer; padding:4px 8px; margin-left:auto; }
+  .add-set-btn{
+    align-self:flex-start; background:none; border:1px dashed var(--panel-line);
+    color:var(--muted); border-radius:8px; padding:8px 14px; font-size:13px;
+    cursor:pointer; margin-top:4px; font-family:inherit;
+  }
+
+  .stats-list{ display:flex; flex-direction:column; }
+  .stat-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 0; border-bottom:1px dashed var(--panel-line); font-size:14px;
+  }
+  .stat-row:last-child{ border-bottom:none; }
+  .stat-name{ font-weight:600; }
+  .stat-record .sw{ color:var(--win); font-weight:600; }
+  .stat-record .sl{ color:var(--loss); font-weight:600; }
+  .stats-empty{ color:var(--muted); font-size:13px; padding:8px 0; }
+  .tournament-row{ cursor:pointer; }
+
+  .photo-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .avatar-preview, .avatar-placeholder{
+    width:56px; height:56px; border-radius:50%; object-fit:cover;
+    background:var(--panel); border:1px solid var(--panel-line);
+    display:flex; align-items:center; justify-content:center; font-size:24px;
+  }
+  .photo-preview{ width:64px; height:64px; border-radius:10px; object-fit:cover; border:1px solid var(--panel-line); }
+
+  .champion-banner{
+    background: rgba(215,242,5,0.15); border:1px solid var(--ball); color: var(--ball);
+    border-radius:10px; padding:14px; text-align:center; font-family:'Bebas Neue',sans-serif;
+    font-size:18px; letter-spacing:1px; margin-bottom:18px;
+  }
+  .bracket-round{ margin-bottom:20px; }
+  .bracket-round h4{
+    font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:1px;
+    color:var(--muted); text-transform:uppercase; margin:0 0 10px;
+  }
+  .bracket-match{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .bracket-player{
+    flex:1; background:var(--panel); border:1px solid var(--panel-line); border-radius:8px;
+    padding:10px 8px; color:var(--chalk); text-align:center; font-size:13px; cursor:pointer;
+    font-family:inherit;
+  }
+  .bracket-player.winner{ border-color:var(--win); color:var(--win); background:rgba(95,203,141,0.15); font-weight:600; }
+  .bracket-player.tbd{ color:var(--muted); opacity:0.5; cursor:default; }
+  .bracket-match .vs{ font-size:11px; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="scoreboard">
+  <div class="header-top">
+    <h1><span class="ball"></span><span data-i18n="appTitle">Meu Placar</span></h1>
+    <button class="menu-btn" id="menuBtn"><span></span></button>
+  </div>
+  <div class="record">
+    <div class="record-item wins"><span class="num" id="winsNum">0</span><span class="lbl" data-i18n="winsLabel">Vitórias</span></div>
+    <div class="record-item losses"><span class="num" id="lossesNum">0</span><span class="lbl" data-i18n="lossesLabel">Derrotas</span></div>
+    <div class="record-item pct"><span class="num" id="pctNum">0%</span><span class="lbl" data-i18n="pctLabel">Aproveitamento</span></div>
+  </div>
+  <div class="streak-line"><span data-i18n="streakLabel">Sequência</span>: <span class="streak-val" id="streakVal">-</span></div>
+</header>
+
+<main>
+  <div id="upcomingSection" style="display:none">
+    <h3 class="upcoming-title" data-i18n="upcomingTitle">Próximos Jogos</h3>
+    <div id="upcomingList"></div>
+  </div>
+  <div class="filters">
+    <input type="text" id="searchInput" class="search-input" data-i18n-ph="searchPlaceholder" placeholder="Buscar adversário...">
+    <div class="toggle-group filter-type">
+      <button type="button" data-f="todos" id="filterAll" class="active" data-i18n="filterAll">Todos</button>
+      <button type="button" data-f="amistoso" id="filterFriendly" data-i18n="btnFriendly">Amistoso</button>
+      <button type="button" data-f="liga" id="filterLeague" data-i18n="btnLeague">Liga</button>
+      <button type="button" data-f="campeonato" id="filterChampionship" data-i18n="btnChampionship">Campeonato</button>
+    </div>
+  </div>
+  <div id="matchList"></div>
+</main>
+
+<div class="fab-row">
+  <button class="fab fab-secondary" id="scheduleBtn" data-i18n="btnSchedule">+ Agendar</button>
+  <button class="fab" id="addBtn" data-i18n="addBtn">+ Nova Partida</button>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="sheet" id="matchSheet">
+  <h2 id="matchSheetTitle">Nova Partida</h2>
+  <div class="field">
+    <label data-i18n="labelDate">Data</label>
+    <input type="date" id="fDate">
+  </div>
+  <div class="field">
+    <label data-i18n="labelTime">Hora (opcional)</label>
+    <input type="time" id="fTime">
+  </div>
+  <div class="field">
+    <label data-i18n="labelOpponent">Adversário (opcional)</label>
+    <input type="text" id="fOpponent" data-i18n-ph="placeholderOpponent" placeholder="Ex: João">
+  </div>
+  <div class="field">
+    <label data-i18n="labelFormat">Formato</label>
+    <div class="toggle-group type">
+      <button type="button" data-fmt="individual" id="btnSingles" data-i18n="btnSingles">Individual</button>
+      <button type="button" data-fmt="duplas" id="btnDoubles" data-i18n="btnDoubles">Duplas</button>
+    </div>
+  </div>
+  <div id="doublesFields" style="display:none">
+    <div class="field">
+      <label data-i18n="labelPartner">Parceiro</label>
+      <input type="text" id="fPartner">
+    </div>
+    <div class="field">
+      <label data-i18n="labelOpponent2">Adversário 2 (opcional)</label>
+      <input type="text" id="fOpponent2">
+    </div>
+  </div>
+  <div class="field" id="resultFieldWrap">
+    <label data-i18n="labelResult">Resultado</label>
+    <div class="toggle-group">
+      <button type="button" data-v="V" id="btnV" data-i18n="btnWin">Vitória</button>
+      <button type="button" data-v="D" id="btnD" data-i18n="btnLoss">Derrota</button>
+    </div>
+  </div>
+  <div class="field">
+    <label data-i18n="labelMatchType">Tipo de Partida</label>
+    <div class="toggle-group type">
+      <button type="button" data-t="amistoso" id="btnFriendly" data-i18n="btnFriendly">Amistoso</button>
+      <button type="button" data-t="liga" id="btnLeague" data-i18n="btnLeague">Liga</button>
+      <button type="button" data-t="campeonato" id="btnChampionship" data-i18n="btnChampionship">Campeonato</button>
+    </div>
+  </div>
+  <div class="field">
+    <label data-i18n="labelSurface">Tipo de Quadra</label>
+    <div class="toggle-group type">
+      <button type="button" data-s="saibro" id="btnClay" data-i18n="btnClay">Saibro</button>
+      <button type="button" data-s="rapida" id="btnHard" data-i18n="btnHard">Rápida</button>
+      <button type="button" data-s="grama" id="btnGrass" data-i18n="btnGrass">Grama</button>
+    </div>
+  </div>
+  <div class="field" id="setsFieldWrap">
+    <label data-i18n="labelSets">Placar (sets)</label>
+    <div class="sets-wrap" id="setsContainer"></div>
+    <button type="button" class="add-set-btn" id="addSetBtn" data-i18n="addSet">+ Set</button>
+  </div>
+  <div class="field">
+    <label data-i18n="labelLocation">Local (opcional)</label>
+    <input type="text" id="fLocation" data-i18n-ph="placeholderLocation" placeholder="Ex: Quadra do clube">
+  </div>
+  <div class="field">
+    <label data-i18n="labelNotes">Observações (opcional)</label>
+    <textarea id="fNotes" data-i18n-ph="placeholderNotes" placeholder="Alguma nota sobre o jogo..."></textarea>
+  </div>
+  <div class="field">
+    <label data-i18n="labelMatchPhoto">Foto (opcional)</label>
+    <div class="photo-row">
+      <img id="mPhotoPreview" class="photo-preview" src="" style="display:none">
+      <input type="file" id="mPhotoInput" accept="image/*" style="display:none">
+      <button type="button" class="btn-cancel" id="mPhotoBtn" data-i18n="btnChoosePhoto">Escolher Foto</button>
+      <button type="button" class="btn-cancel" id="mPhotoRemoveBtn" data-i18n="btnRemovePhoto" style="display:none">Remover</button>
+    </div>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="cancelBtn" data-i18n="btnCancel">Cancelar</button>
+    <button class="btn-save" id="saveBtn">Salvar</button>
+  </div>
+</div>
+
+<div class="sheet" id="menuSheet">
+  <h2 data-i18n="menuTitle">Menu</h2>
+
+  <h3 data-i18n="profileTitle">Perfil</h3>
+  <div class="field">
+    <label data-i18n="labelPhoto">Foto de Perfil</label>
+    <div class="photo-row">
+      <img id="pPhotoPreview" class="avatar-preview" src="" style="display:none">
+      <div id="pPhotoPlaceholder" class="avatar-placeholder">🎾</div>
+      <input type="file" id="pPhotoInput" accept="image/*" style="display:none">
+      <button type="button" class="btn-cancel" id="pPhotoBtn" data-i18n="btnChoosePhoto">Escolher Foto</button>
+      <button type="button" class="btn-cancel" id="pPhotoRemoveBtn" data-i18n="btnRemovePhoto" style="display:none">Remover</button>
+    </div>
+  </div>
+  <div class="field">
+    <label data-i18n="labelName">Nome</label>
+    <input type="text" id="pName">
+  </div>
+  <div class="field">
+    <label data-i18n="labelEmail">E-mail</label>
+    <input type="email" id="pEmail">
+  </div>
+  <div class="field">
+    <label data-i18n="labelCountry">País</label>
+    <input type="text" id="pCountry">
+  </div>
+  <div class="field">
+    <label data-i18n="labelCity">Cidade</label>
+    <input type="text" id="pCity">
+  </div>
+  <div class="field">
+    <label data-i18n="labelBirthdate">Data de Nascimento</label>
+    <input type="date" id="pBirthdate">
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-save" id="saveProfileBtn" style="flex:1" data-i18n="btnSaveProfile">Salvar Perfil</button>
+  </div>
+
+  <h3 data-i18n="statsTitle">Estatísticas por Adversário</h3>
+  <div class="stats-list" id="statsContainer"></div>
+
+  <h3 data-i18n="menuTournaments">Campeonatos</h3>
+  <div class="stats-list" id="tournamentsContainer"></div>
+  <div class="sheet-actions">
+    <button class="btn-save" id="newTournamentBtn" style="flex:1" data-i18n="btnNewTournament">+ Novo Campeonato</button>
+  </div>
+
+  <h3 data-i18n="dataTitle">Dados</h3>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="exportBtn" data-i18n="btnExport">Exportar Dados</button>
+    <button class="btn-cancel" id="importBtn" data-i18n="btnImport">Importar Dados</button>
+  </div>
+  <input type="file" id="importFile" accept="application/json" style="display:none">
+
+  <h3 data-i18n="languageTitle">Idioma</h3>
+  <div class="lang-group">
+    <button type="button" data-lang="pt" id="langPt">Português</button>
+    <button type="button" data-lang="en" id="langEn">English</button>
+    <button type="button" data-lang="es" id="langEs">Español</button>
+  </div>
+
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeMenuBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
+<div class="sheet" id="tournamentSheet">
+  <h2 data-i18n="tournamentSheetTitle">Novo Campeonato</h2>
+  <div class="field">
+    <label data-i18n="labelTournamentName">Nome do Campeonato</label>
+    <input type="text" id="tName">
+  </div>
+  <div class="field">
+    <label data-i18n="labelDate">Data</label>
+    <input type="date" id="tDate">
+  </div>
+  <div class="field">
+    <label data-i18n="labelParticipants">Participantes (16 nomes, um por linha)</label>
+    <textarea id="tParticipants" rows="8" placeholder="Nome 1&#10;Nome 2&#10;Nome 3&#10;..."></textarea>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="cancelTournamentBtn" data-i18n="btnCancel">Cancelar</button>
+    <button class="btn-save" id="generateBracketBtn" data-i18n="btnGenerateBracket">Gerar Chaveamento</button>
+  </div>
+</div>
+
+<div class="sheet" id="bracketSheet">
+  <h2 id="bracketTitle">Campeonato</h2>
+  <div id="bracketContent"></div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="deleteTournamentBtn" data-i18n="btnDeleteTournament">Excluir Campeonato</button>
+    <button class="btn-cancel" id="backFromBracketBtn" data-i18n="btnBack">Voltar</button>
+  </div>
+</div>
+
+<script>
+const TRANSLATIONS = {
+  pt: {
+    appTitle: "Meu Placar", winsLabel: "Vitórias", lossesLabel: "Derrotas", pctLabel: "Aproveitamento",
+    emptyState: "Nenhuma partida registrada ainda.", emptyStateHint: 'Toque em "+ Nova Partida" para começar.',
+    addBtn: "+ Nova Partida", sheetTitle: "Nova Partida", editMatchTitle: "Editar Partida",
+    labelDate: "Data", labelTime: "Hora (opcional)", labelOpponent: "Adversário (opcional)", placeholderOpponent: "Ex: João",
+    btnSchedule: "+ Agendar", scheduleTitle: "Agendar Partida", btnScheduleSave: "Agendar",
+    upcomingTitle: "Próximos Jogos", upcomingTag: "AGENDADA",
+    labelFormat: "Formato", btnSingles: "Individual", btnDoubles: "Duplas",
+    labelPartner: "Parceiro", labelOpponent2: "Adversário 2 (opcional)",
+    labelResult: "Resultado", btnWin: "Vitória", btnLoss: "Derrota",
+    labelMatchType: "Tipo de Partida", btnFriendly: "Amistoso", btnLeague: "Liga", btnChampionship: "Campeonato",
+    labelSurface: "Tipo de Quadra", btnClay: "Saibro", btnHard: "Rápida", btnGrass: "Grama",
+    streakLabel: "Sequência",
+    labelSets: "Placar (sets)", setLabel: "Set", addSet: "+ Set",
+    labelLocation: "Local (opcional)", placeholderLocation: "Ex: Quadra do clube",
+    labelNotes: "Observações (opcional)", placeholderNotes: "Alguma nota sobre o jogo...",
+    labelPhoto: "Foto de Perfil", labelMatchPhoto: "Foto (opcional)", labelEmail: "E-mail",
+    btnChoosePhoto: "Escolher Foto", btnRemovePhoto: "Remover",
+    btnCancel: "Cancelar", btnSave: "Salvar", btnUpdate: "Atualizar",
+    resultTagWin: "VITÓRIA", resultTagLoss: "DERROTA", defaultOpponent: "Partida",
+    deleteConfirm: "Excluir esta partida?", alertChooseDate: "Escolha uma data.",
+    menuTitle: "Menu", profileTitle: "Perfil", labelName: "Nome", labelCountry: "País",
+    labelCity: "Cidade", labelBirthdate: "Data de Nascimento", btnSaveProfile: "Salvar Perfil",
+    statsTitle: "Estatísticas por Adversário", statsEmptyState: "Nenhum adversário registrado ainda.",
+    dataTitle: "Dados", btnExport: "Exportar Dados", btnImport: "Importar Dados",
+    importConfirm: "Isso vai substituir os dados atuais. Continuar?", importSuccess: "Dados importados!",
+    importError: "Arquivo inválido.",
+    searchPlaceholder: "Buscar adversário...", filterAll: "Todos", noResultsFilter: "Nenhuma partida encontrada.",
+    languageTitle: "Idioma", btnClose: "Fechar", profileSaved: "Perfil salvo!",
+    menuTournaments: "Campeonatos", btnNewTournament: "+ Novo Campeonato",
+    tournamentSheetTitle: "Novo Campeonato", labelTournamentName: "Nome do Campeonato",
+    labelParticipants: "Participantes (16 nomes, um por linha)", btnGenerateBracket: "Gerar Chaveamento",
+    alertNeed16: "Digite exatamente 16 nomes, um por linha.",
+    roundR16: "Oitavas de Final", roundQF: "Quartas de Final", roundSF: "Semifinal", roundFinal: "Final",
+    championLabel: "Campeão:", tournamentEmptyState: "Nenhum campeonato criado ainda.",
+    btnDeleteTournament: "Excluir Campeonato", deleteTournamentConfirm: "Excluir este campeonato?",
+    statusInProgress: "Em andamento", btnBack: "Voltar", tbdLabel: "A definir"
+  },
+  en: {
+    appTitle: "My Scoreboard", winsLabel: "Wins", lossesLabel: "Losses", pctLabel: "Win Rate",
+    emptyState: "No matches recorded yet.", emptyStateHint: 'Tap "+ New Match" to get started.',
+    addBtn: "+ New Match", sheetTitle: "New Match", editMatchTitle: "Edit Match",
+    labelDate: "Date", labelTime: "Time (optional)", labelOpponent: "Opponent (optional)", placeholderOpponent: "E.g. John",
+    btnSchedule: "+ Schedule", scheduleTitle: "Schedule Match", btnScheduleSave: "Schedule",
+    upcomingTitle: "Upcoming Matches", upcomingTag: "SCHEDULED",
+    labelFormat: "Format", btnSingles: "Singles", btnDoubles: "Doubles",
+    labelPartner: "Partner", labelOpponent2: "Opponent 2 (optional)",
+    labelResult: "Result", btnWin: "Win", btnLoss: "Loss",
+    labelMatchType: "Match Type", btnFriendly: "Friendly", btnLeague: "League", btnChampionship: "Tournament",
+    labelSurface: "Court Surface", btnClay: "Clay", btnHard: "Hard", btnGrass: "Grass",
+    streakLabel: "Streak",
+    labelSets: "Score (sets)", setLabel: "Set", addSet: "+ Set",
+    labelLocation: "Location (optional)", placeholderLocation: "E.g. Club court",
+    labelNotes: "Notes (optional)", placeholderNotes: "Any notes about the match...",
+    labelPhoto: "Profile Photo", labelMatchPhoto: "Photo (optional)", labelEmail: "Email",
+    btnChoosePhoto: "Choose Photo", btnRemovePhoto: "Remove",
+    btnCancel: "Cancel", btnSave: "Save", btnUpdate: "Update",
+    resultTagWin: "WIN", resultTagLoss: "LOSS", defaultOpponent: "Match",
+    deleteConfirm: "Delete this match?", alertChooseDate: "Please choose a date.",
+    menuTitle: "Menu", profileTitle: "Profile", labelName: "Name", labelCountry: "Country",
+    labelCity: "City", labelBirthdate: "Date of Birth", btnSaveProfile: "Save Profile",
+    statsTitle: "Stats by Opponent", statsEmptyState: "No opponents recorded yet.",
+    dataTitle: "Data", btnExport: "Export Data", btnImport: "Import Data",
+    importConfirm: "This will replace your current data. Continue?", importSuccess: "Data imported!",
+    importError: "Invalid file.",
+    searchPlaceholder: "Search opponent...", filterAll: "All", noResultsFilter: "No matches found.",
+    languageTitle: "Language", btnClose: "Close", profileSaved: "Profile saved!",
+    menuTournaments: "Tournaments", btnNewTournament: "+ New Tournament",
+    tournamentSheetTitle: "New Tournament", labelTournamentName: "Tournament Name",
+    labelParticipants: "Participants (16 names, one per line)", btnGenerateBracket: "Generate Bracket",
+    alertNeed16: "Enter exactly 16 names, one per line.",
+    roundR16: "Round of 16", roundQF: "Quarterfinals", roundSF: "Semifinals", roundFinal: "Final",
+    championLabel: "Champion:", tournamentEmptyState: "No tournaments created yet.",
+    btnDeleteTournament: "Delete Tournament", deleteTournamentConfirm: "Delete this tournament?",
+    statusInProgress: "In progress", btnBack: "Back", tbdLabel: "TBD"
+  },
+  es: {
+    appTitle: "Mi Marcador", winsLabel: "Victorias", lossesLabel: "Derrotas", pctLabel: "Rendimiento",
+    emptyState: "Aún no hay partidos registrados.", emptyStateHint: 'Toca en "+ Nuevo Partido" para empezar.',
+    addBtn: "+ Nuevo Partido", sheetTitle: "Nuevo Partido", editMatchTitle: "Editar Partido",
+    labelDate: "Fecha", labelTime: "Hora (opcional)", labelOpponent: "Rival (opcional)", placeholderOpponent: "Ej: Juan",
+    btnSchedule: "+ Agendar", scheduleTitle: "Agendar Partido", btnScheduleSave: "Agendar",
+    upcomingTitle: "Próximos Partidos", upcomingTag: "AGENDADO",
+    labelFormat: "Formato", btnSingles: "Individual", btnDoubles: "Dobles",
+    labelPartner: "Compañero", labelOpponent2: "Rival 2 (opcional)",
+    labelResult: "Resultado", btnWin: "Victoria", btnLoss: "Derrota",
+    labelMatchType: "Tipo de Partido", btnFriendly: "Amistoso", btnLeague: "Liga", btnChampionship: "Campeonato",
+    labelSurface: "Tipo de Cancha", btnClay: "Arcilla", btnHard: "Rápida", btnGrass: "Césped",
+    streakLabel: "Racha",
+    labelSets: "Marcador (sets)", setLabel: "Set", addSet: "+ Set",
+    labelLocation: "Lugar (opcional)", placeholderLocation: "Ej: Cancha del club",
+    labelNotes: "Notas (opcional)", placeholderNotes: "Alguna nota sobre el partido...",
+    labelPhoto: "Foto de Perfil", labelMatchPhoto: "Foto (opcional)", labelEmail: "Correo Electrónico",
+    btnChoosePhoto: "Elegir Foto", btnRemovePhoto: "Quitar",
+    btnCancel: "Cancelar", btnSave: "Guardar", btnUpdate: "Actualizar",
+    resultTagWin: "VICTORIA", resultTagLoss: "DERROTA", defaultOpponent: "Partido",
+    deleteConfirm: "¿Eliminar este partido?", alertChooseDate: "Elige una fecha.",
+    menuTitle: "Menú", profileTitle: "Perfil", labelName: "Nombre", labelCountry: "País",
+    labelCity: "Ciudad", labelBirthdate: "Fecha de Nacimiento", btnSaveProfile: "Guardar Perfil",
+    statsTitle: "Estadísticas por Rival", statsEmptyState: "Aún no hay rivales registrados.",
+    dataTitle: "Datos", btnExport: "Exportar Datos", btnImport: "Importar Datos",
+    importConfirm: "Esto reemplazará tus datos actuales. ¿Continuar?", importSuccess: "¡Datos importados!",
+    importError: "Archivo inválido.",
+    searchPlaceholder: "Buscar rival...", filterAll: "Todos", noResultsFilter: "No se encontraron partidos.",
+    languageTitle: "Idioma", btnClose: "Cerrar", profileSaved: "¡Perfil guardado!",
+    menuTournaments: "Campeonatos", btnNewTournament: "+ Nuevo Campeonato",
+    tournamentSheetTitle: "Nuevo Campeonato", labelTournamentName: "Nombre del Campeonato",
+    labelParticipants: "Participantes (16 nombres, uno por línea)", btnGenerateBracket: "Generar Cuadro",
+    alertNeed16: "Ingresa exactamente 16 nombres, uno por línea.",
+    roundR16: "Octavos de Final", roundQF: "Cuartos de Final", roundSF: "Semifinal", roundFinal: "Final",
+    championLabel: "Campeón:", tournamentEmptyState: "Aún no hay campeonatos creados.",
+    btnDeleteTournament: "Eliminar Campeonato", deleteTournamentConfirm: "¿Eliminar este campeonato?",
+    statusInProgress: "En curso", btnBack: "Volver", tbdLabel: "Por definir"
+  }
+};
+
+const MATCHES_KEY = 'tennis_matches_v1';
+const PROFILE_KEY = 'tennis_profile_v1';
+const LANG_KEY = 'tennis_lang_v1';
+const TOURNAMENTS_KEY = 'tennis_tournaments_v1';
+
+let matches = [];
+let tournaments = [];
+let selectedResult = 'V';
+let selectedType = 'amistoso';
+let selectedFormat = 'individual';
+let selectedSurface = 'rapida';
+let currentLang = localStorage.getItem(LANG_KEY) || 'pt';
+let editingId = null;
+let currentSets = [{a:'', b:''}];
+let searchQuery = '';
+let typeFilterVal = 'todos';
+let currentMatchPhoto = null;
+let currentProfilePhoto = null;
+let currentTournamentId = null;
+let schedulingMode = false;
+let pushSubscription = null;
+
+const VAPID_PUBLIC_KEY = 'BCI8BNk4OfxVGIXzb1zGK8NAKyqUBhqrEhLTuA2RobM-d-pV1XSqRDtWNuQhkOsR5-3zovQEjpP1_oMkDplugi4';
+
+const $ = id => document.getElementById(id);
+const t = key => (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) || TRANSLATIONS.pt[key] || key;
+
+function applyLanguage(){
+  document.documentElement.lang = currentLang === 'pt' ? 'pt-BR' : currentLang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph')));
+  });
+  document.querySelectorAll('.lang-group button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+  });
+}
+
+function esc(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function resizeImage(file, maxDim, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if(w > h){ if(w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; } }
+        else{ if(h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ---------- Push notifications ----------
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for(let i = 0; i < rawData.length; i++){
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+async function ensurePushSubscription(){
+  if(!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+  if(pushSubscription) return pushSubscription;
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      const permission = await Notification.requestPermission();
+      if(permission !== 'granted') return null;
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+    pushSubscription = sub;
+    return sub;
+  }catch(e){
+    console.log('Push subscription error:', e);
+    return null;
+  }
+}
+
+async function syncScheduledMatch(match){
+  if(match.result) return; // only sync matches without a result yet
+  if(!match.date) return;
+  try{
+    const sub = await ensurePushSubscription();
+    if(!sub) return;
+    const dateTime = match.time ? `${match.date}T${match.time}:00` : `${match.date}T09:00:00`;
+    await fetch('/.netlify/functions/schedule-match', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        matchId: match.id,
+        subscription: sub.toJSON ? sub.toJSON() : sub,
+        dateTime,
+        opponent: match.opponent || ''
+      })
+    });
+  }catch(e){
+    console.log('Sync scheduled match error:', e);
+  }
+}
+
+async function cancelScheduledMatch(matchId){
+  try{
+    await fetch('/.netlify/functions/cancel-match', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ matchId })
+    });
+  }catch(e){
+    console.log('Cancel scheduled match error:', e);
+  }
+}
+
+// ---------- Matches ----------
+function loadMatches(){
+  try{
+    const raw = localStorage.getItem(MATCHES_KEY);
+    matches = raw ? JSON.parse(raw) : [];
+  }catch(e){
+    matches = [];
+  }
+}
+function saveMatches(){
+  try{
+    localStorage.setItem(MATCHES_KEY, JSON.stringify(matches));
+  }catch(e){
+    alert('Storage error.');
+  }
+}
+
+function loadProfile(){
+  try{
+    const raw = localStorage.getItem(PROFILE_KEY);
+    const p = raw ? JSON.parse(raw) : {};
+    $('pName').value = p.name || '';
+    $('pEmail').value = p.email || '';
+    $('pCountry').value = p.country || '';
+    $('pCity').value = p.city || '';
+    $('pBirthdate').value = p.birthdate || '';
+    currentProfilePhoto = p.photo || null;
+    updateProfilePhotoUI();
+  }catch(e){}
+}
+function updateProfilePhotoUI(){
+  if(currentProfilePhoto){
+    $('pPhotoPreview').src = currentProfilePhoto;
+    $('pPhotoPreview').style.display = 'block';
+    $('pPhotoPlaceholder').style.display = 'none';
+    $('pPhotoRemoveBtn').style.display = 'block';
+  } else {
+    $('pPhotoPreview').style.display = 'none';
+    $('pPhotoPlaceholder').style.display = 'flex';
+    $('pPhotoRemoveBtn').style.display = 'none';
+  }
+}
+function saveProfile(){
+  const p = {
+    name: $('pName').value.trim(),
+    email: $('pEmail').value.trim(),
+    country: $('pCountry').value.trim(),
+    city: $('pCity').value.trim(),
+    birthdate: $('pBirthdate').value,
+    photo: currentProfilePhoto
+  };
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+  alert(t('profileSaved'));
+}
+
+function formatDate(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function scoreDisplay(m){
+  if(m.sets && m.sets.length) return m.sets.map(s => `${s.a}-${s.b}`).join(', ');
+  if(m.score) return m.score;
+  return '';
+}
+
+function typeLabel(mt){
+  if(mt === 'liga') return t('btnLeague');
+  if(mt === 'campeonato') return t('btnChampionship');
+  return t('btnFriendly');
+}
+
+function surfaceLabel(s){
+  if(s === 'saibro') return t('btnClay');
+  if(s === 'grama') return t('btnGrass');
+  return t('btnHard');
+}
+
+function opponentDisplay(m){
+  const base = m.opponent ? esc(m.opponent) : t('defaultOpponent');
+  if(m.format === 'duplas' && m.opponent2){
+    return `${base} & ${esc(m.opponent2)}`;
+  }
+  return base;
+}
+
+function computeStreak(){
+  if(matches.length === 0) return null;
+  const sorted = [...matches].sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+  const first = sorted[0].result;
+  let count = 0;
+  for(const m of sorted){
+    if(m.result === first) count++;
+    else break;
+  }
+  return { count, type: first };
+}
+
+function updateStreakDisplay(){
+  const streak = computeStreak();
+  const el = $('streakVal');
+  if(!streak){
+    el.textContent = '-';
+    el.className = 'streak-val';
+    return;
+  }
+  const letter = streak.type === 'V' ? t('resultTagWin').charAt(0) : t('resultTagLoss').charAt(0);
+  el.textContent = `${streak.count}${letter}`;
+  el.className = 'streak-val ' + (streak.type === 'V' ? 'win' : 'loss');
+}
+
+function render(){
+  const list = $('matchList');
+  const wins = matches.filter(m => m.result === 'V').length;
+  const losses = matches.filter(m => m.result === 'D').length;
+  const total = wins + losses;
+  const pct = total ? Math.round((wins/total)*100) : 0;
+
+  $('winsNum').textContent = wins;
+  $('lossesNum').textContent = losses;
+  $('pctNum').textContent = pct + '%';
+  updateStreakDisplay();
+
+  renderUpcoming();
+
+  const completed = matches.filter(m => m.result === 'V' || m.result === 'D');
+
+  if(completed.length === 0){
+    list.innerHTML = `<div class="empty"><div class="ball-big">🎾</div>${t('emptyState')}<br>${t('emptyStateHint')}</div>`;
+    return;
+  }
+
+  let filtered = completed;
+  if(typeFilterVal !== 'todos'){
+    filtered = filtered.filter(m => m.matchType === typeFilterVal);
+  }
+  if(searchQuery.trim()){
+    const q = searchQuery.trim().toLowerCase();
+    filtered = filtered.filter(m => (m.opponent || '').toLowerCase().includes(q));
+  }
+
+  if(filtered.length === 0){
+    list.innerHTML = `<div class="empty">${t('noResultsFilter')}</div>`;
+    return;
+  }
+
+  const sorted = [...filtered].sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+
+  list.innerHTML = sorted.map(m => {
+    const scoreStr = scoreDisplay(m);
+    const metaParts = [];
+    if(m.format === 'duplas' && m.partner) metaParts.push(`${t('labelPartner')}: ${m.partner}`);
+    if(m.location) metaParts.push(m.location);
+    if(m.notes) metaParts.push(m.notes);
+    return `
+    <div class="card ${m.result === 'D' ? 'loss' : ''}" data-id="${m.id}">
+      <button class="del" data-id="${m.id}">✕</button>
+      <div class="row1">
+        <div>
+          <div class="opponent">${opponentDisplay(m)}</div>
+          <div class="date">${formatDate(m.date)} · ${typeLabel(m.matchType)} · ${surfaceLabel(m.surface)}</div>
+        </div>
+        <div class="result-tag">${m.result === 'V' ? t('resultTagWin') : t('resultTagLoss')}</div>
+      </div>
+      ${scoreStr ? `<div class="score">${esc(scoreStr)}</div>` : ''}
+      ${metaParts.length ? `<div class="meta">${metaParts.map(esc).join(' · ')}</div>` : ''}
+      ${m.photo ? `<img class="card-photo" src="${m.photo}" alt="">` : ''}
+    </div>
+  `;
+  }).join('');
+
+  list.querySelectorAll('.del').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); deleteMatch(btn.dataset.id); });
+  });
+  list.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => {
+      const m = matches.find(x => x.id === card.dataset.id);
+      if(m) openMatchSheet(m, false);
+    });
+  });
+}
+
+function renderUpcoming(){
+  const upcoming = matches.filter(m => !m.result);
+  const section = $('upcomingSection');
+  if(upcoming.length === 0){
+    section.style.display = 'none';
+    $('upcomingList').innerHTML = '';
+    return;
+  }
+  section.style.display = 'block';
+  const sorted = [...upcoming].sort((a,b) => {
+    const da = `${a.date || ''}T${a.time || '00:00'}`;
+    const db = `${b.date || ''}T${b.time || '00:00'}`;
+    return da.localeCompare(db);
+  });
+  $('upcomingList').innerHTML = sorted.map(m => {
+    const timeStr = m.time ? ` ${m.time}` : '';
+    return `
+    <div class="upcoming-card" data-id="${m.id}">
+      <button class="del" data-id="${m.id}">✕</button>
+      <div class="row1">
+        <div>
+          <div class="opponent">${opponentDisplay(m)}</div>
+          <div class="date">${formatDate(m.date)}${timeStr} · ${typeLabel(m.matchType)} · ${surfaceLabel(m.surface)}</div>
+        </div>
+        <div class="upcoming-tag">${t('upcomingTag')}</div>
+      </div>
+    </div>
+  `;
+  }).join('');
+
+  $('upcomingList').querySelectorAll('.del').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteMatch(btn.dataset.id);
+    });
+  });
+  $('upcomingList').querySelectorAll('.upcoming-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const m = matches.find(x => x.id === card.dataset.id);
+      if(m) openMatchSheet(m, false);
+    });
+  });
+}
+
+function deleteMatch(id){
+  if(!confirm(t('deleteConfirm'))) return;
+  const m = matches.find(x => x.id === id);
+  matches = matches.filter(m => m.id !== id);
+  saveMatches();
+  if(m && !m.result){
+    cancelScheduledMatch(id);
+  }
+  render();
+}
+
+function openSheet(id){
+  $(id).classList.add('show');
+  $('overlay').classList.add('show');
+}
+function closeAllSheets(){
+  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('show'));
+  $('overlay').classList.remove('show');
+}
+
+function renderSetsUI(){
+  $('setsContainer').innerHTML = currentSets.map((s,i) => `
+    <div class="set-row">
+      <span class="set-num">${t('setLabel')} ${i+1}</span>
+      <input type="number" min="0" max="20" class="set-input" data-field="a" data-index="${i}" value="${s.a}">
+      <span class="sep">-</span>
+      <input type="number" min="0" max="20" class="set-input" data-field="b" data-index="${i}" value="${s.b}">
+      ${currentSets.length > 1 ? `<button type="button" class="set-remove" data-index="${i}">✕</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function updateMatchSheetTexts(){
+  if(editingId){
+    $('matchSheetTitle').textContent = t('editMatchTitle');
+    $('saveBtn').textContent = t('btnUpdate');
+  } else if(schedulingMode){
+    $('matchSheetTitle').textContent = t('scheduleTitle');
+    $('saveBtn').textContent = t('btnScheduleSave');
+  } else {
+    $('matchSheetTitle').textContent = t('sheetTitle');
+    $('saveBtn').textContent = t('btnSave');
+  }
+  $('resultFieldWrap').style.display = schedulingMode ? 'none' : 'block';
+  $('setsFieldWrap').style.display = schedulingMode ? 'none' : 'block';
+}
+
+function updateMatchPhotoUI(){
+  if(currentMatchPhoto){
+    $('mPhotoPreview').src = currentMatchPhoto;
+    $('mPhotoPreview').style.display = 'block';
+    $('mPhotoRemoveBtn').style.display = 'block';
+  } else {
+    $('mPhotoPreview').style.display = 'none';
+    $('mPhotoRemoveBtn').style.display = 'none';
+  }
+}
+
+function openMatchSheet(matchToEdit, isScheduling){
+  schedulingMode = !!isScheduling;
+  if(matchToEdit){
+    editingId = matchToEdit.id;
+    $('fDate').value = matchToEdit.date || '';
+    $('fTime').value = matchToEdit.time || '';
+    $('fOpponent').value = matchToEdit.opponent || '';
+    $('fPartner').value = matchToEdit.partner || '';
+    $('fOpponent2').value = matchToEdit.opponent2 || '';
+    $('fLocation').value = matchToEdit.location || '';
+    $('fNotes').value = matchToEdit.notes || '';
+    setResult(matchToEdit.result || 'V');
+    setType(matchToEdit.matchType || 'amistoso');
+    setFormat(matchToEdit.format || 'individual');
+    setSurface(matchToEdit.surface || 'rapida');
+    currentSets = (matchToEdit.sets && matchToEdit.sets.length)
+      ? matchToEdit.sets.map(s => ({a: String(s.a), b: String(s.b)}))
+      : [{a:'', b:''}];
+    currentMatchPhoto = matchToEdit.photo || null;
+  } else {
+    editingId = null;
+    $('fDate').value = new Date().toISOString().slice(0,10);
+    $('fTime').value = '';
+    $('fOpponent').value = '';
+    $('fPartner').value = '';
+    $('fOpponent2').value = '';
+    $('fLocation').value = '';
+    $('fNotes').value = '';
+    setResult(schedulingMode ? null : 'V');
+    setType('amistoso');
+    setFormat('individual');
+    setSurface('rapida');
+    currentSets = [{a:'', b:''}];
+    currentMatchPhoto = null;
+  }
+  renderSetsUI();
+  updateMatchSheetTexts();
+  updateMatchPhotoUI();
+  openSheet('matchSheet');
+}
+
+function setResult(v){
+  selectedResult = v;
+  $('btnV').classList.toggle('active', v === 'V');
+  $('btnD').classList.toggle('active', v === 'D');
+}
+
+function setType(v){
+  selectedType = v;
+  $('btnFriendly').classList.toggle('active', v === 'amistoso');
+  $('btnLeague').classList.toggle('active', v === 'liga');
+  $('btnChampionship').classList.toggle('active', v === 'campeonato');
+}
+
+function setFormat(v){
+  selectedFormat = v;
+  $('btnSingles').classList.toggle('active', v === 'individual');
+  $('btnDoubles').classList.toggle('active', v === 'duplas');
+  $('doublesFields').style.display = v === 'duplas' ? 'block' : 'none';
+}
+
+function setSurface(v){
+  selectedSurface = v;
+  $('btnClay').classList.toggle('active', v === 'saibro');
+  $('btnHard').classList.toggle('active', v === 'rapida');
+  $('btnGrass').classList.toggle('active', v === 'grama');
+}
+
+function handleSave(){
+  const date = $('fDate').value;
+  if(!date){ alert(t('alertChooseDate')); return; }
+  const sets = currentSets
+    .filter(s => s.a !== '' && s.b !== '')
+    .map(s => ({a: Number(s.a), b: Number(s.b)}));
+  const wasScheduled = editingId ? !matches.find(m => m.id === editingId)?.result : false;
+  const matchData = {
+    date,
+    time: $('fTime').value,
+    opponent: $('fOpponent').value.trim(),
+    format: selectedFormat,
+    partner: selectedFormat === 'duplas' ? $('fPartner').value.trim() : '',
+    opponent2: selectedFormat === 'duplas' ? $('fOpponent2').value.trim() : '',
+    result: schedulingMode ? null : selectedResult,
+    matchType: selectedType,
+    surface: selectedSurface,
+    sets: schedulingMode ? [] : sets,
+    location: $('fLocation').value.trim(),
+    notes: $('fNotes').value.trim(),
+    photo: currentMatchPhoto
+  };
+  let savedMatch;
+  if(editingId){
+    const idx = matches.findIndex(m => m.id === editingId);
+    if(idx > -1){
+      matches[idx] = { ...matches[idx], ...matchData };
+      savedMatch = matches[idx];
+    }
+  } else {
+    savedMatch = { id: Date.now().toString(), ...matchData };
+    matches.push(savedMatch);
+  }
+  saveMatches();
+  render();
+  closeAllSheets();
+
+  if(savedMatch){
+    if(!savedMatch.result){
+      syncScheduledMatch(savedMatch);
+    } else if(wasScheduled){
+      cancelScheduledMatch(savedMatch.id);
+    }
+  }
+}
+
+function setLanguage(lang){
+  currentLang = lang;
+  localStorage.setItem(LANG_KEY, lang);
+  applyLanguage();
+  updateMatchSheetTexts();
+  renderSetsUI();
+  renderStats();
+  renderTournamentsList();
+  render();
+}
+
+function setTypeFilter(v){
+  typeFilterVal = v;
+  $('filterAll').classList.toggle('active', v === 'todos');
+  $('filterFriendly').classList.toggle('active', v === 'amistoso');
+  $('filterLeague').classList.toggle('active', v === 'liga');
+  $('filterChampionship').classList.toggle('active', v === 'campeonato');
+  render();
+}
+
+function renderStats(){
+  const groups = {};
+  matches.forEach(m => {
+    const name = (m.opponent || '').trim();
+    if(!name) return;
+    if(!groups[name]) groups[name] = {w:0, l:0};
+    if(m.result === 'V') groups[name].w++; else groups[name].l++;
+  });
+  const names = Object.keys(groups).sort((a,b) => (groups[b].w + groups[b].l) - (groups[a].w + groups[a].l));
+  const container = $('statsContainer');
+  if(names.length === 0){
+    container.innerHTML = `<div class="stats-empty">${t('statsEmptyState')}</div>`;
+    return;
+  }
+  container.innerHTML = names.map(name => {
+    const g = groups[name];
+    const wLetter = t('resultTagWin').charAt(0);
+    const lLetter = t('resultTagLoss').charAt(0);
+    return `<div class="stat-row"><span class="stat-name">${esc(name)}</span><span class="stat-record"><span class="sw">${g.w}${wLetter}</span> - <span class="sl">${g.l}${lLetter}</span></span></div>`;
+  }).join('');
+}
+
+function exportData(){
+  try{
+    const payload = {
+      matches,
+      tournaments,
+      profile: JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}'),
+      exportedAt: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'meu-placar-backup.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }catch(e){
+    alert('Export error.');
+  }
+}
+
+function importData(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!confirm(t('importConfirm'))) return;
+      matches = Array.isArray(data.matches) ? data.matches : [];
+      tournaments = Array.isArray(data.tournaments) ? data.tournaments : [];
+      saveMatches();
+      saveTournaments();
+      if(data.profile){
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile));
+        loadProfile();
+      }
+      render();
+      renderStats();
+      renderTournamentsList();
+      alert(t('importSuccess'));
+    }catch(err){
+      alert(t('importError'));
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ---------- Tournaments ----------
+function loadTournaments(){
+  try{
+    const raw = localStorage.getItem(TOURNAMENTS_KEY);
+    tournaments = raw ? JSON.parse(raw) : [];
+  }catch(e){
+    tournaments = [];
+  }
+}
+function saveTournaments(){
+  try{
+    localStorage.setItem(TOURNAMENTS_KEY, JSON.stringify(tournaments));
+  }catch(e){
+    alert('Storage error.');
+  }
+}
+
+function shuffleArr(arr){
+  const a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateBracket(participants){
+  const shuffled = shuffleArr(participants);
+  const round0 = [];
+  for(let i = 0; i < 16; i += 2){
+    round0.push({p1: shuffled[i], p2: shuffled[i+1], winner: null});
+  }
+  const round1 = Array.from({length: 4}, () => ({p1: null, p2: null, winner: null}));
+  const round2 = Array.from({length: 2}, () => ({p1: null, p2: null, winner: null}));
+  const round3 = [{p1: null, p2: null, winner: null}];
+  return [round0, round1, round2, round3];
+}
+
+function createTournament(){
+  const name = $('tName').value.trim() || t('tournamentSheetTitle');
+  const date = $('tDate').value || new Date().toISOString().slice(0,10);
+  const names = $('tParticipants').value.split('\n').map(s => s.trim()).filter(Boolean);
+  if(names.length !== 16){ alert(t('alertNeed16')); return; }
+  const tour = {
+    id: Date.now().toString(),
+    name, date,
+    rounds: generateBracket(names),
+    champion: null
+  };
+  tournaments.push(tour);
+  saveTournaments();
+  renderTournamentsList();
+  closeAllSheets();
+  openBracket(tour.id);
+}
+
+function renderTournamentsList(){
+  const container = $('tournamentsContainer');
+  if(tournaments.length === 0){
+    container.innerHTML = `<div class="stats-empty">${t('tournamentEmptyState')}</div>`;
+    return;
+  }
+  container.innerHTML = tournaments.slice().reverse().map(tour => {
+    const status = tour.champion ? `🏆 ${esc(tour.champion)}` : t('statusInProgress');
+    return `<div class="stat-row tournament-row" data-id="${tour.id}"><span class="stat-name">${esc(tour.name)}</span><span class="stat-record">${status}</span></div>`;
+  }).join('');
+  container.querySelectorAll('.tournament-row').forEach(row => {
+    row.addEventListener('click', () => openBracket(row.dataset.id));
+  });
+}
+
+function openBracket(id){
+  currentTournamentId = id;
+  renderBracket();
+  closeAllSheets();
+  openSheet('bracketSheet');
+}
+
+function setWinner(tour, r, m, winnerName){
+  tour.rounds[r][m].winner = winnerName;
+  if(r + 1 < tour.rounds.length){
+    const nm = Math.floor(m / 2);
+    const slot = m % 2 === 0 ? 'p1' : 'p2';
+    const nextMatch = tour.rounds[r+1][nm];
+    if(nextMatch[slot] !== winnerName){
+      nextMatch[slot] = winnerName;
+      if(nextMatch.winner){
+        nextMatch.winner = null;
+        clearDownstream(tour, r+1, nm);
+      }
+    }
+  }
+}
+
+function clearDownstream(tour, r, m){
+  if(r + 1 >= tour.rounds.length) return;
+  const nm = Math.floor(m / 2);
+  const slot = m % 2 === 0 ? 'p1' : 'p2';
+  const nextMatch = tour.rounds[r+1][nm];
+  nextMatch[slot] = null;
+  if(nextMatch.winner){
+    nextMatch.winner = null;
+    clearDownstream(tour, r+1, nm);
+  }
+}
+
+function renderBracket(){
+  const tour = tournaments.find(x => x.id === currentTournamentId);
+  if(!tour) return;
+  $('bracketTitle').textContent = tour.name;
+  const roundNames = [t('roundR16'), t('roundQF'), t('roundSF'), t('roundFinal')];
+  let html = '';
+  if(tour.champion){
+    html += `<div class="champion-banner">🏆 ${t('championLabel')} ${esc(tour.champion)}</div>`;
+  }
+  tour.rounds.forEach((round, rIdx) => {
+    html += `<div class="bracket-round"><h4>${roundNames[rIdx]}</h4>`;
+    round.forEach((match, mIdx) => {
+      const p1 = match.p1 || t('tbdLabel');
+      const p2 = match.p2 || t('tbdLabel');
+      const canPick = !!(match.p1 && match.p2);
+      html += `<div class="bracket-match">
+        <button type="button" class="bracket-player ${match.winner && match.winner === match.p1 ? 'winner' : ''} ${!match.p1 ? 'tbd' : ''}" data-round="${rIdx}" data-match="${mIdx}" data-side="p1" ${canPick ? '' : 'disabled'}>${esc(p1)}</button>
+        <span class="vs">×</span>
+        <button type="button" class="bracket-player ${match.winner && match.winner === match.p2 ? 'winner' : ''} ${!match.p2 ? 'tbd' : ''}" data-round="${rIdx}" data-match="${mIdx}" data-side="p2" ${canPick ? '' : 'disabled'}>${esc(p2)}</button>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  $('bracketContent').innerHTML = html;
+  $('bracketContent').querySelectorAll('.bracket-player').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if(btn.disabled) return;
+      const r = parseInt(btn.dataset.round, 10);
+      const m = parseInt(btn.dataset.match, 10);
+      const side = btn.dataset.side;
+      const tr = tournaments.find(x => x.id === currentTournamentId);
+      const match = tr.rounds[r][m];
+      const winnerName = side === 'p1' ? match.p1 : match.p2;
+      setWinner(tr, r, m, winnerName);
+      tr.champion = tr.rounds[tr.rounds.length - 1][0].winner || null;
+      saveTournaments();
+      renderBracket();
+      renderTournamentsList();
+    });
+  });
+}
+
+function backToMenuFromBracket(){
+  closeAllSheets();
+  loadProfile();
+  renderStats();
+  renderTournamentsList();
+  openSheet('menuSheet');
+}
+
+// Event bindings
+$('addBtn').addEventListener('click', () => openMatchSheet(null, false));
+$('scheduleBtn').addEventListener('click', () => openMatchSheet(null, true));
+$('cancelBtn').addEventListener('click', closeAllSheets);
+$('overlay').addEventListener('click', closeAllSheets);
+$('saveBtn').addEventListener('click', handleSave);
+$('btnV').addEventListener('click', () => setResult('V'));
+$('btnD').addEventListener('click', () => setResult('D'));
+$('btnFriendly').addEventListener('click', () => setType('amistoso'));
+$('btnLeague').addEventListener('click', () => setType('liga'));
+$('btnChampionship').addEventListener('click', () => setType('campeonato'));
+$('btnSingles').addEventListener('click', () => setFormat('individual'));
+$('btnDoubles').addEventListener('click', () => setFormat('duplas'));
+$('btnClay').addEventListener('click', () => setSurface('saibro'));
+$('btnHard').addEventListener('click', () => setSurface('rapida'));
+$('btnGrass').addEventListener('click', () => setSurface('grama'));
+
+$('setsContainer').addEventListener('input', (e) => {
+  if(e.target.matches('.set-input')){
+    const idx = parseInt(e.target.dataset.index, 10);
+    const field = e.target.dataset.field;
+    currentSets[idx][field] = e.target.value;
+  }
+});
+$('setsContainer').addEventListener('click', (e) => {
+  if(e.target.matches('.set-remove')){
+    const idx = parseInt(e.target.dataset.index, 10);
+    if(currentSets.length > 1){ currentSets.splice(idx, 1); renderSetsUI(); }
+  }
+});
+$('addSetBtn').addEventListener('click', () => {
+  if(currentSets.length < 5){ currentSets.push({a:'', b:''}); renderSetsUI(); }
+});
+
+$('mPhotoBtn').addEventListener('click', () => $('mPhotoInput').click());
+$('mPhotoInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  resizeImage(file, 500, 0.75).then(url => {
+    currentMatchPhoto = url;
+    updateMatchPhotoUI();
+  });
+  e.target.value = '';
+});
+$('mPhotoRemoveBtn').addEventListener('click', () => { currentMatchPhoto = null; updateMatchPhotoUI(); });
+
+$('pPhotoBtn').addEventListener('click', () => $('pPhotoInput').click());
+$('pPhotoInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  resizeImage(file, 300, 0.75).then(url => {
+    currentProfilePhoto = url;
+    updateProfilePhotoUI();
+  });
+  e.target.value = '';
+});
+$('pPhotoRemoveBtn').addEventListener('click', () => { currentProfilePhoto = null; updateProfilePhotoUI(); });
+
+$('searchInput').addEventListener('input', (e) => { searchQuery = e.target.value; render(); });
+$('filterAll').addEventListener('click', () => setTypeFilter('todos'));
+$('filterFriendly').addEventListener('click', () => setTypeFilter('amistoso'));
+$('filterLeague').addEventListener('click', () => setTypeFilter('liga'));
+$('filterChampionship').addEventListener('click', () => setTypeFilter('campeonato'));
+
+$('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); renderTournamentsList(); openSheet('menuSheet'); });
+$('closeMenuBtn').addEventListener('click', closeAllSheets);
+$('saveProfileBtn').addEventListener('click', saveProfile);
+$('langPt').addEventListener('click', () => setLanguage('pt'));
+$('langEn').addEventListener('click', () => setLanguage('en'));
+$('langEs').addEventListener('click', () => setLanguage('es'));
+$('exportBtn').addEventListener('click', exportData);
+$('importBtn').addEventListener('click', () => $('importFile').click());
+$('importFile').addEventListener('change', (e) => { importData(e.target.files[0]); e.target.value = ''; });
+
+$('newTournamentBtn').addEventListener('click', () => {
+  closeAllSheets();
+  $('tName').value = '';
+  $('tDate').value = new Date().toISOString().slice(0,10);
+  $('tParticipants').value = '';
+  openSheet('tournamentSheet');
+});
+$('cancelTournamentBtn').addEventListener('click', backToMenuFromBracket);
+$('generateBracketBtn').addEventListener('click', createTournament);
+$('deleteTournamentBtn').addEventListener('click', () => {
+  if(!confirm(t('deleteTournamentConfirm'))) return;
+  tournaments = tournaments.filter(x => x.id !== currentTournamentId);
+  saveTournaments();
+  backToMenuFromBracket();
+});
+$('backFromBracketBtn').addEventListener('click', backToMenuFromBracket);
+
+// Init
+loadMatches();
+loadTournaments();
+applyLanguage();
+updateMatchSheetTexts();
+render();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW error:', err));
+  });
+}
+</script>
+</body>
+</html>
