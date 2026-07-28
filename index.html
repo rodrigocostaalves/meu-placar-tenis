@@ -594,6 +594,7 @@
   <div class="field">
     <label data-i18n="labelEmail">E-mail</label>
     <input type="email" id="pEmail">
+    <div class="stats-empty" id="emailVerifiedBadge" style="padding-top:6px"></div>
   </div>
   <div class="field">
     <label data-i18n="labelCountry">País</label>
@@ -659,6 +660,7 @@
   <div class="stats-list">
     <div class="stat-row"><span class="stat-name" data-i18n="notifStatusLabel">Status</span><span class="stat-record" id="notifStatusValue">–</span></div>
   </div>
+  <button type="button" class="add-set-btn" id="toggleNotifBtn" style="margin-top:8px">…</button>
 
   <h3 data-i18n="dataTitle">Dados</h3>
   <div class="sheet-actions">
@@ -666,6 +668,11 @@
     <button class="btn-cancel" id="importBtn" data-i18n="btnImport">Importar Dados</button>
   </div>
   <input type="file" id="importFile" accept="application/json" style="display:none">
+
+  <h3 data-i18n="legalTitle">Legal</h3>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="privacyPolicyBtn" data-i18n="btnPrivacyPolicy">Política de Privacidade</button>
+  </div>
 
   <h3 data-i18n="dangerZoneTitle">Zona de Risco</h3>
   <div class="sheet-actions">
@@ -784,12 +791,30 @@
   </div>
 </div>
 
+<div class="sheet" id="verifyEmailSheet">
+  <h2 data-i18n="verifyEmailTitle">Verificar E-mail</h2>
+  <p style="font-size:13px; color:var(--muted); margin-bottom:6px;" data-i18n="verifyEmailDesc">Enviamos um código de 6 dígitos para:</p>
+  <p style="font-weight:600; margin-bottom:18px;" id="verifyEmailTarget"></p>
+  <div class="field">
+    <label data-i18n="labelVerificationCode">Código de Verificação</label>
+    <input type="text" id="verifyCodeInput" maxlength="6" inputmode="numeric">
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="resendCodeBtn" data-i18n="btnResendCode">Reenviar Código</button>
+    <button class="btn-save" id="confirmCodeBtn" data-i18n="btnConfirmCode">Confirmar</button>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="cancelVerifyBtn" data-i18n="btnCancel">Cancelar</button>
+  </div>
+</div>
+
 <div class="sheet" id="nearbyPlayersSheet">
   <h2 data-i18n="modeLabelCourts">Quadras</h2>
   <div class="toggle-group" style="margin-bottom:14px; display:none">
     <button type="button" id="modePlayers" class="active" data-mode="players">👥 <span data-i18n="chipNearby">Jogadores</span></button>
     <button type="button" id="modeCourts" data-mode="courts">🎾 <span data-i18n="modeLabelCourts">Quadras</span></button>
   </div>
+  <button type="button" class="add-set-btn" id="useMyLocationBtn" data-i18n="btnUseMyLocation" style="margin-bottom:14px">📍 Usar Minha Localização Atual</button>
   <div class="field">
     <label data-i18n="labelRadius">Raio de Busca</label>
     <div style="display:flex; gap:8px;">
@@ -853,6 +878,17 @@ const TRANSLATIONS = {
     settingsTitle: "Configurações", labelUnit: "Unidade de Distância",
     notifTitle: "Notificações", notifStatusLabel: "Status",
     notifStatusOn: "Ativadas", notifStatusOff: "Desativadas",
+    verifyEmailTitle: "Verificar E-mail", verifyEmailDesc: "Enviamos um código de 6 dígitos para:",
+    labelVerificationCode: "Código de Verificação", btnResendCode: "Reenviar Código", btnConfirmCode: "Confirmar",
+    verifyEmailSuccess: "E-mail verificado!", verifyEmailWrongCode: "Código incorreto ou expirado.",
+    verifyEmailError: "Não foi possível enviar o código agora.", verifiedBadge: "✓ E-mail verificado",
+    unverifiedBadge: "E-mail ainda não verificado",
+    legalTitle: "Legal", btnPrivacyPolicy: "Política de Privacidade",
+    btnEnableNotif: "Ativar Notificações", btnDisableNotif: "Desativar Notificações",
+    btnUseMyLocation: "📍 Usar Minha Localização Atual",
+    geoNotSupported: "Localização não suportada nesse navegador.",
+    geoLocationSet: "Localização atual definida! Toque em Buscar.",
+    geoError: "Não foi possível obter sua localização.",
     dangerZoneTitle: "Zona de Risco", btnClearAllData: "Limpar Todos os Dados",
     clearAllConfirm: "Isso apaga TODOS os dados do app (partidas, torneios, ligas, perfil) deste aparelho. Não dá pra desfazer. Continuar?",
     importConfirm: "Isso vai substituir os dados atuais. Continuar?", importSuccess: "Dados importados!",
@@ -943,6 +979,17 @@ const TRANSLATIONS = {
     settingsTitle: "Settings", labelUnit: "Distance Unit",
     notifTitle: "Notifications", notifStatusLabel: "Status",
     notifStatusOn: "Enabled", notifStatusOff: "Disabled",
+    verifyEmailTitle: "Verify Email", verifyEmailDesc: "We sent a 6-digit code to:",
+    labelVerificationCode: "Verification Code", btnResendCode: "Resend Code", btnConfirmCode: "Confirm",
+    verifyEmailSuccess: "Email verified!", verifyEmailWrongCode: "Incorrect or expired code.",
+    verifyEmailError: "Couldn't send the code right now.", verifiedBadge: "✓ Email verified",
+    unverifiedBadge: "Email not verified yet",
+    legalTitle: "Legal", btnPrivacyPolicy: "Privacy Policy",
+    btnEnableNotif: "Enable Notifications", btnDisableNotif: "Disable Notifications",
+    btnUseMyLocation: "📍 Use My Current Location",
+    geoNotSupported: "Location not supported in this browser.",
+    geoLocationSet: "Current location set! Tap Search.",
+    geoError: "Couldn't get your location.",
     dangerZoneTitle: "Danger Zone", btnClearAllData: "Clear All Data",
     clearAllConfirm: "This deletes ALL app data (matches, tournaments, leagues, profile) on this device. This can't be undone. Continue?",
     importConfirm: "This will replace your current data. Continue?", importSuccess: "Data imported!",
@@ -1033,6 +1080,17 @@ const TRANSLATIONS = {
     settingsTitle: "Configuración", labelUnit: "Unidad de Distancia",
     notifTitle: "Notificaciones", notifStatusLabel: "Estado",
     notifStatusOn: "Activadas", notifStatusOff: "Desactivadas",
+    verifyEmailTitle: "Verificar Correo", verifyEmailDesc: "Enviamos un código de 6 dígitos a:",
+    labelVerificationCode: "Código de Verificación", btnResendCode: "Reenviar Código", btnConfirmCode: "Confirmar",
+    verifyEmailSuccess: "¡Correo verificado!", verifyEmailWrongCode: "Código incorrecto o expirado.",
+    verifyEmailError: "No se pudo enviar el código ahora.", verifiedBadge: "✓ Correo verificado",
+    unverifiedBadge: "Correo aún no verificado",
+    legalTitle: "Legal", btnPrivacyPolicy: "Política de Privacidad",
+    btnEnableNotif: "Activar Notificaciones", btnDisableNotif: "Desactivar Notificaciones",
+    btnUseMyLocation: "📍 Usar Mi Ubicación Actual",
+    geoNotSupported: "Ubicación no compatible con este navegador.",
+    geoLocationSet: "¡Ubicación actual definida! Toca Buscar.",
+    geoError: "No se pudo obtener tu ubicación.",
     dangerZoneTitle: "Zona de Riesgo", btnClearAllData: "Borrar Todos los Datos",
     clearAllConfirm: "Esto borra TODOS los datos de la app (partidos, torneos, ligas, perfil) en este dispositivo. No se puede deshacer. ¿Continuar?",
     importConfirm: "Esto reemplazará tus datos actuales. ¿Continuar?", importSuccess: "¡Datos importados!",
@@ -1196,8 +1254,28 @@ async function ensurePushSubscription(){
 
 // ---------- Location, Weather, Courts ----------
 let myCoords = null;
+let sessionCoords = null;
+
+function useMyLocation(){
+  if(!('geolocation' in navigator)){
+    alert(t('geoNotSupported'));
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      sessionCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      alert(t('geoLocationSet'));
+    },
+    (err) => {
+      console.log('Geolocation error:', err);
+      alert(t('geoError'));
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
 
 async function getMyCoords(){
+  if(sessionCoords) return sessionCoords;
   if(myCoords) return myCoords;
   const profileRaw = localStorage.getItem(PROFILE_KEY);
   const profile = profileRaw ? JSON.parse(profileRaw) : {};
@@ -1614,6 +1692,10 @@ function loadProfile(){
     $('pShareLocation').checked = !!p.shareLocation;
     currentProfilePhoto = p.photo || null;
     updateProfilePhotoUI();
+    const badge = $('emailVerifiedBadge');
+    if(badge){
+      badge.textContent = p.email ? (p.emailVerified ? t('verifiedBadge') : t('unverifiedBadge')) : '';
+    }
   }catch(e){}
 }
 function updateProfilePhotoUI(){
@@ -1629,20 +1711,83 @@ function updateProfilePhotoUI(){
   }
 }
 function saveProfile(){
+  const prevRaw = localStorage.getItem(PROFILE_KEY);
+  const prev = prevRaw ? JSON.parse(prevRaw) : {};
+  const email = $('pEmail').value.trim();
+  const emailChanged = email && email !== prev.verifiedEmailValue;
   const p = {
     name: $('pName').value.trim(),
-    email: $('pEmail').value.trim(),
+    email,
     country: $('pCountry').value.trim(),
     city: $('pCity').value.trim(),
     birthdate: $('pBirthdate').value,
     zip: $('pZip').value.trim(),
     shareLocation: $('pShareLocation').checked,
-    photo: currentProfilePhoto
+    photo: currentProfilePhoto,
+    emailVerified: emailChanged ? false : !!prev.emailVerified,
+    verifiedEmailValue: prev.verifiedEmailValue || ''
   };
   localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
   alert(t('profileSaved'));
-  syncPlayerProfile(p);
+  loadProfile();
+
+  if(p.email && !p.emailVerified){
+    sendVerificationCode(p.email);
+  } else if(p.email){
+    syncPlayerProfile(p);
+  }
   refreshInbox();
+}
+
+async function sendVerificationCode(email){
+  try{
+    const res = await fetch('/.netlify/functions/send-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if(data.ok){
+      $('verifyEmailTarget').textContent = email;
+      $('verifyCodeInput').value = '';
+      closeAllSheets();
+      openSheet('verifyEmailSheet');
+    } else {
+      alert(t('verifyEmailError'));
+    }
+  }catch(e){
+    console.log('Send verification error:', e);
+    alert(t('verifyEmailError'));
+  }
+}
+
+async function confirmVerificationCode(){
+  const profileRaw = localStorage.getItem(PROFILE_KEY);
+  const profile = profileRaw ? JSON.parse(profileRaw) : {};
+  const code = $('verifyCodeInput').value.trim();
+  if(!code) return;
+  try{
+    const res = await fetch('/.netlify/functions/verify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email, code })
+    });
+    const data = await res.json();
+    if(data.ok){
+      profile.emailVerified = true;
+      profile.verifiedEmailValue = profile.email;
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+      alert(t('verifyEmailSuccess'));
+      closeAllSheets();
+      loadProfile();
+      syncPlayerProfile(profile);
+    } else {
+      alert(t('verifyEmailWrongCode'));
+    }
+  }catch(e){
+    console.log('Verify email error:', e);
+    alert(t('verifyEmailError'));
+  }
 }
 
 function getPlayerId(){
@@ -2267,14 +2412,62 @@ function renderStats(){
   }).join('');
 }
 
-function updateNotifStatus(){
+async function updateNotifStatus(){
   const el = $('notifStatusValue');
-  if(!el) return;
-  if('Notification' in window && Notification.permission === 'granted'){
-    el.textContent = t('notifStatusOn');
-  } else {
+  const btn = $('toggleNotifBtn');
+  if(!el || !btn) return;
+  if(!('serviceWorker' in navigator) || !('PushManager' in window)){
     el.textContent = t('notifStatusOff');
+    btn.style.display = 'none';
+    return;
   }
+  btn.style.display = 'block';
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if(sub){
+      pushSubscription = sub;
+      el.textContent = t('notifStatusOn');
+      btn.textContent = t('btnDisableNotif');
+      btn.dataset.action = 'disable';
+    } else {
+      pushSubscription = null;
+      el.textContent = t('notifStatusOff');
+      btn.textContent = t('btnEnableNotif');
+      btn.dataset.action = 'enable';
+    }
+  }catch(e){
+    console.log('Notif status error:', e);
+  }
+}
+
+async function toggleNotifications(){
+  const btn = $('toggleNotifBtn');
+  if(btn.dataset.action === 'disable'){
+    try{
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if(sub) await sub.unsubscribe();
+      pushSubscription = null;
+      const profileRaw = localStorage.getItem(PROFILE_KEY);
+      const profile = profileRaw ? JSON.parse(profileRaw) : {};
+      if(profile.email){
+        await fetch('/.netlify/functions/save-player', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            playerId: getPlayerId(), name: profile.name || '', email: profile.email,
+            zip: profile.zip || '', shareLocation: !!profile.shareLocation, subscription: null
+          })
+        });
+      }
+    }catch(e){
+      console.log('Unsubscribe error:', e);
+    }
+  } else {
+    await ensurePushSubscription();
+  }
+  updateNotifStatus();
 }
 
 function clearAllData(){
@@ -2735,6 +2928,17 @@ $('closeSettingsBtn').addEventListener('click', closeAllSheets);
 $('settingsUnitKm').addEventListener('click', () => setNearbyUnit('km'));
 $('settingsUnitMi').addEventListener('click', () => setNearbyUnit('mi'));
 $('clearAllDataBtn').addEventListener('click', clearAllData);
+$('confirmCodeBtn').addEventListener('click', confirmVerificationCode);
+$('resendCodeBtn').addEventListener('click', () => {
+  const profileRaw = localStorage.getItem(PROFILE_KEY);
+  const profile = profileRaw ? JSON.parse(profileRaw) : {};
+  if(profile.email) sendVerificationCode(profile.email);
+});
+$('cancelVerifyBtn').addEventListener('click', closeAllSheets);
+$('privacyPolicyBtn').addEventListener('click', () => {
+  window.open('privacy.html', '_blank');
+});
+$('toggleNotifBtn').addEventListener('click', toggleNotifications);
 $('saveProfileBtn').addEventListener('click', saveProfile);
 $('langPt').addEventListener('click', () => setLanguage('pt'));
 $('langEn').addEventListener('click', () => setLanguage('en'));
@@ -2783,6 +2987,7 @@ $('nearbyShortcut').addEventListener('click', () => {
 });
 $('modePlayers').addEventListener('click', () => setNearbyMode('players'));
 $('modeCourts').addEventListener('click', () => setNearbyMode('courts'));
+$('useMyLocationBtn').addEventListener('click', useMyLocation);
 $('searchNearbyBtn').addEventListener('click', () => {
   if(nearbySearchMode === 'players') searchNearby();
   else searchCourts();
