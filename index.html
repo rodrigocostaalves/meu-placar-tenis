@@ -97,7 +97,12 @@
   .streak-line .streak-val{ font-weight: 700; text-transform: none; letter-spacing: 0; }
   .streak-line .streak-val.win{ color: var(--win); }
   .streak-line .streak-val.loss{ color: var(--loss); }
-  .activity-line{ display:flex; gap:10px; margin-top:10px; }
+  .activity-line{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  .checkbox-field .checkbox-label{
+    display:flex; align-items:center; gap:10px; font-size:14px; color:var(--chalk);
+    text-transform:none; letter-spacing:0; cursor:pointer;
+  }
+  .checkbox-field input[type="checkbox"]{ width:18px; height:18px; flex-shrink:0; accent-color: var(--ball); }
   .activity-chip{
     background: var(--panel); border:1px solid var(--panel-line); color:var(--chalk);
     border-radius:20px; padding:7px 14px; font-size:12.5px; cursor:pointer; font-family:inherit;
@@ -183,7 +188,24 @@
     background:none; border:none; color: var(--muted);
     font-size: 18px; cursor:pointer; padding: 4px 8px;
   }
+  .card .share-btn{
+    position:absolute; top:10px; right:40px;
+    background:none; border:none; color: var(--muted);
+    font-size: 15px; cursor:pointer; padding: 4px 6px;
+  }
   .card-photo{ width:100%; max-height:140px; object-fit:cover; border-radius:8px; margin-top:10px; display:block; }
+  .weather-slot{ font-size:12px; color:var(--muted); margin-top:6px; }
+
+  .achievements-grid{
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:6px;
+  }
+  .achievement-badge{
+    background: var(--panel); border:1px solid var(--panel-line); border-radius:10px;
+    padding:12px 6px; text-align:center; opacity:0.35;
+  }
+  .achievement-badge.earned{ opacity:1; border-color: var(--ball); background: rgba(215,242,5,0.08); }
+  .achievement-icon{ font-size:24px; margin-bottom:4px; }
+  .achievement-name{ font-size:10px; color:var(--chalk); line-height:1.2; }
 
   .fab{
     position: fixed; bottom: 24px; left:50%; transform:translateX(-50%);
@@ -365,6 +387,19 @@
   .stats-empty{ color:var(--muted); font-size:13px; padding:8px 0; }
   .tournament-row{ cursor:pointer; }
 
+  .nearby-row{
+    padding:10px 0; border-bottom:1px dashed var(--panel-line);
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .nearby-row:last-child{ border-bottom:none; }
+  .nearby-info .nearby-name{ font-weight:600; font-size:14px; }
+  .nearby-info .nearby-dist{ font-size:12px; color:var(--muted); }
+  .nearby-row button{
+    background: var(--ball); color: var(--court-deep); border:none; border-radius:8px;
+    padding:8px 12px; font-size:12.5px; font-family:'Bebas Neue', sans-serif;
+    letter-spacing:0.5px; cursor:pointer; white-space:nowrap;
+  }
+
   .photo-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .avatar-preview, .avatar-placeholder{
     width:56px; height:56px; border-radius:50%; object-fit:cover;
@@ -410,6 +445,7 @@
   <div class="activity-line">
     <button type="button" class="activity-chip" id="tournamentsShortcut">🏆 <span data-i18n="chipTournament">Torneio</span></button>
     <button type="button" class="activity-chip" id="leaguesShortcut">🏅 <span data-i18n="chipLeague">Liga</span></button>
+    <button type="button" class="activity-chip" id="nearbyShortcut">📍 <span data-i18n="chipNearby">Jogadores</span></button>
   </div>
 </header>
 
@@ -563,9 +599,22 @@
     <label data-i18n="labelBirthdate">Data de Nascimento</label>
     <input type="date" id="pBirthdate">
   </div>
+  <div class="field">
+    <label data-i18n="labelZip">CEP / ZIP Code (opcional)</label>
+    <input type="text" id="pZip">
+  </div>
+  <div class="field checkbox-field">
+    <label class="checkbox-label">
+      <input type="checkbox" id="pShareLocation">
+      <span data-i18n="labelShareLocation">Permitir que outros jogadores me encontrem por perto</span>
+    </label>
+  </div>
   <div class="sheet-actions">
     <button class="btn-save" id="saveProfileBtn" style="flex:1" data-i18n="btnSaveProfile">Salvar Perfil</button>
   </div>
+
+  <h3 data-i18n="achievementsTitle">Conquistas</h3>
+  <div class="achievements-grid" id="achievementsContainer"></div>
 
   <h3 data-i18n="statsTitle">Estatísticas por Adversário</h3>
   <div class="stats-list" id="statsContainer"></div>
@@ -582,6 +631,12 @@
     <button type="button" data-lang="pt" id="langPt">Português</button>
     <button type="button" data-lang="en" id="langEn">English</button>
     <button type="button" data-lang="es" id="langEs">Español</button>
+  </div>
+
+  <h3 data-i18n="aboutTitle">Sobre</h3>
+  <div class="stats-list">
+    <div class="stat-row"><span class="stat-name" data-i18n="aboutCreatorLabel">Criador</span><span class="stat-record">Rodrigo Alves</span></div>
+    <div class="stat-row" id="aboutEmailRow" style="display:none"><span class="stat-name" data-i18n="aboutEmailLabel">Contato</span><span class="stat-record" id="aboutEmailValue"></span></div>
   </div>
 
   <div class="sheet-actions">
@@ -696,6 +751,29 @@
   </div>
 </div>
 
+<div class="sheet" id="nearbyPlayersSheet">
+  <h2 data-i18n="nearbyTitle">Jogadores Próximos</h2>
+  <div class="toggle-group" style="margin-bottom:14px">
+    <button type="button" id="modePlayers" class="active" data-mode="players">👥 <span data-i18n="chipNearby">Jogadores</span></button>
+    <button type="button" id="modeCourts" data-mode="courts">🎾 <span data-i18n="modeLabelCourts">Quadras</span></button>
+  </div>
+  <div class="field">
+    <label data-i18n="labelRadius">Raio de Busca</label>
+    <div style="display:flex; gap:8px;">
+      <input type="number" id="nearbyRadius" value="25" min="1" max="500" style="flex:1">
+      <div class="toggle-group" style="flex:0 0 120px">
+        <button type="button" id="unitKm" class="active" data-unit="km">km</button>
+        <button type="button" id="unitMi" data-unit="mi">mi</button>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="add-set-btn" id="searchNearbyBtn" data-i18n="btnSearchNearby">Buscar</button>
+  <div class="stats-list" id="nearbyContainer" style="margin-top:16px"></div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeNearbyBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
 <script>
 const TRANSLATIONS = {
   pt: {
@@ -743,8 +821,27 @@ const TRANSLATIONS = {
     importError: "Arquivo inválido.",
     searchPlaceholder: "Buscar adversário...", filterAll: "Todos", noResultsFilter: "Nenhuma partida encontrada.",
     languageTitle: "Idioma", btnClose: "Fechar", profileSaved: "Perfil salvo!",
+    aboutTitle: "Sobre", aboutCreatorLabel: "Criador", aboutEmailLabel: "Contato",
     menuTournaments: "Torneios", btnNewTournament: "+ Novo Torneio",
     chipTournament: "Torneio", chipLeague: "Liga", menuLeagues: "Ligas",
+    chipNearby: "Jogadores", nearbyTitle: "Jogadores Próximos", labelZip: "CEP / ZIP Code (opcional)",
+    modeLabelCourts: "Quadras", courtDefaultName: "Quadra de Tênis", btnOpenMap: "Abrir no Mapa",
+    courtsEmptyState: "Nenhuma quadra encontrada nesse raio.", rainLabel: "chuva",
+    achievementsTitle: "Conquistas",
+    achFirstWinName: "Primeira Vitória", achFirstWinDesc: "Vença sua primeira partida",
+    achWins10Name: "10 Vitórias", achWins10Desc: "Vença 10 partidas",
+    achWins25Name: "25 Vitórias", achWins25Desc: "Vença 25 partidas",
+    achStreak5Name: "Sequência de Fogo", achStreak5Desc: "5 vitórias seguidas",
+    achMatches100Name: "Veterano", achMatches100Desc: "Registre 100 partidas",
+    achDoublesName: "Dupla Dinâmica", achDoublesDesc: "Jogue uma partida de duplas",
+    achTournamentName: "Competidor", achTournamentDesc: "Jogue uma partida de torneio",
+    achLeagueName: "Ligueiro", achLeagueDesc: "Registre uma partida de liga",
+    achPhotoName: "Fotógrafo", achPhotoDesc: "Adicione uma foto a uma partida",
+    achTravelerName: "Viajante", achTravelerDesc: "Jogue em 3 locais diferentes",
+    labelShareLocation: "Permitir que outros jogadores me encontrem por perto",
+    labelRadius: "Raio de Busca (km)", btnSearchNearby: "Buscar",
+    nearbyEmptyState: "Nenhum jogador encontrado nesse raio.", nearbyNeedZip: "Adicione um CEP/ZIP no seu perfil pra buscar.",
+    btnScheduleWithPlayer: "Agendar", nearbyError: "Não foi possível buscar agora.",
     leaguesEmptyState: "Nenhuma liga criada ainda.", btnNewLeague: "+ Nova Liga",
     leagueCreateTitle: "Nova Liga", labelLeagueName: "Nome da Liga",
     labelPlayerName: "Nome do Jogador", labelPlayerEmail: "E-mail (opcional)", btnAddPlayer: "+ Adicionar",
@@ -809,8 +906,27 @@ const TRANSLATIONS = {
     importError: "Invalid file.",
     searchPlaceholder: "Search opponent...", filterAll: "All", noResultsFilter: "No matches found.",
     languageTitle: "Language", btnClose: "Close", profileSaved: "Profile saved!",
+    aboutTitle: "About", aboutCreatorLabel: "Creator", aboutEmailLabel: "Contact",
     menuTournaments: "Tournaments", btnNewTournament: "+ New Tournament",
     chipTournament: "Tournament", chipLeague: "League", menuLeagues: "Leagues",
+    chipNearby: "Players", nearbyTitle: "Nearby Players", labelZip: "ZIP / Postal Code (optional)",
+    modeLabelCourts: "Courts", courtDefaultName: "Tennis Court", btnOpenMap: "Open Map",
+    courtsEmptyState: "No courts found in that radius.", rainLabel: "rain",
+    achievementsTitle: "Achievements",
+    achFirstWinName: "First Win", achFirstWinDesc: "Win your first match",
+    achWins10Name: "10 Wins", achWins10Desc: "Win 10 matches",
+    achWins25Name: "25 Wins", achWins25Desc: "Win 25 matches",
+    achStreak5Name: "On Fire", achStreak5Desc: "5 wins in a row",
+    achMatches100Name: "Veteran", achMatches100Desc: "Log 100 matches",
+    achDoublesName: "Dynamic Duo", achDoublesDesc: "Play a doubles match",
+    achTournamentName: "Competitor", achTournamentDesc: "Play a tournament match",
+    achLeagueName: "Leaguer", achLeagueDesc: "Record a league match",
+    achPhotoName: "Photographer", achPhotoDesc: "Add a photo to a match",
+    achTravelerName: "Traveler", achTravelerDesc: "Play at 3 different locations",
+    labelShareLocation: "Let other players find me nearby",
+    labelRadius: "Search Radius (km)", btnSearchNearby: "Search",
+    nearbyEmptyState: "No players found in that radius.", nearbyNeedZip: "Add a ZIP code to your profile to search.",
+    btnScheduleWithPlayer: "Schedule", nearbyError: "Couldn't search right now.",
     leaguesEmptyState: "No leagues created yet.", btnNewLeague: "+ New League",
     leagueCreateTitle: "New League", labelLeagueName: "League Name",
     labelPlayerName: "Player Name", labelPlayerEmail: "Email (optional)", btnAddPlayer: "+ Add",
@@ -875,8 +991,27 @@ const TRANSLATIONS = {
     importError: "Archivo inválido.",
     searchPlaceholder: "Buscar rival...", filterAll: "Todos", noResultsFilter: "No se encontraron partidos.",
     languageTitle: "Idioma", btnClose: "Cerrar", profileSaved: "¡Perfil guardado!",
+    aboutTitle: "Acerca de", aboutCreatorLabel: "Creador", aboutEmailLabel: "Contacto",
     menuTournaments: "Torneios", btnNewTournament: "+ Nuevo Torneio",
     chipTournament: "Torneo", chipLeague: "Liga", menuLeagues: "Ligas",
+    chipNearby: "Jugadores", nearbyTitle: "Jugadores Cercanos", labelZip: "Código Postal (opcional)",
+    modeLabelCourts: "Canchas", courtDefaultName: "Cancha de Tenis", btnOpenMap: "Abrir en el Mapa",
+    courtsEmptyState: "No se encontraron canchas en ese radio.", rainLabel: "lluvia",
+    achievementsTitle: "Logros",
+    achFirstWinName: "Primera Victoria", achFirstWinDesc: "Gana tu primer partido",
+    achWins10Name: "10 Victorias", achWins10Desc: "Gana 10 partidos",
+    achWins25Name: "25 Victorias", achWins25Desc: "Gana 25 partidos",
+    achStreak5Name: "Racha Ardiente", achStreak5Desc: "5 victorias seguidas",
+    achMatches100Name: "Veterano", achMatches100Desc: "Registra 100 partidos",
+    achDoublesName: "Dúo Dinámico", achDoublesDesc: "Juega un partido de dobles",
+    achTournamentName: "Competidor", achTournamentDesc: "Juega un partido de torneo",
+    achLeagueName: "Liguero", achLeagueDesc: "Registra un partido de liga",
+    achPhotoName: "Fotógrafo", achPhotoDesc: "Agrega una foto a un partido",
+    achTravelerName: "Viajero", achTravelerDesc: "Juega en 3 lugares diferentes",
+    labelShareLocation: "Permitir que otros jugadores me encuentren cerca",
+    labelRadius: "Radio de Búsqueda (km)", btnSearchNearby: "Buscar",
+    nearbyEmptyState: "No se encontraron jugadores en ese radio.", nearbyNeedZip: "Agrega un código postal a tu perfil para buscar.",
+    btnScheduleWithPlayer: "Agendar", nearbyError: "No se pudo buscar ahora.",
     leaguesEmptyState: "Aún no hay ligas creadas.", btnNewLeague: "+ Nueva Liga",
     leagueCreateTitle: "Nueva Liga", labelLeagueName: "Nombre de la Liga",
     labelPlayerName: "Nombre del Jugador", labelPlayerEmail: "Correo (opcional)", btnAddPlayer: "+ Añadir",
@@ -922,12 +1057,15 @@ let currentTournamentId = null;
 let leagues = [];
 let currentLeagueId = null;
 let newLeaguePlayers = [];
+let nearbyUnit = 'km';
+let nearbySearchMode = 'players';
 let schedulingMode = false;
 let wantsInvite = false;
 let wantsSendResult = false;
 let pushSubscription = null;
 
 const VAPID_PUBLIC_KEY = 'BCI8BNk4OfxVGIXzb1zGK8NAKyqUBhqrEhLTuA2RobM-d-pV1XSqRDtWNuQhkOsR5-3zovQEjpP1_oMkDplugi4';
+const AUTHOR_EMAIL = ''; // fill in when ready; the contact row stays hidden while empty
 
 const $ = id => document.getElementById(id);
 const t = key => (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) || TRANSLATIONS.pt[key] || key;
@@ -1005,6 +1143,143 @@ async function ensurePushSubscription(){
     console.log('Push subscription error:', e);
     return null;
   }
+}
+
+// ---------- Location, Weather, Courts ----------
+let myCoords = null;
+
+async function getMyCoords(){
+  if(myCoords) return myCoords;
+  const profileRaw = localStorage.getItem(PROFILE_KEY);
+  const profile = profileRaw ? JSON.parse(profileRaw) : {};
+  if(!profile.email) return null;
+  try{
+    const res = await fetch('/.netlify/functions/get-my-location', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    if(data.lat != null && data.lng != null){
+      myCoords = { lat: data.lat, lng: data.lng };
+      return myCoords;
+    }
+  }catch(e){
+    console.log('Get location error:', e);
+  }
+  return null;
+}
+
+const weatherCache = {};
+
+async function fetchWeather(dateStr){
+  if(weatherCache[dateStr] !== undefined) return weatherCache[dateStr];
+  const coords = await getMyCoords();
+  if(!coords){ weatherCache[dateStr] = null; return null; }
+  try{
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&start_date=${dateStr}&end_date=${dateStr}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if(data.daily && data.daily.time && data.daily.time.length){
+      const w = {
+        tempMaxC: data.daily.temperature_2m_max[0],
+        tempMinC: data.daily.temperature_2m_min[0],
+        precip: data.daily.precipitation_probability_max[0]
+      };
+      weatherCache[dateStr] = w;
+      return w;
+    }
+  }catch(e){
+    console.log('Weather fetch error:', e);
+  }
+  weatherCache[dateStr] = null;
+  return null;
+}
+
+function formatTemp(c){
+  if(currentLang === 'en') return Math.round(c * 9/5 + 32) + '°F';
+  return Math.round(c) + '°C';
+}
+
+async function attachWeatherToUpcoming(upcomingMatches){
+  const today = new Date().toISOString().slice(0,10);
+  const maxDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0,10);
+  for(const m of upcomingMatches){
+    if(!m.date || m.date < today || m.date > maxDate) continue;
+    const w = await fetchWeather(m.date);
+    const slot = document.getElementById(`wx-${m.id}`);
+    if(!slot) continue;
+    if(w){
+      slot.textContent = `🌤 ${formatTemp(w.tempMinC)}–${formatTemp(w.tempMaxC)} · ${w.precip}% ${t('rainLabel')}`;
+    }
+  }
+}
+
+function haversineKmClient(lat1, lng1, lat2, lng2){
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function searchCourts(){
+  const coords = await getMyCoords();
+  if(!coords){ alert(t('nearbyNeedZip')); return; }
+  const radiusInput = parseFloat($('nearbyRadius').value) || 25;
+  const radiusKm = nearbyUnit === 'mi' ? radiusInput * 1.60934 : radiusInput;
+  const radiusM = Math.round(radiusKm * 1000);
+  $('nearbyContainer').innerHTML = `<div class="stats-empty">…</div>`;
+  try{
+    const query = `[out:json][timeout:25];(node["sport"="tennis"]["leisure"="pitch"](around:${radiusM},${coords.lat},${coords.lng});way["sport"="tennis"]["leisure"="pitch"](around:${radiusM},${coords.lat},${coords.lng});node["leisure"="tennis_court"](around:${radiusM},${coords.lat},${coords.lng});way["leisure"="tennis_court"](around:${radiusM},${coords.lat},${coords.lng}););out center;`;
+    const res = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: 'data=' + encodeURIComponent(query)
+    });
+    const data = await res.json();
+    const courts = (data.elements || []).map(el => {
+      const lat = el.lat != null ? el.lat : (el.center && el.center.lat);
+      const lon = el.lon != null ? el.lon : (el.center && el.center.lon);
+      if(lat == null || lon == null) return null;
+      return {
+        name: (el.tags && el.tags.name) || t('courtDefaultName'),
+        lat, lon,
+        distanceKm: haversineKmClient(coords.lat, coords.lng, lat, lon)
+      };
+    }).filter(Boolean).sort((a,b) => a.distanceKm - b.distanceKm);
+    renderCourts(courts);
+  }catch(e){
+    console.log('Search courts error:', e);
+    $('nearbyContainer').innerHTML = `<div class="stats-empty">${t('nearbyError')}</div>`;
+  }
+}
+
+function renderCourts(courts){
+  const container = $('nearbyContainer');
+  if(courts.length === 0){
+    container.innerHTML = `<div class="stats-empty">${t('courtsEmptyState')}</div>`;
+    return;
+  }
+  container.innerHTML = courts.map((c, i) => {
+    const dist = nearbyUnit === 'mi' ? c.distanceKm * 0.621371 : c.distanceKm;
+    const unitLabel = nearbyUnit === 'mi' ? 'mi' : 'km';
+    return `
+    <div class="nearby-row">
+      <div class="nearby-info">
+        <div class="nearby-name">${esc(c.name)}</div>
+        <div class="nearby-dist">${dist.toFixed(1)} ${unitLabel}</div>
+      </div>
+      <button type="button" data-idx="${i}">${t('btnOpenMap')}</button>
+    </div>`;
+  }).join('');
+  container.querySelectorAll('button[data-idx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = courts[parseInt(btn.dataset.idx, 10)];
+      window.open(`https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lon}`, '_blank');
+    });
+  });
 }
 
 async function syncScheduledMatch(match){
@@ -1286,6 +1561,8 @@ function loadProfile(){
     $('pCountry').value = p.country || '';
     $('pCity').value = p.city || '';
     $('pBirthdate').value = p.birthdate || '';
+    $('pZip').value = p.zip || '';
+    $('pShareLocation').checked = !!p.shareLocation;
     currentProfilePhoto = p.photo || null;
     updateProfilePhotoUI();
   }catch(e){}
@@ -1309,6 +1586,8 @@ function saveProfile(){
     country: $('pCountry').value.trim(),
     city: $('pCity').value.trim(),
     birthdate: $('pBirthdate').value,
+    zip: $('pZip').value.trim(),
+    shareLocation: $('pShareLocation').checked,
     photo: currentProfilePhoto
   };
   localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
@@ -1337,12 +1616,74 @@ async function syncPlayerProfile(profile){
         playerId: getPlayerId(),
         name: profile.name || '',
         email: profile.email,
+        zip: profile.zip || '',
+        shareLocation: !!profile.shareLocation,
         subscription: sub ? (sub.toJSON ? sub.toJSON() : sub) : null
       })
     });
   }catch(e){
     console.log('Sync player profile error:', e);
   }
+}
+
+function setNearbyUnit(u){
+  nearbyUnit = u;
+  $('unitKm').classList.toggle('active', u === 'km');
+  $('unitMi').classList.toggle('active', u === 'mi');
+}
+
+async function searchNearby(){
+  const profileRaw = localStorage.getItem(PROFILE_KEY);
+  const profile = profileRaw ? JSON.parse(profileRaw) : {};
+  if(!profile.email || !profile.zip){
+    alert(t('nearbyNeedZip'));
+    return;
+  }
+  const radiusInput = parseFloat($('nearbyRadius').value) || 25;
+  const radiusKm = nearbyUnit === 'mi' ? radiusInput * 1.60934 : radiusInput;
+  $('nearbyContainer').innerHTML = `<div class="stats-empty">…</div>`;
+  try{
+    const res = await fetch('/.netlify/functions/find-nearby-players', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email, radiusKm })
+    });
+    const data = await res.json();
+    renderNearby(Array.isArray(data.players) ? data.players : []);
+  }catch(e){
+    console.log('Search nearby error:', e);
+    $('nearbyContainer').innerHTML = `<div class="stats-empty">${t('nearbyError')}</div>`;
+  }
+}
+
+function renderNearby(players){
+  const container = $('nearbyContainer');
+  if(players.length === 0){
+    container.innerHTML = `<div class="stats-empty">${t('nearbyEmptyState')}</div>`;
+    return;
+  }
+  container.innerHTML = players.map((p, i) => {
+    const dist = nearbyUnit === 'mi' ? p.distanceKm * 0.621371 : p.distanceKm;
+    const unitLabel = nearbyUnit === 'mi' ? 'mi' : 'km';
+    return `
+    <div class="nearby-row">
+      <div class="nearby-info">
+        <div class="nearby-name">${esc(p.name || '')}</div>
+        <div class="nearby-dist">${dist.toFixed(1)} ${unitLabel}</div>
+      </div>
+      <button type="button" data-idx="${i}">${t('btnScheduleWithPlayer')}</button>
+    </div>
+  `;
+  }).join('');
+  container.querySelectorAll('button[data-idx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const p = players[parseInt(btn.dataset.idx, 10)];
+      closeAllSheets();
+      openMatchSheet(null, true);
+      $('fOpponent').value = p.name || '';
+      $('fOpponentEmail').value = p.email || '';
+    });
+  });
 }
 
 function formatDate(iso){
@@ -1375,6 +1716,87 @@ function opponentDisplay(m){
     return `${base} & ${esc(m.opponent2)}`;
   }
   return base;
+}
+
+function opponentDisplayPlain(m){
+  const base = m.opponent || t('defaultOpponent');
+  if(m.format === 'duplas' && m.opponent2) return `${base} & ${m.opponent2}`;
+  return base;
+}
+
+function shareMatchImage(matchId){
+  const m = matches.find(x => x.id === matchId);
+  if(!m) return;
+  const canvas = document.createElement('canvas');
+  canvas.width = 800; canvas.height = 800;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#0A2B3D';
+  ctx.fillRect(0, 0, 800, 800);
+  ctx.fillStyle = m.result === 'V' ? '#5FCB8D' : '#E06B4E';
+  ctx.fillRect(0, 0, 16, 800);
+
+  ctx.fillStyle = '#D7F205';
+  ctx.beginPath(); ctx.arc(72, 88, 13, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#F3F6F2';
+  ctx.font = "bold 42px sans-serif";
+  ctx.fillText('MEU PLACAR', 100, 100);
+
+  ctx.fillStyle = m.result === 'V' ? '#5FCB8D' : '#E06B4E';
+  ctx.font = "bold 32px sans-serif";
+  ctx.fillText(m.result === 'V' ? t('resultTagWin') : t('resultTagLoss'), 70, 220);
+
+  ctx.fillStyle = '#F3F6F2';
+  ctx.font = "bold 50px sans-serif";
+  wrapCanvasText(ctx, opponentDisplayPlain(m), 70, 290, 660, 56);
+
+  ctx.fillStyle = '#8FADBE';
+  ctx.font = "26px sans-serif";
+  ctx.fillText(`${formatDate(m.date)} · ${typeLabel(m.matchType)} · ${surfaceLabel(m.surface)}`, 70, 400);
+
+  const scoreStr = scoreDisplay(m);
+  if(scoreStr){
+    ctx.fillStyle = '#F3F6F2';
+    ctx.font = "40px monospace";
+    ctx.fillText(scoreStr, 70, 460);
+  }
+
+  ctx.fillStyle = '#8FADBE';
+  ctx.font = "22px sans-serif";
+  ctx.fillText('🎾 Meu Placar de Tênis', 70, 760);
+
+  canvas.toBlob(async (blob) => {
+    if(!blob) return;
+    const file = new File([blob], 'placar.png', { type: 'image/png' });
+    if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
+      try{
+        await navigator.share({ files: [file], title: 'Meu Placar' });
+      }catch(e){ /* user cancelled */ }
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'placar.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  }, 'image/png');
+}
+
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
+  const words = text.split(' ');
+  let line = '';
+  let curY = y;
+  for(const word of words){
+    const testLine = line + word + ' ';
+    if(ctx.measureText(testLine).width > maxWidth && line !== ''){
+      ctx.fillText(line, x, curY);
+      line = word + ' ';
+      curY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, curY);
 }
 
 function computeStreak(){
@@ -1448,6 +1870,7 @@ function render(){
     return `
     <div class="card ${m.result === 'D' ? 'loss' : ''}" data-id="${m.id}">
       <button class="del" data-id="${m.id}">✕</button>
+      <button class="share-btn" data-id="${m.id}">📤</button>
       <div class="row1">
         <div>
           <div class="opponent">${opponentDisplay(m)}</div>
@@ -1464,6 +1887,9 @@ function render(){
 
   list.querySelectorAll('.del').forEach(btn => {
     btn.addEventListener('click', (e) => { e.stopPropagation(); deleteMatch(btn.dataset.id); });
+  });
+  list.querySelectorAll('.share-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); shareMatchImage(btn.dataset.id); });
   });
   list.querySelectorAll('.card').forEach(card => {
     card.addEventListener('click', () => {
@@ -1498,9 +1924,11 @@ function renderUpcoming(){
         </div>
         <div class="upcoming-tag">${t('upcomingTag')}</div>
       </div>
+      <div class="weather-slot" id="wx-${m.id}"></div>
     </div>
   `;
   }).join('');
+  attachWeatherToUpcoming(sorted);
 
   $('upcomingList').querySelectorAll('.del').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1710,6 +2138,7 @@ function setLanguage(lang){
   updateMatchSheetTexts();
   renderSetsUI();
   renderStats();
+  renderAchievements();
   renderTournamentsList();
   renderLeaguesList();
   render();
@@ -1722,6 +2151,46 @@ function setTypeFilter(v){
   $('filterLeague').classList.toggle('active', v === 'liga');
   $('filterChampionship').classList.toggle('active', v === 'campeonato');
   render();
+}
+
+function computeAchievements(){
+  const completed = matches.filter(m => m.result === 'V' || m.result === 'D');
+  const wins = completed.filter(m => m.result === 'V').length;
+  const hasDoubles = completed.some(m => m.format === 'duplas');
+  const hasPhoto = completed.some(m => m.photo);
+  const hasTournamentMatch = completed.some(m => m.matchType === 'campeonato');
+  const hasLeagueMatch = leagues.some(lg => lg.matchLog && lg.matchLog.length > 0);
+  const uniqueLocations = new Set(completed.filter(m => m.location).map(m => m.location.trim().toLowerCase()));
+
+  const sortedAsc = [...completed].sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+  let maxWinStreak = 0, cur = 0;
+  sortedAsc.forEach(m => {
+    if(m.result === 'V'){ cur++; maxWinStreak = Math.max(maxWinStreak, cur); }
+    else cur = 0;
+  });
+
+  return [
+    { icon: '🎾', name: t('achFirstWinName'), desc: t('achFirstWinDesc'), earned: wins >= 1 },
+    { icon: '🏅', name: t('achWins10Name'), desc: t('achWins10Desc'), earned: wins >= 10 },
+    { icon: '🥇', name: t('achWins25Name'), desc: t('achWins25Desc'), earned: wins >= 25 },
+    { icon: '🔥', name: t('achStreak5Name'), desc: t('achStreak5Desc'), earned: maxWinStreak >= 5 },
+    { icon: '💯', name: t('achMatches100Name'), desc: t('achMatches100Desc'), earned: completed.length >= 100 },
+    { icon: '🤝', name: t('achDoublesName'), desc: t('achDoublesDesc'), earned: hasDoubles },
+    { icon: '🏆', name: t('achTournamentName'), desc: t('achTournamentDesc'), earned: hasTournamentMatch },
+    { icon: '📊', name: t('achLeagueName'), desc: t('achLeagueDesc'), earned: hasLeagueMatch },
+    { icon: '📸', name: t('achPhotoName'), desc: t('achPhotoDesc'), earned: hasPhoto },
+    { icon: '🗺️', name: t('achTravelerName'), desc: t('achTravelerDesc'), earned: uniqueLocations.size >= 3 }
+  ];
+}
+
+function renderAchievements(){
+  const achievements = computeAchievements();
+  $('achievementsContainer').innerHTML = achievements.map(a => `
+    <div class="achievement-badge ${a.earned ? 'earned' : 'locked'}" title="${esc(a.desc)}">
+      <div class="achievement-icon">${a.icon}</div>
+      <div class="achievement-name">${esc(a.name)}</div>
+    </div>
+  `).join('');
 }
 
 function renderStats(){
@@ -2182,7 +2651,7 @@ $('filterFriendly').addEventListener('click', () => setTypeFilter('amistoso'));
 $('filterLeague').addEventListener('click', () => setTypeFilter('liga'));
 $('filterChampionship').addEventListener('click', () => setTypeFilter('campeonato'));
 
-$('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); openSheet('menuSheet'); });
+$('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); renderAchievements(); openSheet('menuSheet'); });
 $('inviteBtn').addEventListener('click', toggleWantsInvite);
 $('sendResultBtn').addEventListener('click', toggleWantsSendResult);
 $('closeMenuBtn').addEventListener('click', closeAllSheets);
@@ -2221,6 +2690,26 @@ $('leaguesShortcut').addEventListener('click', () => {
   openSheet('leaguesListSheet');
 });
 $('closeLeaguesListBtn').addEventListener('click', closeAllSheets);
+function setNearbyMode(m){
+  nearbySearchMode = m;
+  $('modePlayers').classList.toggle('active', m === 'players');
+  $('modeCourts').classList.toggle('active', m === 'courts');
+  $('nearbyContainer').innerHTML = '';
+}
+
+$('nearbyShortcut').addEventListener('click', () => {
+  setNearbyMode('players');
+  openSheet('nearbyPlayersSheet');
+});
+$('modePlayers').addEventListener('click', () => setNearbyMode('players'));
+$('modeCourts').addEventListener('click', () => setNearbyMode('courts'));
+$('searchNearbyBtn').addEventListener('click', () => {
+  if(nearbySearchMode === 'players') searchNearby();
+  else searchCourts();
+});
+$('unitKm').addEventListener('click', () => setNearbyUnit('km'));
+$('unitMi').addEventListener('click', () => setNearbyUnit('mi'));
+$('closeNearbyBtn').addEventListener('click', closeAllSheets);
 $('newLeagueBtn').addEventListener('click', () => {
   newLeaguePlayers = [];
   $('lgName').value = '';
@@ -2267,6 +2756,10 @@ refreshInbox();
 applyLanguage();
 updateMatchSheetTexts();
 render();
+if(AUTHOR_EMAIL){
+  $('aboutEmailValue').textContent = AUTHOR_EMAIL;
+  $('aboutEmailRow').style.display = 'flex';
+}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
