@@ -194,7 +194,11 @@
     font-size: 15px; cursor:pointer; padding: 4px 6px;
   }
   .card-photo{ width:100%; max-height:140px; object-fit:cover; border-radius:8px; margin-top:10px; display:block; }
-  .weather-slot{ font-size:12px; color:var(--muted); margin-top:6px; }
+  .weather-slot{ font-size:14.5px; color:var(--chalk); margin-top:6px; font-weight:500; }
+  .form-weather{
+    background: var(--panel); border:1px solid var(--panel-line); border-radius:8px;
+    padding:12px; font-size:15px; color:var(--chalk); font-weight:500;
+  }
 
   .achievements-grid{
     display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:6px;
@@ -494,6 +498,9 @@
   <div class="field">
     <label data-i18n="labelTime">Hora (opcional)</label>
     <input type="time" id="fTime">
+  </div>
+  <div class="field" id="formWeatherWrap" style="display:none">
+    <div class="form-weather" id="formWeatherSlot"></div>
   </div>
   <div class="field">
     <label data-i18n="labelOpponent">Adversário (opcional)</label>
@@ -1339,6 +1346,27 @@ async function attachWeatherToUpcoming(upcomingMatches){
     if(w){
       slot.textContent = `🌤 ${formatTemp(w.tempMinC)}–${formatTemp(w.tempMaxC)} · ${w.precip}% ${t('rainLabel')}`;
     }
+  }
+}
+
+async function updateFormWeather(){
+  if(!schedulingMode){
+    $('formWeatherWrap').style.display = 'none';
+    return;
+  }
+  const date = $('fDate').value;
+  const today = new Date().toISOString().slice(0,10);
+  const maxDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0,10);
+  if(!date || date < today || date > maxDate){
+    $('formWeatherWrap').style.display = 'none';
+    return;
+  }
+  const w = await fetchWeather(date);
+  if(w){
+    $('formWeatherSlot').textContent = `🌤 ${formatTemp(w.tempMinC)}–${formatTemp(w.tempMaxC)} · ${w.precip}% ${t('rainLabel')}`;
+    $('formWeatherWrap').style.display = 'block';
+  } else {
+    $('formWeatherWrap').style.display = 'none';
   }
 }
 
@@ -2245,6 +2273,7 @@ function openMatchSheet(matchToEdit, isScheduling){
   renderSetsUI();
   updateMatchSheetTexts();
   updateMatchPhotoUI();
+  updateFormWeather();
   openSheet('matchSheet');
 }
 
@@ -2850,6 +2879,7 @@ function recordLeagueMatch(winnerSlot){
 
 // Event bindings
 $('addBtn').addEventListener('click', () => openMatchSheet(null, false));
+$('fDate').addEventListener('change', updateFormWeather);
 $('scheduleBtn').addEventListener('click', () => {
   ensurePushSubscription();
   openMatchSheet(null, true);

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deuce-score-v20';
+const CACHE_NAME = 'deuce-score-v21';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
