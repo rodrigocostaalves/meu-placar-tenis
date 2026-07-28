@@ -2,7 +2,7 @@
   "name": "meu-placar-tenis",
   "version": "1.0.0",
   "private": true,
-  "description": "Meu Placar de Tenis - backend functions for match reminders",
+  "description": "Deuce Score - backend functions for match reminders",
   "dependencies": {
     "web-push": "^3.6.7",
     "@netlify/blobs": "^10.0.0"

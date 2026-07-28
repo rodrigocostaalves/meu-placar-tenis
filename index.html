@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Meu Placar de Tênis</title>
+<title>Deuce Score</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#0A2B3D">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Meu Placar">
+<meta name="apple-mobile-web-app-title" content="Deuce Score">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -336,6 +336,14 @@
   .toggle-group.type button.active{
     background: rgba(215,242,5,0.15); border-color: var(--ball); color: var(--ball);
   }
+  .toggle-group button.active{
+    background: rgba(215,242,5,0.15); border-color: var(--ball); color: var(--ball);
+  }
+  .search-btn{
+    width:100%; background: var(--ball); color: var(--court-deep); border:none;
+    border-radius:10px; padding:15px; font-family:'Bebas Neue', sans-serif;
+    font-size:17px; letter-spacing:1px; cursor:pointer; margin-top:6px;
+  }
   .lang-group{ display:flex; flex-direction:column; gap:8px; }
   .lang-group button{
     text-align:left;
@@ -433,7 +441,7 @@
 
 <header class="scoreboard">
   <div class="header-top">
-    <h1><span class="ball"></span><span data-i18n="appTitle">Meu Placar</span></h1>
+    <h1><span class="ball"></span><span data-i18n="appTitle">Deuce Score</span></h1>
     <button class="menu-btn" id="menuBtn"><span></span></button>
   </div>
   <div class="record">
@@ -445,7 +453,7 @@
   <div class="activity-line">
     <button type="button" class="activity-chip" id="tournamentsShortcut">🏆 <span data-i18n="chipTournament">Torneio</span></button>
     <button type="button" class="activity-chip" id="leaguesShortcut">🏅 <span data-i18n="chipLeague">Liga</span></button>
-    <button type="button" class="activity-chip" id="nearbyShortcut">📍 <span data-i18n="chipNearby">Jogadores</span></button>
+    <button type="button" class="activity-chip" id="nearbyShortcut">📍 <span data-i18n="modeLabelCourts">Quadras</span></button>
   </div>
 </header>
 
@@ -603,7 +611,7 @@
     <label data-i18n="labelZip">CEP / ZIP Code (opcional)</label>
     <input type="text" id="pZip">
   </div>
-  <div class="field checkbox-field">
+  <div class="field checkbox-field" style="display:none">
     <label class="checkbox-label">
       <input type="checkbox" id="pShareLocation">
       <span data-i18n="labelShareLocation">Permitir que outros jogadores me encontrem por perto</span>
@@ -611,6 +619,7 @@
   </div>
   <div class="sheet-actions">
     <button class="btn-save" id="saveProfileBtn" style="flex:1" data-i18n="btnSaveProfile">Salvar Perfil</button>
+    <button class="btn-cancel" id="openSettingsBtn" style="flex:0 0 52px">⚙️</button>
   </div>
 
   <h3 data-i18n="achievementsTitle">Conquistas</h3>
@@ -618,20 +627,6 @@
 
   <h3 data-i18n="statsTitle">Estatísticas por Adversário</h3>
   <div class="stats-list" id="statsContainer"></div>
-
-  <h3 data-i18n="dataTitle">Dados</h3>
-  <div class="sheet-actions">
-    <button class="btn-cancel" id="exportBtn" data-i18n="btnExport">Exportar Dados</button>
-    <button class="btn-cancel" id="importBtn" data-i18n="btnImport">Importar Dados</button>
-  </div>
-  <input type="file" id="importFile" accept="application/json" style="display:none">
-
-  <h3 data-i18n="languageTitle">Idioma</h3>
-  <div class="lang-group">
-    <button type="button" data-lang="pt" id="langPt">Português</button>
-    <button type="button" data-lang="en" id="langEn">English</button>
-    <button type="button" data-lang="es" id="langEs">Español</button>
-  </div>
 
   <h3 data-i18n="aboutTitle">Sobre</h3>
   <div class="stats-list">
@@ -641,6 +636,44 @@
 
   <div class="sheet-actions">
     <button class="btn-cancel" id="closeMenuBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
+<div class="sheet" id="settingsSheet">
+  <h2 data-i18n="settingsTitle">Configurações</h2>
+
+  <h3 data-i18n="languageTitle">Idioma</h3>
+  <div class="lang-group">
+    <button type="button" data-lang="pt" id="langPt">Português</button>
+    <button type="button" data-lang="en" id="langEn">English</button>
+    <button type="button" data-lang="es" id="langEs">Español</button>
+  </div>
+
+  <h3 data-i18n="labelUnit">Unidade de Distância</h3>
+  <div class="toggle-group">
+    <button type="button" id="settingsUnitKm" class="active" data-unit="km">km</button>
+    <button type="button" id="settingsUnitMi" data-unit="mi">mi</button>
+  </div>
+
+  <h3 data-i18n="notifTitle">Notificações</h3>
+  <div class="stats-list">
+    <div class="stat-row"><span class="stat-name" data-i18n="notifStatusLabel">Status</span><span class="stat-record" id="notifStatusValue">–</span></div>
+  </div>
+
+  <h3 data-i18n="dataTitle">Dados</h3>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="exportBtn" data-i18n="btnExport">Exportar Dados</button>
+    <button class="btn-cancel" id="importBtn" data-i18n="btnImport">Importar Dados</button>
+  </div>
+  <input type="file" id="importFile" accept="application/json" style="display:none">
+
+  <h3 data-i18n="dangerZoneTitle">Zona de Risco</h3>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="clearAllDataBtn" data-i18n="btnClearAllData">Limpar Todos os Dados</button>
+  </div>
+
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeSettingsBtn" data-i18n="btnClose">Fechar</button>
   </div>
 </div>
 
@@ -752,8 +785,8 @@
 </div>
 
 <div class="sheet" id="nearbyPlayersSheet">
-  <h2 data-i18n="nearbyTitle">Jogadores Próximos</h2>
-  <div class="toggle-group" style="margin-bottom:14px">
+  <h2 data-i18n="modeLabelCourts">Quadras</h2>
+  <div class="toggle-group" style="margin-bottom:14px; display:none">
     <button type="button" id="modePlayers" class="active" data-mode="players">👥 <span data-i18n="chipNearby">Jogadores</span></button>
     <button type="button" id="modeCourts" data-mode="courts">🎾 <span data-i18n="modeLabelCourts">Quadras</span></button>
   </div>
@@ -767,7 +800,7 @@
       </div>
     </div>
   </div>
-  <button type="button" class="add-set-btn" id="searchNearbyBtn" data-i18n="btnSearchNearby">Buscar</button>
+  <button type="button" class="search-btn" id="searchNearbyBtn" data-i18n="btnSearchNearby">Buscar</button>
   <div class="stats-list" id="nearbyContainer" style="margin-top:16px"></div>
   <div class="sheet-actions">
     <button class="btn-cancel" id="closeNearbyBtn" data-i18n="btnClose">Fechar</button>
@@ -777,7 +810,7 @@
 <script>
 const TRANSLATIONS = {
   pt: {
-    appTitle: "Meu Placar", winsLabel: "Vitórias", lossesLabel: "Derrotas", pctLabel: "Aproveitamento",
+    appTitle: "Deuce Score", winsLabel: "Vitórias", lossesLabel: "Derrotas", pctLabel: "Aproveitamento",
     emptyState: "Nenhuma partida registrada ainda.", emptyStateHint: 'Toque em "+ Nova Partida" para começar.',
     addBtn: "+ Nova Partida", sheetTitle: "Nova Partida", editMatchTitle: "Editar Partida",
     labelDate: "Data", labelTime: "Hora (opcional)", labelOpponent: "Adversário (opcional)", placeholderOpponent: "Ex: João",
@@ -817,6 +850,11 @@ const TRANSLATIONS = {
     labelCity: "Cidade", labelBirthdate: "Data de Nascimento", btnSaveProfile: "Salvar Perfil",
     statsTitle: "Estatísticas por Adversário", statsEmptyState: "Nenhum adversário registrado ainda.",
     dataTitle: "Dados", btnExport: "Exportar Dados", btnImport: "Importar Dados",
+    settingsTitle: "Configurações", labelUnit: "Unidade de Distância",
+    notifTitle: "Notificações", notifStatusLabel: "Status",
+    notifStatusOn: "Ativadas", notifStatusOff: "Desativadas",
+    dangerZoneTitle: "Zona de Risco", btnClearAllData: "Limpar Todos os Dados",
+    clearAllConfirm: "Isso apaga TODOS os dados do app (partidas, torneios, ligas, perfil) deste aparelho. Não dá pra desfazer. Continuar?",
     importConfirm: "Isso vai substituir os dados atuais. Continuar?", importSuccess: "Dados importados!",
     importError: "Arquivo inválido.",
     searchPlaceholder: "Buscar adversário...", filterAll: "Todos", noResultsFilter: "Nenhuma partida encontrada.",
@@ -862,7 +900,7 @@ const TRANSLATIONS = {
     statusInProgress: "Em andamento", btnBack: "Voltar", tbdLabel: "A definir"
   },
   en: {
-    appTitle: "My Scoreboard", winsLabel: "Wins", lossesLabel: "Losses", pctLabel: "Win Rate",
+    appTitle: "Deuce Score", winsLabel: "Wins", lossesLabel: "Losses", pctLabel: "Win Rate",
     emptyState: "No matches recorded yet.", emptyStateHint: 'Tap "+ New Match" to get started.',
     addBtn: "+ New Match", sheetTitle: "New Match", editMatchTitle: "Edit Match",
     labelDate: "Date", labelTime: "Time (optional)", labelOpponent: "Opponent (optional)", placeholderOpponent: "E.g. John",
@@ -902,6 +940,11 @@ const TRANSLATIONS = {
     labelCity: "City", labelBirthdate: "Date of Birth", btnSaveProfile: "Save Profile",
     statsTitle: "Stats by Opponent", statsEmptyState: "No opponents recorded yet.",
     dataTitle: "Data", btnExport: "Export Data", btnImport: "Import Data",
+    settingsTitle: "Settings", labelUnit: "Distance Unit",
+    notifTitle: "Notifications", notifStatusLabel: "Status",
+    notifStatusOn: "Enabled", notifStatusOff: "Disabled",
+    dangerZoneTitle: "Danger Zone", btnClearAllData: "Clear All Data",
+    clearAllConfirm: "This deletes ALL app data (matches, tournaments, leagues, profile) on this device. This can't be undone. Continue?",
     importConfirm: "This will replace your current data. Continue?", importSuccess: "Data imported!",
     importError: "Invalid file.",
     searchPlaceholder: "Search opponent...", filterAll: "All", noResultsFilter: "No matches found.",
@@ -947,7 +990,7 @@ const TRANSLATIONS = {
     statusInProgress: "In progress", btnBack: "Back", tbdLabel: "TBD"
   },
   es: {
-    appTitle: "Mi Marcador", winsLabel: "Victorias", lossesLabel: "Derrotas", pctLabel: "Rendimiento",
+    appTitle: "Deuce Score", winsLabel: "Victorias", lossesLabel: "Derrotas", pctLabel: "Rendimiento",
     emptyState: "Aún no hay partidos registrados.", emptyStateHint: 'Toca en "+ Nuevo Partido" para empezar.',
     addBtn: "+ Nuevo Partido", sheetTitle: "Nuevo Partido", editMatchTitle: "Editar Partido",
     labelDate: "Fecha", labelTime: "Hora (opcional)", labelOpponent: "Rival (opcional)", placeholderOpponent: "Ej: Juan",
@@ -987,6 +1030,11 @@ const TRANSLATIONS = {
     labelCity: "Ciudad", labelBirthdate: "Fecha de Nacimiento", btnSaveProfile: "Guardar Perfil",
     statsTitle: "Estadísticas por Rival", statsEmptyState: "Aún no hay rivales registrados.",
     dataTitle: "Datos", btnExport: "Exportar Datos", btnImport: "Importar Datos",
+    settingsTitle: "Configuración", labelUnit: "Unidad de Distancia",
+    notifTitle: "Notificaciones", notifStatusLabel: "Estado",
+    notifStatusOn: "Activadas", notifStatusOff: "Desactivadas",
+    dangerZoneTitle: "Zona de Riesgo", btnClearAllData: "Borrar Todos los Datos",
+    clearAllConfirm: "Esto borra TODOS los datos de la app (partidos, torneos, ligas, perfil) en este dispositivo. No se puede deshacer. ¿Continuar?",
     importConfirm: "Esto reemplazará tus datos actuales. ¿Continuar?", importSuccess: "¡Datos importados!",
     importError: "Archivo inválido.",
     searchPlaceholder: "Buscar rival...", filterAll: "Todos", noResultsFilter: "No se encontraron partidos.",
@@ -1039,6 +1087,7 @@ const LANG_KEY = 'tennis_lang_v1';
 const TOURNAMENTS_KEY = 'tennis_tournaments_v1';
 const PLAYER_ID_KEY = 'tennis_player_id_v1';
 const LEAGUES_KEY = 'tennis_leagues_v1';
+const UNIT_KEY = 'tennis_unit_v1';
 
 let matches = [];
 let tournaments = [];
@@ -1057,7 +1106,7 @@ let currentTournamentId = null;
 let leagues = [];
 let currentLeagueId = null;
 let newLeaguePlayers = [];
-let nearbyUnit = 'km';
+let nearbyUnit = localStorage.getItem(UNIT_KEY) || 'km';
 let nearbySearchMode = 'players';
 let schedulingMode = false;
 let wantsInvite = false;
@@ -1236,7 +1285,7 @@ async function searchCourts(){
     const query = `[out:json][timeout:25];(node["sport"="tennis"]["leisure"="pitch"](around:${radiusM},${coords.lat},${coords.lng});way["sport"="tennis"]["leisure"="pitch"](around:${radiusM},${coords.lat},${coords.lng});node["leisure"="tennis_court"](around:${radiusM},${coords.lat},${coords.lng});way["leisure"="tennis_court"](around:${radiusM},${coords.lat},${coords.lng}););out center;`;
     const res = await fetch('https://overpass-api.de/api/interpreter', {
       method: 'POST',
-      body: 'data=' + encodeURIComponent(query)
+      body: query
     });
     const data = await res.json();
     const courts = (data.elements || []).map(el => {
@@ -1628,8 +1677,11 @@ async function syncPlayerProfile(profile){
 
 function setNearbyUnit(u){
   nearbyUnit = u;
+  localStorage.setItem(UNIT_KEY, u);
   $('unitKm').classList.toggle('active', u === 'km');
   $('unitMi').classList.toggle('active', u === 'mi');
+  $('settingsUnitKm').classList.toggle('active', u === 'km');
+  $('settingsUnitMi').classList.toggle('active', u === 'mi');
 }
 
 async function searchNearby(){
@@ -1740,7 +1792,7 @@ function shareMatchImage(matchId){
   ctx.beginPath(); ctx.arc(72, 88, 13, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#F3F6F2';
   ctx.font = "bold 42px sans-serif";
-  ctx.fillText('MEU PLACAR', 100, 100);
+  ctx.fillText('DEUCE SCORE', 100, 100);
 
   ctx.fillStyle = m.result === 'V' ? '#5FCB8D' : '#E06B4E';
   ctx.font = "bold 32px sans-serif";
@@ -1763,14 +1815,14 @@ function shareMatchImage(matchId){
 
   ctx.fillStyle = '#8FADBE';
   ctx.font = "22px sans-serif";
-  ctx.fillText('🎾 Meu Placar de Tênis', 70, 760);
+  ctx.fillText('🎾 Deuce Score', 70, 760);
 
   canvas.toBlob(async (blob) => {
     if(!blob) return;
     const file = new File([blob], 'placar.png', { type: 'image/png' });
     if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
       try{
-        await navigator.share({ files: [file], title: 'Meu Placar' });
+        await navigator.share({ files: [file], title: 'Deuce Score' });
       }catch(e){ /* user cancelled */ }
     } else {
       const url = URL.createObjectURL(blob);
@@ -2215,6 +2267,25 @@ function renderStats(){
   }).join('');
 }
 
+function updateNotifStatus(){
+  const el = $('notifStatusValue');
+  if(!el) return;
+  if('Notification' in window && Notification.permission === 'granted'){
+    el.textContent = t('notifStatusOn');
+  } else {
+    el.textContent = t('notifStatusOff');
+  }
+}
+
+function clearAllData(){
+  if(!confirm(t('clearAllConfirm'))) return;
+  localStorage.removeItem(MATCHES_KEY);
+  localStorage.removeItem(TOURNAMENTS_KEY);
+  localStorage.removeItem(LEAGUES_KEY);
+  localStorage.removeItem(PROFILE_KEY);
+  location.reload();
+}
+
 function exportData(){
   try{
     const payload = {
@@ -2655,6 +2726,15 @@ $('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); ren
 $('inviteBtn').addEventListener('click', toggleWantsInvite);
 $('sendResultBtn').addEventListener('click', toggleWantsSendResult);
 $('closeMenuBtn').addEventListener('click', closeAllSheets);
+$('openSettingsBtn').addEventListener('click', () => {
+  updateNotifStatus();
+  closeAllSheets();
+  openSheet('settingsSheet');
+});
+$('closeSettingsBtn').addEventListener('click', closeAllSheets);
+$('settingsUnitKm').addEventListener('click', () => setNearbyUnit('km'));
+$('settingsUnitMi').addEventListener('click', () => setNearbyUnit('mi'));
+$('clearAllDataBtn').addEventListener('click', clearAllData);
 $('saveProfileBtn').addEventListener('click', saveProfile);
 $('langPt').addEventListener('click', () => setLanguage('pt'));
 $('langEn').addEventListener('click', () => setLanguage('en'));
@@ -2698,7 +2778,7 @@ function setNearbyMode(m){
 }
 
 $('nearbyShortcut').addEventListener('click', () => {
-  setNearbyMode('players');
+  setNearbyMode('courts');
   openSheet('nearbyPlayersSheet');
 });
 $('modePlayers').addEventListener('click', () => setNearbyMode('players'));
@@ -2760,6 +2840,7 @@ if(AUTHOR_EMAIL){
   $('aboutEmailValue').textContent = AUTHOR_EMAIL;
   $('aboutEmailRow').style.display = 'flex';
 }
+setNearbyUnit(nearbyUnit);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {

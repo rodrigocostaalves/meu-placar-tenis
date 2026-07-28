@@ -1,6 +1,6 @@
 {
-  "name": "Meu Placar de Tênis",
-  "short_name": "Meu Placar",
+  "name": "Deuce Score",
+  "short_name": "Deuce Score",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0A2B3D",

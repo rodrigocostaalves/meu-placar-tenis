@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meu-placar-v15';
+const CACHE_NAME = 'deuce-score-v18';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
@@ -39,9 +39,9 @@ self.addEventListener('push', (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch (e) {
-    data = { title: 'Meu Placar', body: event.data ? event.data.text() : '' };
+    data = { title: 'Deuce Score', body: event.data ? event.data.text() : '' };
   }
-  const title = data.title || 'Meu Placar';
+  const title = data.title || 'Deuce Score';
   const options = {
     body: data.body || '',
     icon: 'icon-192.png',
