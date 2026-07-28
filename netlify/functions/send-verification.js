@@ -18,29 +18,31 @@ export default async (req) => {
     const store = getStore('email-verifications');
     await store.setJSON(key, { code, createdAt: Date.now() });
 
-    const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    if (!RESEND_API_KEY) {
-      console.error('RESEND_API_KEY not configured');
+    const BREVO_API_KEY = process.env.BREVO_API_KEY;
+    const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL;
+    if (!BREVO_API_KEY || !BREVO_SENDER_EMAIL) {
+      console.error('BREVO_API_KEY or BREVO_SENDER_EMAIL not configured');
       return new Response(JSON.stringify({ ok: false, error: 'Email service not configured' }), { status: 500 });
     }
 
-    const emailRes = await fetch('https://api.resend.com/emails', {
+    const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json'
+        'api-key': BREVO_API_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
-        from: 'Deuce Score <onboarding@resend.dev>',
-        to: [key],
+        sender: { email: BREVO_SENDER_EMAIL, name: 'Deuce Score' },
+        to: [{ email: key }],
         subject: 'Seu código de verificação - Deuce Score',
-        text: `Seu código de verificação é: ${code}\n\nEsse código expira em 15 minutos. Se você não pediu isso, pode ignorar este e-mail.`
+        textContent: `Seu código de verificação é: ${code}\n\nEsse código expira em 15 minutos. Se você não pediu isso, pode ignorar este e-mail.`
       })
     });
 
     if (!emailRes.ok) {
       const errText = await emailRes.text();
-      console.error('Resend error:', errText);
+      console.error('Brevo error:', errText);
       return new Response(JSON.stringify({ ok: false, error: 'Failed to send email' }), { status: 500 });
     }
 
