@@ -1,1 +1,13 @@
+name = "deuce-score-reminders"
+main = "index.js"
+compatibility_date = "2026-07-28"
 
+[triggers]
+crons = ["*/15 * * * *"]
+
+# The KV namespace binding below needs to be filled in with your real
+# namespace ID after you create it in the Cloudflare dashboard
+# (Workers & Pages -> KV -> Create namespace).
+[[kv_namespaces]]
+binding = "DEUCE_KV"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
