@@ -208,7 +208,8 @@
     background: var(--panel); border:1px solid var(--panel-line); border-radius:10px;
     padding:12px 6px; text-align:center; opacity:0.35;
   }
-  .achievement-badge.earned{ opacity:1; border-color: var(--ball); background: rgba(215,242,5,0.08); }
+  .achievement-badge.earned{ opacity:1; border-color: var(--ball); background: rgba(215,242,5,0.10); }
+  .achievement-badge.earned .achievement-name{ color: var(--ball); font-weight:600; }
   .achievement-icon{ font-size:24px; margin-bottom:4px; }
   .achievement-name{ font-size:10px; color:var(--chalk); line-height:1.2; }
 
@@ -1849,6 +1850,7 @@ function saveProfile(){
   localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
   showAlert(t('profileSaved'));
   loadProfile();
+  renderAchievements();
 
   if(p.email && !p.emailVerified){
     sendVerificationCode(p.email);
@@ -2510,7 +2512,8 @@ function computeAchievements(){
   const hasDoubles = completed.some(m => m.format === 'duplas');
   const hasPhoto = completed.some(m => m.photo);
   const hasTournamentMatch = completed.some(m => m.matchType === 'campeonato');
-  const hasLeagueMatch = leagues.some(lg => lg.matchLog && lg.matchLog.length > 0);
+  const hasLeagueMatch = leagues.some(lg => lg.matchLog && lg.matchLog.length > 0)
+    || completed.some(m => m.matchType === 'liga');
   const uniqueLocations = new Set(completed.filter(m => m.location).map(m => m.location.trim().toLowerCase()));
 
   const sortedAsc = [...completed].sort((a,b) => (a.date || '').localeCompare(b.date || ''));
@@ -2526,7 +2529,7 @@ function computeAchievements(){
 
   const opponentCounts = {};
   completed.forEach(m => {
-    const name = (m.opponent || '').trim();
+    const name = (m.opponent || '').trim().toLowerCase();
     if(!name) return;
     opponentCounts[name] = (opponentCounts[name] || 0) + 1;
   });
