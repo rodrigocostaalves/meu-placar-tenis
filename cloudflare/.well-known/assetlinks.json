@@ -1,1 +1,8 @@
-
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "dev.pages.meu_placar_tenis.twa",
+        "sha256_cert_fingerprints": ["5C:62:01:50:58:44:2C:BB:A8:24:79:2B:04:DF:AF:02:D6:27:F0:9C:DB:A1:11:86:89:9D:77:56:2C:86:09:FC"]
+      }
+    }]
