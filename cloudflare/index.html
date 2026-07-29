@@ -151,6 +151,7 @@
   .card .row1{
     display:flex; justify-content:space-between; align-items:flex-start;
     gap: 10px;
+    padding-right: 74px;
   }
   .card .opponent{
     font-weight:600; font-size:15px;
@@ -372,6 +373,37 @@
   .btn-cancel{ background: var(--panel); color: var(--muted); }
   .btn-save{ background: var(--ball); color: var(--court-deep); }
 
+  /* Dialogos internos - substituem os dialogos nativos do navegador */
+  .dialog-overlay{
+    position: fixed; inset:0; background: rgba(0,0,0,0.6);
+    opacity:0; pointer-events:none; transition: opacity 0.18s;
+    z-index: 30;
+    display:flex; align-items:center; justify-content:center;
+    padding: 24px;
+  }
+  .dialog-overlay.show{ opacity:1; pointer-events:auto; }
+  .dialog-box{
+    background: var(--court-deep);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 22px 20px 18px;
+    width: 100%; max-width: 360px;
+    max-height: 80vh; overflow-y: auto;
+    transform: scale(0.94);
+    transition: transform 0.18s ease;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  }
+  .dialog-overlay.show .dialog-box{ transform: scale(1); }
+  .dialog-box h3{
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 1px;
+    margin: 0 0 10px; color: var(--ball);
+  }
+  .dialog-box p{
+    font-size: 14.5px; line-height: 1.6; color: var(--chalk);
+    margin: 0 0 18px; white-space: pre-line;
+  }
+
   .sets-wrap{ display:flex; flex-direction:column; gap:8px; }
   .set-row{ display:flex; align-items:center; gap:8px; }
   .set-row .set-num{ font-size:12px; color:var(--muted); width:44px; flex-shrink:0; }
@@ -488,6 +520,17 @@
 </div>
 
 <div class="overlay" id="overlay"></div>
+
+<div class="dialog-overlay" id="appDialog">
+  <div class="dialog-box">
+    <h3 id="dialogTitle"></h3>
+    <p id="dialogMsg"></p>
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="dialogCancelBtn">Cancelar</button>
+      <button class="btn-save" id="dialogOkBtn">OK</button>
+    </div>
+  </div>
+</div>
 
 <div class="sheet" id="matchSheet">
   <h2 id="matchSheetTitle">Nova Partida</h2>
@@ -656,6 +699,16 @@
   </div>
   <div class="sheet-actions">
     <button class="btn-cancel" id="closeAboutBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
+<div class="sheet" id="achievementSheet">
+  <h2 id="achSheetTitle">&mdash;</h2>
+  <div id="achSheetIcon" style="font-size:56px; line-height:1; text-align:center; margin-bottom:14px;"></div>
+  <p id="achSheetStatus" style="font-family:'Bebas Neue', sans-serif; letter-spacing:1.5px; font-size:15px; text-align:center; margin-bottom:8px;"></p>
+  <p id="achSheetDesc" style="font-size:14px; line-height:1.6; color:var(--chalk); text-align:center; margin-bottom:22px;"></p>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeAchievementBtn" data-i18n="btnClose">Fechar</button>
   </div>
 </div>
 
@@ -934,6 +987,9 @@ const TRANSLATIONS = {
     achProfileName: "Perfil Completo", achProfileDesc: "Preencha nome, e-mail, CEP, data de nascimento e foto",
     achRivalName: "Grande Rival", achRivalDesc: "Jogue 5 partidas contra o mesmo adversário",
     achEarnedPrefix: "Conquistado", achLockedPrefix: "Como conquistar",
+    dlgNotice: "Aviso", dlgOk: "OK", dlgConfirmTitle: "Confirmar", dlgConfirm: "Confirmar",
+    dlgStorageError: "Erro ao salvar os dados no dispositivo.",
+    dlgExportError: "Erro ao exportar os dados.",
     btnSettingsShort: "Config",
     btnAboutApp: "Sobre o App",
     aboutStory: "O Deuce Score nasceu da paixão pelo tênis. Criado por um jogador para jogadores que amam o esporte, o app existe para facilitar o dia a dia de quem joga: acompanhar cada partida, organizar torneios e ligas com os amigos, e nunca mais perder um jogo agendado. Um projeto feito com carinho, quadra a quadra.",
@@ -1041,6 +1097,9 @@ const TRANSLATIONS = {
     achProfileName: "Complete Profile", achProfileDesc: "Fill in name, email, ZIP, birthdate and photo",
     achRivalName: "Big Rival", achRivalDesc: "Play 5 matches against the same opponent",
     achEarnedPrefix: "Earned", achLockedPrefix: "How to earn",
+    dlgNotice: "Notice", dlgOk: "OK", dlgConfirmTitle: "Confirm", dlgConfirm: "Confirm",
+    dlgStorageError: "Could not save data on this device.",
+    dlgExportError: "Could not export the data.",
     btnSettingsShort: "Settings",
     btnAboutApp: "About the App",
     aboutStory: "Deuce Score was born out of a love for tennis. Built by a player for players who love the game, the app makes it easy to track every match, organize tournaments and leagues with friends, and never miss a scheduled game again. A project made with care, court by court.",
@@ -1148,6 +1207,9 @@ const TRANSLATIONS = {
     achProfileName: "Perfil Completo", achProfileDesc: "Completa nombre, correo, código postal, fecha de nacimiento y foto",
     achRivalName: "Gran Rival", achRivalDesc: "Juega 5 partidos contra el mismo rival",
     achEarnedPrefix: "Conseguido", achLockedPrefix: "Cómo conseguirlo",
+    dlgNotice: "Aviso", dlgOk: "OK", dlgConfirmTitle: "Confirmar", dlgConfirm: "Confirmar",
+    dlgStorageError: "Error al guardar los datos en el dispositivo.",
+    dlgExportError: "Error al exportar los datos.",
     btnSettingsShort: "Config",
     btnAboutApp: "Acerca de la App",
     aboutStory: "Deuce Score nació del amor por el tenis. Creado por un jugador para jugadores que aman el deporte, la app existe para facilitar el día a día de quien juega: seguir cada partido, organizar torneos y ligas con amigos, y nunca más perder un partido agendado. Un proyecto hecho con cariño, cancha a cancha.",
@@ -1294,17 +1356,17 @@ let sessionCoords = null;
 
 function useMyLocation(){
   if(!('geolocation' in navigator)){
-    alert(t('geoNotSupported'));
+    showAlert(t('geoNotSupported'));
     return;
   }
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       sessionCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      alert(t('geoLocationSet'));
+      showAlert(t('geoLocationSet'));
     },
     (err) => {
       console.log('Geolocation error:', err);
-      alert(t('geoError'));
+      showAlert(t('geoError'));
     },
     { enableHighAccuracy: true, timeout: 10000 }
   );
@@ -1411,7 +1473,7 @@ function haversineKmClient(lat1, lng1, lat2, lng2){
 
 async function searchCourts(){
   const coords = await getMyCoords();
-  if(!coords){ alert(t('nearbyNeedZip')); return; }
+  if(!coords){ showAlert(t('nearbyNeedZip')); return; }
   const radiusInput = parseFloat($('nearbyRadius').value) || 25;
   const radiusKm = nearbyUnit === 'mi' ? radiusInput * 1.60934 : radiusInput;
   const radiusM = Math.round(radiusKm * 1000);
@@ -1524,7 +1586,7 @@ function toggleWantsSendResult(){
 async function sendInvite(){
   const date = $('fDate').value;
   const toEmail = $('fOpponentEmail').value.trim();
-  if(!date || !toEmail){ alert(t('inviteNeedInfo')); return; }
+  if(!date || !toEmail){ showAlert(t('inviteNeedInfo')); return; }
   try{
     const profileRaw = localStorage.getItem(PROFILE_KEY);
     const profile = profileRaw ? JSON.parse(profileRaw) : {};
@@ -1541,16 +1603,16 @@ async function sendInvite(){
       })
     });
     const data = await res.json();
-    alert(data.notified ? t('inviteSentNotified') : t('inviteSentNoAccount'));
+    showAlert(data.notified ? t('inviteSentNotified') : t('inviteSentNoAccount'));
   }catch(e){
     console.log('Send invite error:', e);
-    alert(t('inviteError'));
+    showAlert(t('inviteError'));
   }
 }
 
 async function sendResult(){
   const toEmail = $('fOpponentEmail').value.trim();
-  if(!toEmail || !selectedResult){ alert(t('inviteNeedInfo')); return; }
+  if(!toEmail || !selectedResult){ showAlert(t('inviteNeedInfo')); return; }
   try{
     const profileRaw = localStorage.getItem(PROFILE_KEY);
     const profile = profileRaw ? JSON.parse(profileRaw) : {};
@@ -1570,10 +1632,10 @@ async function sendResult(){
       })
     });
     const data = await res.json();
-    alert(data.notified ? t('resultSentNotified') : t('resultSentNoAccount'));
+    showAlert(data.notified ? t('resultSentNotified') : t('resultSentNoAccount'));
   }catch(e){
     console.log('Send result error:', e);
-    alert(t('resultError'));
+    showAlert(t('resultError'));
   }
 }
 
@@ -1676,7 +1738,7 @@ async function respondInvite(inviteId, response){
         matches.push(newMatch);
         saveMatches();
         render();
-        alert(t('inviteAccepted'));
+        showAlert(t('inviteAccepted'));
       }
     }
     refreshInbox();
@@ -1710,7 +1772,7 @@ async function respondResult(resultId, response){
         matches.push(newMatch);
         saveMatches();
         render();
-        alert(t('resultAccepted'));
+        showAlert(t('resultAccepted'));
       }
     }
     refreshInbox();
@@ -1732,7 +1794,7 @@ function saveMatches(){
   try{
     localStorage.setItem(MATCHES_KEY, JSON.stringify(matches));
   }catch(e){
-    alert('Storage error.');
+    showAlert(t('dlgStorageError'));
   }
 }
 
@@ -1785,7 +1847,7 @@ function saveProfile(){
     verifiedEmailValue: prev.verifiedEmailValue || ''
   };
   localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
-  alert(t('profileSaved'));
+  showAlert(t('profileSaved'));
   loadProfile();
 
   if(p.email && !p.emailVerified){
@@ -1810,11 +1872,11 @@ async function sendVerificationCode(email){
       closeAllSheets();
       openSheet('verifyEmailSheet');
     } else {
-      alert(t('verifyEmailError'));
+      showAlert(t('verifyEmailError'));
     }
   }catch(e){
     console.log('Send verification error:', e);
-    alert(t('verifyEmailError'));
+    showAlert(t('verifyEmailError'));
   }
 }
 
@@ -1834,16 +1896,16 @@ async function confirmVerificationCode(){
       profile.emailVerified = true;
       profile.verifiedEmailValue = profile.email;
       localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-      alert(t('verifyEmailSuccess'));
+      showAlert(t('verifyEmailSuccess'));
       closeAllSheets();
       loadProfile();
       syncPlayerProfile(profile);
     } else {
-      alert(t('verifyEmailWrongCode'));
+      showAlert(t('verifyEmailWrongCode'));
     }
   }catch(e){
     console.log('Verify email error:', e);
-    alert(t('verifyEmailError'));
+    showAlert(t('verifyEmailError'));
   }
 }
 
@@ -1890,7 +1952,7 @@ async function searchNearby(){
   const profileRaw = localStorage.getItem(PROFILE_KEY);
   const profile = profileRaw ? JSON.parse(profileRaw) : {};
   if(!profile.email || !profile.zip){
-    alert(t('nearbyNeedZip'));
+    showAlert(t('nearbyNeedZip'));
     return;
   }
   const radiusInput = parseFloat($('nearbyRadius').value) || 25;
@@ -2198,8 +2260,8 @@ function renderUpcoming(){
   });
 }
 
-function deleteMatch(id){
-  if(!confirm(t('deleteConfirm'))) return;
+async function deleteMatch(id){
+  if(!await askConfirm(t('deleteConfirm'))) return;
   const m = matches.find(x => x.id === id);
   matches = matches.filter(m => m.id !== id);
   saveMatches();
@@ -2216,6 +2278,40 @@ function openSheet(id){
 function closeAllSheets(){
   document.querySelectorAll('.sheet').forEach(s => s.classList.remove('show'));
   $('overlay').classList.remove('show');
+}
+
+/* ---------- Dialogos internos (substituem alert/confirm nativos) ----------
+   O dialogo fica fora da classe .sheet e num z-index maior, entao pode
+   aparecer sobre uma sheet aberta e closeAllSheets() nao o fecha por engano. */
+let dialogResolve = null;
+
+function settleDialog(result){
+  $('appDialog').classList.remove('show');
+  if(dialogResolve){
+    const done = dialogResolve;
+    dialogResolve = null;
+    done(result);
+  }
+}
+
+function openDialog(opts){
+  const titleEl = $('dialogTitle');
+  titleEl.textContent = opts.title || '';
+  titleEl.style.display = opts.title ? '' : 'none';
+  $('dialogMsg').textContent = opts.message == null ? '' : String(opts.message);
+  $('dialogCancelBtn').style.display = opts.isConfirm ? '' : 'none';
+  $('dialogCancelBtn').textContent = t('btnCancel');
+  $('dialogOkBtn').textContent = opts.isConfirm ? t('dlgConfirm') : t('dlgOk');
+  $('appDialog').classList.add('show');
+  return new Promise(resolve => { dialogResolve = resolve; });
+}
+
+function showAlert(message, title){
+  return openDialog({ title: title || t('dlgNotice'), message: message });
+}
+
+function askConfirm(message, title){
+  return openDialog({ title: title || t('dlgConfirmTitle'), message: message, isConfirm: true });
 }
 
 function renderSetsUI(){
@@ -2335,7 +2431,7 @@ function setSurface(v){
 
 function handleSave(){
   const date = $('fDate').value;
-  if(!date){ alert(t('alertChooseDate')); return; }
+  if(!date){ showAlert(t('alertChooseDate')); return; }
   const sets = currentSets
     .filter(s => s.a !== '' && s.b !== '')
     .map(s => ({a: Number(s.a), b: Number(s.b)}));
@@ -2463,10 +2559,21 @@ function renderAchievements(){
   $('achievementsContainer').querySelectorAll('.achievement-badge').forEach(el => {
     el.addEventListener('click', () => {
       const a = achievements[parseInt(el.dataset.idx, 10)];
-      const prefix = a.earned ? t('achEarnedPrefix') : t('achLockedPrefix');
-      alert(`${a.name}\n\n${prefix}: ${a.desc}`);
+      openAchievementSheet(a);
     });
   });
+}
+
+function openAchievementSheet(a){
+  const earned = !!a.earned;
+  $('achSheetTitle').textContent = a.name;
+  $('achSheetIcon').textContent = a.icon;
+  $('achSheetIcon').style.opacity = earned ? '1' : '0.35';
+  const status = $('achSheetStatus');
+  status.textContent = earned ? t('achEarnedPrefix') : t('achLockedPrefix');
+  status.style.color = earned ? 'var(--ball)' : 'var(--muted)';
+  $('achSheetDesc').textContent = a.desc;
+  openSheet('achievementSheet');
 }
 
 function renderStats(){
@@ -2549,8 +2656,8 @@ async function toggleNotifications(){
   updateNotifStatus();
 }
 
-function clearAllData(){
-  if(!confirm(t('clearAllConfirm'))) return;
+async function clearAllData(){
+  if(!await askConfirm(t('clearAllConfirm'))) return;
   localStorage.removeItem(MATCHES_KEY);
   localStorage.removeItem(TOURNAMENTS_KEY);
   localStorage.removeItem(LEAGUES_KEY);
@@ -2576,17 +2683,17 @@ function exportData(){
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }catch(e){
-    alert('Export error.');
+    showAlert(t('dlgExportError'));
   }
 }
 
 function importData(file){
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     try{
       const data = JSON.parse(e.target.result);
-      if(!confirm(t('importConfirm'))) return;
+      if(!await askConfirm(t('importConfirm'))) return;
       matches = Array.isArray(data.matches) ? data.matches : [];
       tournaments = Array.isArray(data.tournaments) ? data.tournaments : [];
       saveMatches();
@@ -2598,9 +2705,9 @@ function importData(file){
       render();
       renderStats();
       renderTournamentsList();
-      alert(t('importSuccess'));
+      showAlert(t('importSuccess'));
     }catch(err){
-      alert(t('importError'));
+      showAlert(t('importError'));
     }
   };
   reader.readAsText(file);
@@ -2619,7 +2726,7 @@ function saveTournaments(){
   try{
     localStorage.setItem(TOURNAMENTS_KEY, JSON.stringify(tournaments));
   }catch(e){
-    alert('Storage error.');
+    showAlert(t('dlgStorageError'));
   }
 }
 
@@ -2648,7 +2755,7 @@ function createTournament(){
   const name = $('tName').value.trim() || t('tournamentSheetTitle');
   const date = $('tDate').value || new Date().toISOString().slice(0,10);
   const names = $('tParticipants').value.split('\n').map(s => s.trim()).filter(Boolean);
-  if(names.length !== 16){ alert(t('alertNeed16')); return; }
+  if(names.length !== 16){ showAlert(t('alertNeed16')); return; }
   const tour = {
     id: Date.now().toString(),
     name, date,
@@ -2773,7 +2880,7 @@ function saveLeagues(){
   try{
     localStorage.setItem(LEAGUES_KEY, JSON.stringify(leagues));
   }catch(e){
-    alert('Storage error.');
+    showAlert(t('dlgStorageError'));
   }
 }
 
@@ -2826,8 +2933,8 @@ function renderNewLeaguePlayers(){
 function addLeaguePlayer(){
   const name = $('lgPlayerName').value.trim();
   const email = $('lgPlayerEmail').value.trim();
-  if(!name){ alert(t('alertPlayerNeedName')); return; }
-  if(newLeaguePlayers.length >= 100){ alert(t('alertLeagueMax100')); return; }
+  if(!name){ showAlert(t('alertPlayerNeedName')); return; }
+  if(newLeaguePlayers.length >= 100){ showAlert(t('alertLeagueMax100')); return; }
   newLeaguePlayers.push({name, email});
   $('lgPlayerName').value = '';
   $('lgPlayerEmail').value = '';
@@ -2836,8 +2943,8 @@ function addLeaguePlayer(){
 
 function createLeague(){
   const name = $('lgName').value.trim();
-  if(!name){ alert(t('alertLeagueNeedName')); return; }
-  if(newLeaguePlayers.length < 2){ alert(t('alertLeagueNeedPlayers')); return; }
+  if(!name){ showAlert(t('alertLeagueNeedName')); return; }
+  if(newLeaguePlayers.length < 2){ showAlert(t('alertLeagueNeedPlayers')); return; }
   const league = {
     id: Date.now().toString(),
     name,
@@ -2905,7 +3012,7 @@ function recordLeagueMatch(winnerSlot){
   const lg = leagues.find(x => x.id === currentLeagueId);
   if(!lg) return;
   const p1Id = $('lmP1').value, p2Id = $('lmP2').value;
-  if(p1Id === p2Id){ alert(t('leagueSamePlayer')); return; }
+  if(p1Id === p2Id){ showAlert(t('leagueSamePlayer')); return; }
   const ranked = getLeagueRanking(lg);
   const rankOf = (id) => ranked.findIndex(p => p.id === id) + 1;
   const winnerId = winnerSlot === 1 ? p1Id : p2Id;
@@ -3004,6 +3111,10 @@ $('openAboutBtn').addEventListener('click', () => {
   openSheet('aboutSheet');
 });
 $('closeAboutBtn').addEventListener('click', closeAllSheets);
+$('closeAchievementBtn').addEventListener('click', closeAllSheets);
+$('dialogOkBtn').addEventListener('click', () => settleDialog(true));
+$('dialogCancelBtn').addEventListener('click', () => settleDialog(false));
+$('appDialog').addEventListener('click', (e) => { if(e.target === $('appDialog')) settleDialog(false); });
 $('openSettingsBtn').addEventListener('click', () => {
   updateNotifStatus();
   closeAllSheets();
@@ -3046,8 +3157,8 @@ $('newTournamentBtn').addEventListener('click', () => {
 });
 $('cancelTournamentBtn').addEventListener('click', backToTournamentsList);
 $('generateBracketBtn').addEventListener('click', createTournament);
-$('deleteTournamentBtn').addEventListener('click', () => {
-  if(!confirm(t('deleteTournamentConfirm'))) return;
+$('deleteTournamentBtn').addEventListener('click', async () => {
+  if(!await askConfirm(t('deleteTournamentConfirm'))) return;
   tournaments = tournaments.filter(x => x.id !== currentTournamentId);
   saveTournaments();
   backToTournamentsList();
@@ -3096,8 +3207,8 @@ $('cancelLeagueCreateBtn').addEventListener('click', () => {
 $('addLeaguePlayerBtn').addEventListener('click', addLeaguePlayer);
 $('createLeagueBtn').addEventListener('click', createLeague);
 $('registerLeagueMatchBtn').addEventListener('click', openLeagueMatchSheet);
-$('deleteLeagueBtn').addEventListener('click', () => {
-  if(!confirm(t('deleteLeagueConfirm'))) return;
+$('deleteLeagueBtn').addEventListener('click', async () => {
+  if(!await askConfirm(t('deleteLeagueConfirm'))) return;
   leagues = leagues.filter(x => x.id !== currentLeagueId);
   saveLeagues();
   closeAllSheets();
