@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Política de Privacidade - Deuce Score</title>
+<title>Deuce Score</title>
 <style>
   body{
     margin:0; background:#0A2B3D; color:#F3F6F2;
@@ -12,18 +12,43 @@
     max-width: 720px; margin-left:auto; margin-right:auto;
   }
   h1{ font-size: 26px; margin-bottom: 4px; }
-  .subtitle{ color:#8FADBE; font-size: 13px; margin-bottom: 28px; }
+  .subtitle{ color:#8FADBE; font-size: 13px; margin-bottom: 22px; }
   h2{ font-size: 18px; color:#D7F205; margin-top: 32px; margin-bottom: 8px; }
   p, li{ font-size: 15px; color:#F3F6F2; }
   ul{ padding-left: 20px; }
   a{ color:#D7F205; }
-  .note{
+  .lang-switch{
+    display:flex; gap:8px; margin-bottom: 28px;
+  }
+  .lang-switch button{
+    background:#123A52; border:1px solid #1E4C68; color:#8FADBE;
+    border-radius:20px; padding:6px 14px; font-size:13px;
+    cursor:pointer; font-family:inherit;
+  }
+  .lang-switch button.active{
+    background:#D7F205; border-color:#D7F205; color:#0A2B3D; font-weight:600;
+  }
+  .contact-box{
     background: #123A52; border: 1px solid #1E4C68; border-radius:10px;
-    padding:14px; font-size:13px; color:#8FADBE; margin-top:32px;
+    padding:14px; margin-top:8px;
   }
 </style>
 </head>
 <body>
+
+<div class="lang-switch">
+  <button type="button" data-lang="pt">Português</button>
+  <button type="button" data-lang="en">English</button>
+  <button type="button" data-lang="es">Español</button>
+</div>
+
+<div id="content"></div>
+
+<script>
+const CONTACT_EMAIL = 'deucescore@gmail.com';
+
+const CONTENT = {
+  pt: `
   <h1>🎾 Deuce Score — Política de Privacidade</h1>
   <div class="subtitle">Última atualização: julho de 2026</div>
 
@@ -33,7 +58,7 @@
   <p>O histórico de partidas, torneios, ligas, fotos, e o restante do seu perfil ficam salvos localmente no armazenamento do navegador do seu celular. Isso nunca é enviado a nenhum servidor, a menos que você use a opção de exportar dados manualmente.</p>
 
   <h2>2. O que é enviado ao servidor (e por quê)</h2>
-  <p>Para que os recursos abaixo funcionem entre aparelhos diferentes, uma quantidade mínima de dados é enviada e guardada em um servidor (Netlify):</p>
+  <p>Para que os recursos abaixo funcionem entre aparelhos diferentes, uma quantidade mínima de dados é enviada e guardada em um servidor (Cloudflare):</p>
   <ul>
     <li><strong>Nome e e-mail</strong> — usados para identificar você e permitir que outros jogadores te encontrem por e-mail (convites, confirmação de resultado).</li>
     <li><strong>CEP/ZIP code</strong> — convertido em coordenadas aproximadas (nível de cidade/bairro, nunca endereço exato) para mostrar previsão do tempo e quadras próximas.</li>
@@ -44,10 +69,11 @@
   <h2>3. Serviços de terceiros</h2>
   <p>O app usa os seguintes serviços externos, cada um recebendo apenas o mínimo necessário:</p>
   <ul>
+    <li><strong>Cloudflare</strong> — hospeda o app e guarda os dados descritos no item 2.</li>
     <li><strong>Zippopotam.us</strong> — converte CEP/ZIP em coordenadas aproximadas.</li>
     <li><strong>Open-Meteo</strong> — fornece previsão do tempo com base em coordenadas.</li>
     <li><strong>OpenStreetMap / Overpass</strong> — busca quadras de tênis públicas próximas.</li>
-    <li><strong>Resend</strong> — envia o e-mail com o código de verificação.</li>
+    <li><strong>Brevo</strong> — envia o e-mail com o código de verificação.</li>
   </ul>
   <p>Nenhum desses serviços recebe seu nome ou identificação pessoal — apenas coordenadas ou o e-mail estritamente necessário para o envio do código.</p>
 
@@ -74,10 +100,158 @@
   <p>Podemos atualizar esta política conforme o app evolui. A data no topo da página sempre reflete a versão mais recente.</p>
 
   <h2>8. Contato</h2>
-  <p>Dúvidas sobre privacidade ou solicitações de remoção de dados: <strong>[e-mail de contato a definir]</strong></p>
-
-  <div class="note">
-    Este documento foi preparado como parte da app Deuce Score. O endereço de contato acima precisa ser preenchido com um e-mail real antes da publicação na Play Store.
+  <p>Dúvidas sobre privacidade ou solicitações de remoção de dados:</p>
+  <div class="contact-box">
+    <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
   </div>
+  `,
+
+  en: `
+  <h1>🎾 Deuce Score — Privacy Policy</h1>
+  <div class="subtitle">Last updated: July 2026</div>
+
+  <p>This policy explains what data Deuce Score collects, how it is used, and what your options are. The app was built to be as private as possible: most of your data never leaves your phone.</p>
+
+  <h2>1. What stays only on your device</h2>
+  <p>Your match history, tournaments, leagues, photos, and the rest of your profile are saved locally in your phone's browser storage. None of it is ever sent to a server unless you use the manual data export option.</p>
+
+  <h2>2. What is sent to the server (and why)</h2>
+  <p>So that the features below can work across different devices, a minimal amount of data is sent to and stored on a server (Cloudflare):</p>
+  <ul>
+    <li><strong>Name and email</strong> — used to identify you and let other players find you by email (invites, result confirmation).</li>
+    <li><strong>ZIP/postal code</strong> — converted into approximate coordinates (city/neighborhood level, never an exact address) to show the weather forecast and nearby courts.</li>
+    <li><strong>Push notification subscription</strong> — a technical browser identifier used to send reminders for scheduled matches.</li>
+  </ul>
+  <p>This data is only sent after you confirm your email address with a verification code.</p>
+
+  <h2>3. Third-party services</h2>
+  <p>The app uses the following external services, each receiving only the minimum necessary:</p>
+  <ul>
+    <li><strong>Cloudflare</strong> — hosts the app and stores the data described in section 2.</li>
+    <li><strong>Zippopotam.us</strong> — converts a ZIP/postal code into approximate coordinates.</li>
+    <li><strong>Open-Meteo</strong> — provides the weather forecast based on coordinates.</li>
+    <li><strong>OpenStreetMap / Overpass</strong> — finds nearby public tennis courts.</li>
+    <li><strong>Brevo</strong> — sends the email containing your verification code.</li>
+  </ul>
+  <p>None of these services receives your name or personal identification — only coordinates, or the email address strictly needed to deliver the code.</p>
+
+  <h2>4. What the app does NOT do</h2>
+  <ul>
+    <li>It does not show ads</li>
+    <li>It does not sell or share your data with third parties for marketing purposes</li>
+    <li>It does not track your location in real time (it only uses your ZIP code, or a one-off location you choose to share at the moment of a search)</li>
+    <li>It does not access your data unless you have enabled the corresponding feature</li>
+  </ul>
+
+  <h2>5. Your rights and controls</h2>
+  <ul>
+    <li>You can <strong>export</strong> all of your data at any time (Menu → Settings → Data)</li>
+    <li>You can <strong>delete all data</strong> from this device at any time (Menu → Settings → Danger Zone)</li>
+    <li>You can <strong>turn off notifications</strong> at any time (Menu → Settings → Notifications)</li>
+    <li>To request removal of your data from the server, contact us at the email address below</li>
+  </ul>
+
+  <h2>6. Children</h2>
+  <p>Deuce Score is not specifically directed at children under 13, and does not knowingly collect data belonging to that age group.</p>
+
+  <h2>7. Changes to this policy</h2>
+  <p>We may update this policy as the app evolves. The date at the top of the page always reflects the most recent version.</p>
+
+  <h2>8. Contact</h2>
+  <p>Privacy questions or data removal requests:</p>
+  <div class="contact-box">
+    <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
+  </div>
+  `,
+
+  es: `
+  <h1>🎾 Deuce Score — Política de Privacidad</h1>
+  <div class="subtitle">Última actualización: julio de 2026</div>
+
+  <p>Esta política explica qué datos recoge Deuce Score, cómo se usan y cuáles son tus opciones. La app fue creada para ser lo más privada posible: la mayor parte de tus datos nunca sale de tu teléfono.</p>
+
+  <h2>1. Lo que se queda solo en tu dispositivo</h2>
+  <p>El historial de partidos, torneos, ligas, fotos y el resto de tu perfil se guardan localmente en el almacenamiento del navegador de tu teléfono. Nada de esto se envía a ningún servidor, salvo que uses la opción de exportar datos manualmente.</p>
+
+  <h2>2. Lo que se envía al servidor (y por qué)</h2>
+  <p>Para que las funciones de abajo puedan funcionar entre distintos dispositivos, se envía y se guarda una cantidad mínima de datos en un servidor (Cloudflare):</p>
+  <ul>
+    <li><strong>Nombre y correo electrónico</strong> — se usan para identificarte y permitir que otros jugadores te encuentren por correo (invitaciones, confirmación de resultados).</li>
+    <li><strong>Código postal</strong> — se convierte en coordenadas aproximadas (a nivel de ciudad/barrio, nunca la dirección exacta) para mostrar el pronóstico del tiempo y las canchas cercanas.</li>
+    <li><strong>Suscripción de notificaciones push</strong> — un identificador técnico del navegador que se usa para enviar recordatorios de partidos agendados.</li>
+  </ul>
+  <p>Estos datos solo se envían después de que confirmes tu correo mediante un código de verificación.</p>
+
+  <h2>3. Servicios de terceros</h2>
+  <p>La app usa los siguientes servicios externos, y cada uno recibe solo lo mínimo necesario:</p>
+  <ul>
+    <li><strong>Cloudflare</strong> — aloja la app y guarda los datos descritos en el punto 2.</li>
+    <li><strong>Zippopotam.us</strong> — convierte el código postal en coordenadas aproximadas.</li>
+    <li><strong>Open-Meteo</strong> — proporciona el pronóstico del tiempo a partir de coordenadas.</li>
+    <li><strong>OpenStreetMap / Overpass</strong> — busca canchas de tenis públicas cercanas.</li>
+    <li><strong>Brevo</strong> — envía el correo con el código de verificación.</li>
+  </ul>
+  <p>Ninguno de estos servicios recibe tu nombre ni tu identificación personal — solo coordenadas, o el correo estrictamente necesario para enviar el código.</p>
+
+  <h2>4. Lo que la app NO hace</h2>
+  <ul>
+    <li>No muestra anuncios</li>
+    <li>No vende ni comparte tus datos con terceros con fines de marketing</li>
+    <li>No rastrea tu ubicación en tiempo real (solo usa el código postal, o una ubicación puntual que decidas compartir en el momento de la búsqueda)</li>
+    <li>No accede a tus datos sin que hayas activado la función correspondiente</li>
+  </ul>
+
+  <h2>5. Tus derechos y controles</h2>
+  <ul>
+    <li>Puedes <strong>exportar</strong> todos tus datos en cualquier momento (Menú → Configuración → Datos)</li>
+    <li>Puedes <strong>borrar todos los datos</strong> de este dispositivo en cualquier momento (Menú → Configuración → Zona de Riesgo)</li>
+    <li>Puedes <strong>desactivar las notificaciones</strong> en cualquier momento (Menú → Configuración → Notificaciones)</li>
+    <li>Para solicitar la eliminación de tus datos del servidor, escríbenos al correo de abajo</li>
+  </ul>
+
+  <h2>6. Menores de edad</h2>
+  <p>Deuce Score no está dirigida específicamente a menores de 13 años y no recoge intencionadamente datos sabiendo que pertenecen a ese grupo de edad.</p>
+
+  <h2>7. Cambios en esta política</h2>
+  <p>Podemos actualizar esta política a medida que la app evoluciona. La fecha en la parte superior de la página siempre refleja la versión más reciente.</p>
+
+  <h2>8. Contacto</h2>
+  <p>Dudas sobre privacidad o solicitudes de eliminación de datos:</p>
+  <div class="contact-box">
+    <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
+  </div>
+  `
+};
+
+const HTML_LANG = { pt: 'pt-BR', en: 'en', es: 'es' };
+
+function pickInitialLang(){
+  // 1. explicit ?lang= wins, 2. the language chosen inside the app, 3. browser, 4. pt
+  const param = new URLSearchParams(location.search).get('lang');
+  if(param && CONTENT[param]) return param;
+  try{
+    const saved = localStorage.getItem('tennis_lang_v1');
+    if(saved && CONTENT[saved]) return saved;
+  }catch(e){}
+  const nav = (navigator.language || '').slice(0,2).toLowerCase();
+  if(CONTENT[nav]) return nav;
+  return 'pt';
+}
+
+function setLang(lang){
+  document.getElementById('content').innerHTML = CONTENT[lang];
+  document.documentElement.lang = HTML_LANG[lang];
+  document.querySelectorAll('.lang-switch button').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+}
+
+document.querySelectorAll('.lang-switch button').forEach(b => {
+  b.addEventListener('click', () => setLang(b.dataset.lang));
+});
+
+setLang(pickInitialLang());
+</script>
+
 </body>
 </html>
