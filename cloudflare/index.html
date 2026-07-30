@@ -849,6 +849,14 @@
   </div>
   <input type="file" id="importFile" accept="application/json" style="display:none">
 
+  <h3 data-i18n="syncTitle">Backup na Nuvem</h3>
+  <p class="rating-note" data-i18n="syncIntro"></p>
+  <div class="stats-list" id="syncStatus" style="margin-bottom:10px"></div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="syncPushBtn" data-i18n="btnSyncPush">Salvar na Nuvem</button>
+    <button class="btn-cancel" id="syncPullBtn" data-i18n="btnSyncPull">Restaurar</button>
+  </div>
+
   <h3 data-i18n="legalTitle">Legal</h3>
   <div class="sheet-actions">
     <button class="btn-cancel" id="privacyPolicyBtn" data-i18n="btnPrivacyPolicy">Política de Privacidade</button>
@@ -1184,6 +1192,19 @@ const TRANSLATIONS = {
     recapMatchesLabel: "PARTIDAS", recapWinsLabel: "VITÓRIAS", recapLossesLabel: "DERROTAS",
     recapWinRateLabel: "APROVEITAMENTO", recapRatingLabel: "RATING",
     recapTopOpponentLabel: "MAIS ENFRENTADO", recapBestStreakLabel: "MELHOR SEQUÊNCIA",
+    syncTitle: "Backup na Nuvem",
+    syncIntro: "Guarda seu histórico no servidor, ligado ao seu e-mail verificado. Se você limpar o navegador ou trocar de aparelho, é só restaurar. As fotos das partidas não entram no backup da nuvem para não estourar o tamanho — para elas, use Exportar Dados.",
+    btnSyncPush: "Salvar na Nuvem", btnSyncPull: "Restaurar",
+    syncNeedProfile: "Salve seu perfil com e-mail verificado para usar o backup.",
+    syncNever: "Nenhum backup na nuvem ainda.",
+    syncLastLabel: "Último backup",
+    syncSaved: "Backup salvo na nuvem!",
+    syncNothingToRestore: "Não há backup na nuvem para restaurar.",
+    syncRestored: "Dados restaurados da nuvem!",
+    syncConfirmRestore: "Isso vai substituir as partidas, torneios e ligas deste aparelho pelos dados da nuvem. Continuar?",
+    syncTooLarge: "Seus dados passaram do limite do backup. Use Exportar Dados.",
+    syncError: "Não foi possível falar com o servidor agora.",
+    syncAutoNote: "Salvo automaticamente a cada alteração.",
     btnSettingsShort: "Config",
     btnAboutApp: "Sobre o App",
     aboutStory: "O Deuce Score nasceu da paixão pelo tênis. Criado por um jogador para jogadores que amam o esporte, o app existe para facilitar o dia a dia de quem joga: acompanhar cada partida, organizar torneios e ligas com os amigos, e nunca mais perder um jogo agendado. Um projeto feito com carinho, quadra a quadra.",
@@ -1333,6 +1354,19 @@ const TRANSLATIONS = {
     recapMatchesLabel: "MATCHES", recapWinsLabel: "WINS", recapLossesLabel: "LOSSES",
     recapWinRateLabel: "WIN RATE", recapRatingLabel: "RATING",
     recapTopOpponentLabel: "MOST PLAYED", recapBestStreakLabel: "BEST STREAK",
+    syncTitle: "Cloud Backup",
+    syncIntro: "Keeps your history on the server, tied to your verified email. If you clear the browser or switch devices, just restore it. Match photos are left out of the cloud backup to keep it small — use Export Data for those.",
+    btnSyncPush: "Save to Cloud", btnSyncPull: "Restore",
+    syncNeedProfile: "Save your profile with a verified email to use backup.",
+    syncNever: "No cloud backup yet.",
+    syncLastLabel: "Last backup",
+    syncSaved: "Backup saved to the cloud!",
+    syncNothingToRestore: "There is no cloud backup to restore.",
+    syncRestored: "Data restored from the cloud!",
+    syncConfirmRestore: "This will replace the matches, tournaments and leagues on this device with the cloud data. Continue?",
+    syncTooLarge: "Your data exceeded the backup limit. Use Export Data instead.",
+    syncError: "Could not reach the server right now.",
+    syncAutoNote: "Saved automatically on every change.",
     btnSettingsShort: "Settings",
     btnAboutApp: "About the App",
     aboutStory: "Deuce Score was born out of a love for tennis. Built by a player for players who love the game, the app makes it easy to track every match, organize tournaments and leagues with friends, and never miss a scheduled game again. A project made with care, court by court.",
@@ -1482,6 +1516,19 @@ const TRANSLATIONS = {
     recapMatchesLabel: "PARTIDOS", recapWinsLabel: "VICTORIAS", recapLossesLabel: "DERROTAS",
     recapWinRateLabel: "RENDIMIENTO", recapRatingLabel: "RATING",
     recapTopOpponentLabel: "MÁS JUGADO", recapBestStreakLabel: "MEJOR RACHA",
+    syncTitle: "Copia en la Nube",
+    syncIntro: "Guarda tu historial en el servidor, vinculado a tu correo verificado. Si borras el navegador o cambias de dispositivo, solo tienes que restaurar. Las fotos de los partidos no entran en la copia en la nube para no exceder el tamaño — para eso usa Exportar Datos.",
+    btnSyncPush: "Guardar en la Nube", btnSyncPull: "Restaurar",
+    syncNeedProfile: "Guarda tu perfil con el correo verificado para usar la copia.",
+    syncNever: "Aún no hay copia en la nube.",
+    syncLastLabel: "Última copia",
+    syncSaved: "¡Copia guardada en la nube!",
+    syncNothingToRestore: "No hay copia en la nube para restaurar.",
+    syncRestored: "¡Datos restaurados de la nube!",
+    syncConfirmRestore: "Esto reemplazará los partidos, torneos y ligas de este dispositivo con los datos de la nube. ¿Continuar?",
+    syncTooLarge: "Tus datos superaron el límite de la copia. Usa Exportar Datos.",
+    syncError: "No se pudo contactar con el servidor ahora.",
+    syncAutoNote: "Se guarda automáticamente en cada cambio.",
     btnSettingsShort: "Config",
     btnAboutApp: "Acerca de la App",
     aboutStory: "Deuce Score nació del amor por el tenis. Creado por un jugador para jugadores que aman el deporte, la app existe para facilitar el día a día de quien juega: seguir cada partido, organizar torneos y ligas con amigos, y nunca más perder un partido agendado. Un proyecto hecho con cariño, cancha a cancha.",
@@ -2063,6 +2110,7 @@ function loadMatches(){
   }
 }
 function saveMatches(){
+  queueSync();
   try{
     localStorage.setItem(MATCHES_KEY, JSON.stringify(matches));
   }catch(e){
@@ -2228,6 +2276,181 @@ function setNearbyUnit(u){
   $('unitMi').classList.toggle('active', u === 'mi');
   $('settingsUnitKm').classList.toggle('active', u === 'km');
   $('settingsUnitMi').classList.toggle('active', u === 'mi');
+}
+
+/* ---------------- Cloud backup ----------------
+   Whole-snapshot, last-write-wins. A single user's dataset doesn't justify
+   a merge strategy, and a simple model that is easy to reason about beats
+   a clever one that can silently drop a match.
+
+   Photos are stripped from the payload on purpose: they are base64 blobs
+   and would blow past a sane request size within a few dozen matches.
+   Export Data remains the full backup, photos included.                  */
+let syncTimer = null;
+
+function syncProfile(){
+  const raw = localStorage.getItem(PROFILE_KEY);
+  return raw ? JSON.parse(raw) : {};
+}
+
+function syncEnabled(){
+  const p = syncProfile();
+  return !!(p.email && p.emailVerified);
+}
+
+function buildSyncPayload(){
+  return {
+    version: 1,
+    matches: matches.map(m => {
+      const copy = { ...m };
+      delete copy.photo;
+      return copy;
+    }),
+    tournaments,
+    leagues
+  };
+}
+
+function applySyncPayload(payload){
+  if(!payload || typeof payload !== 'object') return false;
+  if(Array.isArray(payload.matches)){
+    // keep any local photo we already have for a match we also received
+    const localPhotos = {};
+    matches.forEach(m => { if(m.photo) localPhotos[m.id] = m.photo; });
+    matches = payload.matches.map(m => {
+      if(!m.photo && localPhotos[m.id]) return { ...m, photo: localPhotos[m.id] };
+      return m;
+    });
+    saveMatches();
+  }
+  if(Array.isArray(payload.tournaments)){
+    tournaments = payload.tournaments;
+    saveTournaments();
+  }
+  if(Array.isArray(payload.leagues)){
+    leagues = payload.leagues;
+    saveLeagues();
+  }
+  return true;
+}
+
+function renderSyncStatus(savedAt){
+  const el = $('syncStatus');
+  if(!el) return;
+  if(!syncEnabled()){
+    el.innerHTML = `<div class="stats-empty">${t('syncNeedProfile')}</div>`;
+    return;
+  }
+  if(!savedAt){
+    el.innerHTML = `<div class="stats-empty">${t('syncNever')}</div>`;
+    return;
+  }
+  const d = new Date(savedAt);
+  const label = Number.isNaN(d.getTime())
+    ? savedAt
+    : d.toLocaleString(recapLocale(), { dateStyle: 'short', timeStyle: 'short' });
+  el.innerHTML = statLineHTML(t('syncLastLabel'), label);
+}
+
+async function pushSync(showFeedback){
+  if(!syncEnabled()){
+    if(showFeedback) showAlert(t('syncNeedProfile'));
+    return;
+  }
+  const profile = syncProfile();
+  try{
+    const res = await fetch('/api/sync-push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: profile.email,
+        payload: buildSyncPayload(),
+        updatedAt: new Date().toISOString()
+      })
+    });
+    const data = await res.json();
+    if(data.ok){
+      renderSyncStatus(data.savedAt);
+      if(showFeedback) showAlert(t('syncSaved'));
+    } else if(data.error === 'too_large'){
+      if(showFeedback) showAlert(t('syncTooLarge'));
+    } else if(showFeedback){
+      showAlert(t('syncError'));
+    }
+  }catch(e){
+    console.log('Sync push error:', e);
+    if(showFeedback) showAlert(t('syncError'));
+  }
+}
+
+// Any data change schedules one push a few seconds later, so a burst of
+// edits results in a single request.
+function queueSync(){
+  if(!syncEnabled()) return;
+  if(syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => { syncTimer = null; pushSync(false); }, 4000);
+}
+
+async function pullSync(){
+  if(!syncEnabled()){
+    showAlert(t('syncNeedProfile'));
+    return;
+  }
+  const profile = syncProfile();
+  try{
+    const res = await fetch('/api/sync-pull', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    if(!data.found || !data.payload){
+      showAlert(t('syncNothingToRestore'));
+      return;
+    }
+    // never overwrite existing local data without asking
+    const hasLocal = matches.length || tournaments.length || leagues.length;
+    if(hasLocal && !await askConfirm(t('syncConfirmRestore'))) return;
+
+    applySyncPayload(data.payload);
+    render();
+    renderTournamentsList();
+    renderLeaguesList();
+    renderSyncStatus(data.savedAt);
+    syncRating();
+    showAlert(t('syncRestored'));
+  }catch(e){
+    console.log('Sync pull error:', e);
+    showAlert(t('syncError'));
+  }
+}
+
+// On a device with no data at all, restoring is what the user wants and
+// there is nothing to lose, so do it without prompting.
+async function autoRestoreIfEmpty(){
+  if(!syncEnabled()) return;
+  if(matches.length || tournaments.length || leagues.length) return;
+  const profile = syncProfile();
+  try{
+    const res = await fetch('/api/sync-pull', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    if(data.found && data.payload){
+      applySyncPayload(data.payload);
+      render();
+      renderTournamentsList();
+      renderLeaguesList();
+      renderSyncStatus(data.savedAt);
+      showAlert(t('syncRestored'));
+    } else {
+      renderSyncStatus(data.savedAt);
+    }
+  }catch(e){
+    console.log('Auto restore error:', e);
+  }
 }
 
 /* ---------------- Global ranking ----------------
@@ -3651,6 +3874,7 @@ function loadTournaments(){
   }
 }
 function saveTournaments(){
+  queueSync();
   try{
     localStorage.setItem(TOURNAMENTS_KEY, JSON.stringify(tournaments));
   }catch(e){
@@ -3805,6 +4029,7 @@ function loadLeagues(){
   }
 }
 function saveLeagues(){
+  queueSync();
   try{
     localStorage.setItem(LEAGUES_KEY, JSON.stringify(leagues));
   }catch(e){
@@ -4068,6 +4293,8 @@ $('saveProfileBtn').addEventListener('click', saveProfile);
 $('langPt').addEventListener('click', () => setLanguage('pt'));
 $('langEn').addEventListener('click', () => setLanguage('en'));
 $('langEs').addEventListener('click', () => setLanguage('es'));
+$('syncPushBtn').addEventListener('click', () => pushSync(true));
+$('syncPullBtn').addEventListener('click', pullSync);
 $('exportBtn').addEventListener('click', exportData);
 $('importBtn').addEventListener('click', () => $('importFile').click());
 $('importFile').addEventListener('change', (e) => { importData(e.target.files[0]); e.target.value = ''; });
@@ -4183,6 +4410,8 @@ applyLanguage();
 updateMatchSheetTexts();
 render();
 setNearbyUnit(nearbyUnit);
+renderSyncStatus(null);
+autoRestoreIfEmpty();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
