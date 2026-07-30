@@ -1205,6 +1205,7 @@ const TRANSLATIONS = {
     syncTooLarge: "Seus dados passaram do limite do backup. Use Exportar Dados.",
     syncError: "Não foi possível falar com o servidor agora.",
     syncAutoNote: "Salvo automaticamente a cada alteração.",
+    syncSaving: "Salvando…", syncFailed: "⚠ O último backup automático falhou. Toque em Salvar na Nuvem.",
     btnSettingsShort: "Config",
     btnAboutApp: "Sobre o App",
     aboutStory: "O Deuce Score nasceu da paixão pelo tênis. Criado por um jogador para jogadores que amam o esporte, o app existe para facilitar o dia a dia de quem joga: acompanhar cada partida, organizar torneios e ligas com os amigos, e nunca mais perder um jogo agendado. Um projeto feito com carinho, quadra a quadra.",
@@ -1367,6 +1368,7 @@ const TRANSLATIONS = {
     syncTooLarge: "Your data exceeded the backup limit. Use Export Data instead.",
     syncError: "Could not reach the server right now.",
     syncAutoNote: "Saved automatically on every change.",
+    syncSaving: "Saving…", syncFailed: "⚠ The last automatic backup failed. Tap Save to Cloud.",
     btnSettingsShort: "Settings",
     btnAboutApp: "About the App",
     aboutStory: "Deuce Score was born out of a love for tennis. Built by a player for players who love the game, the app makes it easy to track every match, organize tournaments and leagues with friends, and never miss a scheduled game again. A project made with care, court by court.",
@@ -1529,6 +1531,7 @@ const TRANSLATIONS = {
     syncTooLarge: "Tus datos superaron el límite de la copia. Usa Exportar Datos.",
     syncError: "No se pudo contactar con el servidor ahora.",
     syncAutoNote: "Se guarda automáticamente en cada cambio.",
+    syncSaving: "Guardando…", syncFailed: "⚠ La última copia automática falló. Toca Guardar en la Nube.",
     btnSettingsShort: "Config",
     btnAboutApp: "Acerca de la App",
     aboutStory: "Deuce Score nació del amor por el tenis. Creado por un jugador para jugadores que aman el deporte, la app existe para facilitar el día a día de quien juega: seguir cada partido, organizar torneos y ligas con amigos, y nunca más perder un partido agendado. Un proyecto hecho con cariño, cancha a cancha.",
@@ -2334,11 +2337,15 @@ function applySyncPayload(payload){
   return true;
 }
 
-function renderSyncStatus(savedAt){
+function renderSyncStatus(savedAt, errorMsg){
   const el = $('syncStatus');
   if(!el) return;
   if(!syncEnabled()){
     el.innerHTML = `<div class="stats-empty">${t('syncNeedProfile')}</div>`;
+    return;
+  }
+  if(errorMsg){
+    el.innerHTML = `<div class="stats-empty" style="color:var(--loss)">${esc(errorMsg)}</div>`;
     return;
   }
   if(!savedAt){
@@ -2357,6 +2364,8 @@ async function pushSync(showFeedback){
     if(showFeedback) showAlert(t('syncNeedProfile'));
     return;
   }
+  const statusEl = $('syncStatus');
+  if(statusEl) statusEl.innerHTML = `<div class="stats-empty">${t('syncSaving')}</div>`;
   const profile = syncProfile();
   try{
     const res = await fetch('/api/sync-push', {
@@ -2373,12 +2382,16 @@ async function pushSync(showFeedback){
       renderSyncStatus(data.savedAt);
       if(showFeedback) showAlert(t('syncSaved'));
     } else if(data.error === 'too_large'){
+      renderSyncStatus(null, t('syncTooLarge'));
       if(showFeedback) showAlert(t('syncTooLarge'));
-    } else if(showFeedback){
-      showAlert(t('syncError'));
+    } else {
+      // never leave the status silently stale — an invisible failure is worse
+      renderSyncStatus(null, t('syncFailed'));
+      if(showFeedback) showAlert(t('syncError'));
     }
   }catch(e){
     console.log('Sync push error:', e);
+    renderSyncStatus(null, t('syncFailed'));
     if(showFeedback) showAlert(t('syncError'));
   }
 }
@@ -2422,6 +2435,28 @@ async function pullSync(){
   }catch(e){
     console.log('Sync pull error:', e);
     showAlert(t('syncError'));
+  }
+}
+
+// The status line used to start every session claiming there was no backup,
+// because nothing ever asked the server. Fetch the real timestamp instead.
+async function refreshSyncStatus(){
+  if(!syncEnabled()){
+    renderSyncStatus(null);
+    return;
+  }
+  const profile = syncProfile();
+  try{
+    const res = await fetch('/api/sync-pull', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    renderSyncStatus(data.savedAt || null);
+  }catch(e){
+    console.log('Sync status error:', e);
+    renderSyncStatus(null);
   }
 }
 
@@ -3256,9 +3291,9 @@ function renderSetsUI(){
   $('setsContainer').innerHTML = currentSets.map((s,i) => `
     <div class="set-row">
       <span class="set-num">${t('setLabel')} ${i+1}</span>
-      <input type="number" min="0" max="20" class="set-input" data-field="a" data-index="${i}" value="${s.a}">
+      <input type="text" inputmode="numeric" maxlength="${i === currentSets.length - 1 ? 2 : 1}" data-last="${i === currentSets.length - 1 ? 1 : 0}" class="set-input" data-field="a" data-index="${i}" value="${s.a}">
       <span class="sep">-</span>
-      <input type="number" min="0" max="20" class="set-input" data-field="b" data-index="${i}" value="${s.b}">
+      <input type="text" inputmode="numeric" maxlength="${i === currentSets.length - 1 ? 2 : 1}" data-last="${i === currentSets.length - 1 ? 1 : 0}" class="set-input" data-field="b" data-index="${i}" value="${s.b}">
       ${currentSets.length > 1 ? `<button type="button" class="set-remove" data-index="${i}">✕</button>` : ''}
     </div>
   `).join('');
@@ -4209,10 +4244,38 @@ $('btnHard').addEventListener('click', () => setSurface('rapida'));
 $('btnGrass').addEventListener('click', () => setSurface('grama'));
 
 $('setsContainer').addEventListener('input', (e) => {
-  if(e.target.matches('.set-input')){
-    const idx = parseInt(e.target.dataset.index, 10);
-    const field = e.target.dataset.field;
-    currentSets[idx][field] = e.target.value;
+  if(!e.target.matches('.set-input')) return;
+
+  const isLast = e.target.dataset.last === '1';
+  const digits = e.target.value.replace(/[^0-9]/g, '');
+  // one digit everywhere except the final set, which may hold a super tie-break
+  const clean = isLast ? digits.slice(0, 2) : digits.slice(-1);
+  if(e.target.value !== clean) e.target.value = clean;
+
+  const idx = parseInt(e.target.dataset.index, 10);
+  const field = e.target.dataset.field;
+  currentSets[idx][field] = e.target.value;
+
+  // In a two-digit box only a leading "1" is ambiguous (1 vs 10-15), so that
+  // one waits for a possible second digit; everything else advances at once.
+  const advance = isLast
+    ? (clean.length === 2 || (clean.length === 1 && clean !== '1'))
+    : clean.length === 1;
+
+  if(advance){
+    const inputs = [...$('setsContainer').querySelectorAll('.set-input')];
+    const next = inputs[inputs.indexOf(e.target) + 1];
+    if(next){ next.focus(); next.select(); }
+  }
+});
+
+// backspace on an empty box steps back instead of dead-ending
+$('setsContainer').addEventListener('keydown', (e) => {
+  if(!e.target.matches('.set-input')) return;
+  if(e.key === 'Backspace' && e.target.value === ''){
+    const inputs = [...$('setsContainer').querySelectorAll('.set-input')];
+    const prev = inputs[inputs.indexOf(e.target) - 1];
+    if(prev){ e.preventDefault(); prev.focus(); prev.select(); }
   }
 });
 $('setsContainer').addEventListener('click', (e) => {
@@ -4271,6 +4334,7 @@ $('dialogCancelBtn').addEventListener('click', () => settleDialog(false));
 $('appDialog').addEventListener('click', (e) => { if(e.target === $('appDialog')) settleDialog(false); });
 $('openSettingsBtn').addEventListener('click', () => {
   updateNotifStatus();
+  refreshSyncStatus();
   closeAllSheets();
   openSheet('settingsSheet');
 });
@@ -4410,7 +4474,7 @@ applyLanguage();
 updateMatchSheetTexts();
 render();
 setNearbyUnit(nearbyUnit);
-renderSyncStatus(null);
+refreshSyncStatus();
 autoRestoreIfEmpty();
 
 if('serviceWorker' in navigator){
