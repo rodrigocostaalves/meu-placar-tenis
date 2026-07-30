@@ -70,7 +70,8 @@
   .menu-btn span::before{ position:absolute; top:-6px; }
   .menu-btn span::after{ position:absolute; top:6px; }
   .record{
-    display:flex; gap:22px; align-items:flex-end;
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;
+    align-items:end;
   }
   .record-item{
     display:flex; flex-direction:column; align-items:flex-start;
@@ -90,27 +91,36 @@
   .record-item.wins .num{ color: var(--win); }
   .record-item.losses .num{ color: var(--loss); }
   .record-item.pct .num{ color: var(--ball); font-size: 28px; }
-  .streak-line{
-    margin-top: 12px; font-size: 13px; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 1px;
+  .info-strip{
+    display:flex; gap:10px; margin-top:16px;
   }
-  .streak-line .streak-val{ font-weight: 700; text-transform: none; letter-spacing: 0; }
-  .streak-line .streak-val.win{ color: var(--win); }
-  .streak-line .streak-val.loss{ color: var(--loss); }
-  .rating-line{
-    margin-top: 8px; font-size: 13px; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 1px;
-    display: none;
+  .info-cell{
+    flex:1; background: rgba(10,43,61,0.45);
+    border:1px solid var(--panel-line); border-radius:10px;
+    padding:8px 10px; min-width:0;
   }
+  .info-cell .cap{
+    display:block; font-size:10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom:2px;
+  }
+  .info-cell .body{
+    display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;
+  }
+  .streak-val{
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+    letter-spacing: 1px; color: var(--chalk);
+  }
+  .streak-val.win{ color: var(--win); }
+  .streak-val.loss{ color: var(--loss); }
   .rating-line .rating-val{
     font-family: 'Bebas Neue', sans-serif; font-size: 22px;
-    color: var(--ball); letter-spacing: 1px; margin-left: 4px;
+    color: var(--ball); letter-spacing: 1px;
   }
-  .rating-line .rating-delta{ font-size: 12px; margin-left: 6px; letter-spacing: 0; }
+  .rating-line .rating-delta{ font-size: 12px; letter-spacing: 0; }
   .rating-line .rating-delta.up{ color: var(--win); }
   .rating-line .rating-delta.down{ color: var(--loss); }
   .rating-line .rating-level{
-    font-size: 11px; margin-left: 8px; color: var(--muted); letter-spacing: 0;
+    font-size: 11px; color: var(--muted); letter-spacing: 0;
   }
   .rating-note{
     font-size: 12px; color: var(--muted); line-height: 1.5;
@@ -144,7 +154,12 @@
     font-family:'Bebas Neue', sans-serif; font-size:34px; color:var(--ball);
     display:block; line-height:1.1;
   }
-  .activity-line{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  /* every chip flexes, so a wrapped row divides evenly instead of
+     leaving a ragged gap on the right */
+  .activity-line{
+    display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;
+  }
+  .activity-line .activity-chip{ flex:1 1 0; min-width:0; }
   .checkbox-field .checkbox-label{
     display:flex; align-items:center; gap:10px; font-size:14px; color:var(--chalk);
     text-transform:none; letter-spacing:0; cursor:pointer;
@@ -152,7 +167,8 @@
   .checkbox-field input[type="checkbox"]{ width:18px; height:18px; flex-shrink:0; accent-color: var(--ball); }
   .activity-chip{
     background: var(--panel); border:1px solid var(--panel-line); color:var(--chalk);
-    border-radius:20px; padding:7px 14px; font-size:12.5px; cursor:pointer; font-family:inherit;
+    border-radius:20px; padding:8px 10px; font-size:12.5px; cursor:pointer;
+    font-family:inherit; white-space:nowrap; text-align:center;
   }
 
   main{ padding: 18px 16px 0; }
@@ -533,9 +549,20 @@
     <div class="record-item losses"><span class="num" id="lossesNum">0</span><span class="lbl" data-i18n="lossesLabel">Derrotas</span></div>
     <div class="record-item pct"><span class="num" id="pctNum">0%</span><span class="lbl" data-i18n="pctLabel">Aproveitamento</span></div>
   </div>
-  <div class="streak-line"><span data-i18n="streakLabel">Sequência</span>: <span class="streak-val" id="streakVal">-</span></div>
-  <div class="rating-line" id="ratingLine">
-    <span data-i18n="ratingLabel">Rating</span>:<span class="rating-val" id="ratingVal">-</span><span class="rating-delta" id="ratingDelta"></span><span class="rating-level" id="ratingLevel"></span><span class="rating-level" id="ratingPosition"></span>
+  <div class="info-strip">
+    <div class="info-cell">
+      <span class="cap" data-i18n="streakLabel">Sequência</span>
+      <div class="body"><span class="streak-val" id="streakVal">-</span></div>
+    </div>
+    <div class="info-cell rating-line" id="ratingLine">
+      <span class="cap" data-i18n="ratingLabel">Rating</span>
+      <div class="body">
+        <span class="rating-val" id="ratingVal">-</span>
+        <span class="rating-delta" id="ratingDelta"></span>
+        <span class="rating-level" id="ratingLevel"></span>
+        <span class="rating-level" id="ratingPosition"></span>
+      </div>
+    </div>
   </div>
   <div class="activity-line">
     <button type="button" class="activity-chip" id="tournamentsShortcut">🏆 <span data-i18n="chipTournament">Torneio</span></button>
@@ -989,7 +1016,7 @@
 
   <h3 data-i18n="boardOthersTitle" style="margin-top:26px">Jogos Disponíveis</h3>
   <div class="field">
-    <label data-i18n="labelRadius">Raio de Busca</label>
+    <label id="boardRadiusLabel" data-i18n="labelRadius">Raio de Busca</label>
     <input type="number" id="boardRadius" value="25" min="1" max="500">
   </div>
   <button type="button" class="search-btn" id="searchListingsBtn" data-i18n="btnSearchNearby">Buscar</button>
@@ -1008,7 +1035,7 @@
   </div>
   <button type="button" class="add-set-btn" id="useMyLocationBtn" data-i18n="btnUseMyLocation" style="margin-bottom:14px">📍 Usar Minha Localização Atual</button>
   <div class="field">
-    <label data-i18n="labelRadius">Raio de Busca</label>
+    <label id="nearbyRadiusLabel" data-i18n="labelRadius">Raio de Busca</label>
     <div style="display:flex; gap:8px;">
       <input type="number" id="nearbyRadius" value="25" min="1" max="500" style="flex:1">
       <div class="toggle-group" style="flex:0 0 120px">
@@ -1146,7 +1173,7 @@ const TRANSLATIONS = {
     btnAboutApp: "Sobre o App",
     aboutStory: "O Deuce Score nasceu da paixão pelo tênis. Criado por um jogador para jogadores que amam o esporte, o app existe para facilitar o dia a dia de quem joga: acompanhar cada partida, organizar torneios e ligas com os amigos, e nunca mais perder um jogo agendado. Um projeto feito com carinho, quadra a quadra.",
     labelShareLocation: "Permitir que outros jogadores me encontrem por perto",
-    labelRadius: "Raio de Busca (km)", btnSearchNearby: "Buscar",
+    labelRadius: "Raio de Busca", btnSearchNearby: "Buscar",
     nearbyEmptyState: "Nenhum jogador encontrado nesse raio.", nearbyNeedZip: "Adicione um CEP/ZIP no seu perfil pra buscar.",
     btnScheduleWithPlayer: "Agendar", nearbyError: "Não foi possível buscar agora.",
     leaguesEmptyState: "Nenhuma liga criada ainda.", btnNewLeague: "+ Nova Liga",
@@ -1288,7 +1315,7 @@ const TRANSLATIONS = {
     btnAboutApp: "About the App",
     aboutStory: "Deuce Score was born out of a love for tennis. Built by a player for players who love the game, the app makes it easy to track every match, organize tournaments and leagues with friends, and never miss a scheduled game again. A project made with care, court by court.",
     labelShareLocation: "Let other players find me nearby",
-    labelRadius: "Search Radius (km)", btnSearchNearby: "Search",
+    labelRadius: "Search Radius", btnSearchNearby: "Search",
     nearbyEmptyState: "No players found in that radius.", nearbyNeedZip: "Add a ZIP code to your profile to search.",
     btnScheduleWithPlayer: "Schedule", nearbyError: "Couldn't search right now.",
     leaguesEmptyState: "No leagues created yet.", btnNewLeague: "+ New League",
@@ -1430,7 +1457,7 @@ const TRANSLATIONS = {
     btnAboutApp: "Acerca de la App",
     aboutStory: "Deuce Score nació del amor por el tenis. Creado por un jugador para jugadores que aman el deporte, la app existe para facilitar el día a día de quien juega: seguir cada partido, organizar torneos y ligas con amigos, y nunca más perder un partido agendado. Un proyecto hecho con cariño, cancha a cancha.",
     labelShareLocation: "Permitir que otros jugadores me encuentren cerca",
-    labelRadius: "Radio de Búsqueda (km)", btnSearchNearby: "Buscar",
+    labelRadius: "Radio de Búsqueda", btnSearchNearby: "Buscar",
     nearbyEmptyState: "No se encontraron jugadores en ese radio.", nearbyNeedZip: "Agrega un código postal a tu perfil para buscar.",
     btnScheduleWithPlayer: "Agendar", nearbyError: "No se pudo buscar ahora.",
     leaguesEmptyState: "Aún no hay ligas creadas.", btnNewLeague: "+ Nueva Liga",
@@ -2156,9 +2183,18 @@ async function syncPlayerProfile(profile){
   }
 }
 
+function updateUnitLabels(){
+  const suffix = ` (${nearbyUnit})`;
+  ['nearbyRadiusLabel', 'boardRadiusLabel'].forEach(id => {
+    const el = $(id);
+    if(el) el.textContent = t('labelRadius') + suffix;
+  });
+}
+
 function setNearbyUnit(u){
   nearbyUnit = u;
   localStorage.setItem(UNIT_KEY, u);
+  updateUnitLabels();
   $('unitKm').classList.toggle('active', u === 'km');
   $('unitMi').classList.toggle('active', u === 'mi');
   $('settingsUnitKm').classList.toggle('active', u === 'km');
@@ -3015,6 +3051,7 @@ function setLanguage(lang){
   renderTournamentsList();
   renderLeaguesList();
   renderInbox();
+  updateUnitLabels();
   render();
 }
 
