@@ -123,6 +123,27 @@
   .rating-spark .bar{ flex: 1; border-radius: 2px 2px 0 0; min-height: 2px; }
   .rating-spark .bar.up{ background: var(--win); }
   .rating-spark .bar.down{ background: var(--loss); }
+  .rank-row{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-bottom:1px solid rgba(143,173,190,0.12);
+  }
+  .rank-row.me{ background: rgba(215,242,5,0.10); border-radius:8px; }
+  .rank-pos{
+    font-family:'Bebas Neue', sans-serif; font-size:18px; color:var(--muted);
+    min-width:34px;
+  }
+  .rank-row.me .rank-pos{ color: var(--ball); }
+  .rank-name{ flex:1; font-size:14px; }
+  .rank-rating{ font-family:'Bebas Neue', sans-serif; font-size:18px; color:var(--ball); }
+  .rank-sub{ font-size:11px; color:var(--muted); }
+  .rank-mine{
+    background:#123A52; border:1px solid #1E4C68; border-radius:10px;
+    padding:14px; margin-bottom:14px; text-align:center;
+  }
+  .rank-mine .big{
+    font-family:'Bebas Neue', sans-serif; font-size:34px; color:var(--ball);
+    display:block; line-height:1.1;
+  }
   .activity-line{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
   .checkbox-field .checkbox-label{
     display:flex; align-items:center; gap:10px; font-size:14px; color:var(--chalk);
@@ -514,13 +535,14 @@
   </div>
   <div class="streak-line"><span data-i18n="streakLabel">Sequência</span>: <span class="streak-val" id="streakVal">-</span></div>
   <div class="rating-line" id="ratingLine">
-    <span data-i18n="ratingLabel">Rating</span>:<span class="rating-val" id="ratingVal">-</span><span class="rating-delta" id="ratingDelta"></span><span class="rating-level" id="ratingLevel"></span>
+    <span data-i18n="ratingLabel">Rating</span>:<span class="rating-val" id="ratingVal">-</span><span class="rating-delta" id="ratingDelta"></span><span class="rating-level" id="ratingLevel"></span><span class="rating-level" id="ratingPosition"></span>
   </div>
   <div class="activity-line">
     <button type="button" class="activity-chip" id="tournamentsShortcut">🏆 <span data-i18n="chipTournament">Torneio</span></button>
     <button type="button" class="activity-chip" id="leaguesShortcut">🏅 <span data-i18n="chipLeague">Liga</span></button>
     <button type="button" class="activity-chip" id="nearbyShortcut">📍 <span data-i18n="modeLabelCourts">Quadras</span></button>
     <button type="button" class="activity-chip" id="boardShortcut">🔎 <span data-i18n="chipBoard">Procuro Jogo</span></button>
+    <button type="button" class="activity-chip" id="rankingShortcut">📊 <span data-i18n="chipRanking">Ranking</span></button>
   </div>
 </header>
 
@@ -931,6 +953,16 @@
   </div>
 </div>
 
+<div class="sheet" id="rankingSheet">
+  <h2 data-i18n="rankingTitle">Ranking Geral</h2>
+  <div class="rank-mine" id="rankingMine"></div>
+  <div id="rankingContainer"></div>
+  <p class="rating-note" data-i18n="rankingNote"></p>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeRankingBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
 <div class="sheet" id="gamesBoardSheet">
   <h2 data-i18n="boardTitle">Procuro Jogo</h2>
   <p class="rating-note" data-i18n="boardIntro"></p>
@@ -1103,6 +1135,13 @@ const TRANSLATIONS = {
     boardEmptyState: "Nenhum jogo disponível por aqui ainda.",
     boardError: "Não foi possível carregar os anúncios agora.",
     btnInvitePlayer: "Convidar",
+    chipRanking: "Ranking", rankingTitle: "Ranking Geral",
+    rankingMyPosition: "Sua colocação", rankingUnranked: "Registre uma partida para entrar no ranking.",
+    rankingOfTotal: "de", rankingPlayers: "jogadores",
+    rankingEmptyState: "Ninguém no ranking ainda. Seja o primeiro!",
+    rankingError: "Não foi possível carregar o ranking agora.",
+    rankingNote: "Ranking geral de todos os jogadores do Deuce Score. O rating de cada um é calculado a partir do próprio histórico, então a comparação fica mais precisa conforme vocês jogam entre si e contra adversários em comum.",
+    rankingMatchesShort: "partidas",
     btnSettingsShort: "Config",
     btnAboutApp: "Sobre o App",
     aboutStory: "O Deuce Score nasceu da paixão pelo tênis. Criado por um jogador para jogadores que amam o esporte, o app existe para facilitar o dia a dia de quem joga: acompanhar cada partida, organizar torneios e ligas com os amigos, e nunca mais perder um jogo agendado. Um projeto feito com carinho, quadra a quadra.",
@@ -1238,6 +1277,13 @@ const TRANSLATIONS = {
     boardEmptyState: "No games available around here yet.",
     boardError: "Could not load the posts right now.",
     btnInvitePlayer: "Invite",
+    chipRanking: "Ranking", rankingTitle: "Global Ranking",
+    rankingMyPosition: "Your position", rankingUnranked: "Record a match to enter the ranking.",
+    rankingOfTotal: "of", rankingPlayers: "players",
+    rankingEmptyState: "Nobody in the ranking yet. Be the first!",
+    rankingError: "Could not load the ranking right now.",
+    rankingNote: "Global ranking of every Deuce Score player. Each rating is computed from that player's own history, so the comparison gets sharper as you play each other and share opponents.",
+    rankingMatchesShort: "matches",
     btnSettingsShort: "Settings",
     btnAboutApp: "About the App",
     aboutStory: "Deuce Score was born out of a love for tennis. Built by a player for players who love the game, the app makes it easy to track every match, organize tournaments and leagues with friends, and never miss a scheduled game again. A project made with care, court by court.",
@@ -1373,6 +1419,13 @@ const TRANSLATIONS = {
     boardEmptyState: "Todavía no hay partidos disponibles por aquí.",
     boardError: "No se pudieron cargar los anuncios ahora.",
     btnInvitePlayer: "Invitar",
+    chipRanking: "Ranking", rankingTitle: "Ranking General",
+    rankingMyPosition: "Tu posición", rankingUnranked: "Registra un partido para entrar en el ranking.",
+    rankingOfTotal: "de", rankingPlayers: "jugadores",
+    rankingEmptyState: "Nadie en el ranking todavía. ¡Sé el primero!",
+    rankingError: "No se pudo cargar el ranking ahora.",
+    rankingNote: "Ranking general de todos los jugadores de Deuce Score. El rating de cada uno se calcula a partir de su propio historial, así que la comparación gana precisión a medida que juegan entre sí y contra rivales en común.",
+    rankingMatchesShort: "partidos",
     btnSettingsShort: "Config",
     btnAboutApp: "Acerca de la App",
     aboutStory: "Deuce Score nació del amor por el tenis. Creado por un jugador para jugadores que aman el deporte, la app existe para facilitar el día a día de quien juega: seguir cada partido, organizar torneos y ligas con amigos, y nunca más perder un partido agendado. Un proyecto hecho con cariño, cancha a cancha.",
@@ -2110,6 +2163,82 @@ function setNearbyUnit(u){
   $('unitMi').classList.toggle('active', u === 'mi');
   $('settingsUnitKm').classList.toggle('active', u === 'km');
   $('settingsUnitMi').classList.toggle('active', u === 'mi');
+}
+
+/* ---------------- Global ranking ----------------
+   The rating itself is computed on-device, so it has to be pushed up
+   before it can be ranked. lastKnownPosition lets the header show the
+   placing without refetching on every render.                          */
+let lastKnownPosition = null;
+let lastKnownTotal = null;
+
+async function syncRating(){
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+  if(!profile.email || !profile.emailVerified) return;
+  const data = computeRatings();
+  try{
+    await fetch('/api/post-rating', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: profile.email,
+        rating: data.played ? data.rating : null,
+        level: data.played ? levelFromRating(data.rating) : '',
+        played: data.played
+      })
+    });
+  }catch(e){
+    console.log('Sync rating error:', e);
+  }
+}
+
+async function loadRanking(){
+  const mine = $('rankingMine');
+  const container = $('rankingContainer');
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+
+  container.innerHTML = `<div class="stats-empty">…</div>`;
+  try{
+    const res = await fetch('/api/get-ranking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email || '' })
+    });
+    const data = await res.json();
+
+    lastKnownPosition = data.myPosition || null;
+    lastKnownTotal = data.total || null;
+    updateRatingDisplay();
+
+    if(data.myPosition){
+      mine.style.display = 'block';
+      mine.innerHTML =
+        `<span class="rank-sub">${esc(t('rankingMyPosition'))}</span>` +
+        `<span class="big">#${data.myPosition}</span>` +
+        `<span class="rank-sub">${esc(t('rankingOfTotal'))} ${data.total} ${esc(t('rankingPlayers'))}</span>`;
+    } else {
+      mine.style.display = 'block';
+      mine.innerHTML = `<span class="rank-sub">${esc(t('rankingUnranked'))}</span>`;
+    }
+
+    const top = Array.isArray(data.top) ? data.top : [];
+    container.innerHTML = top.length
+      ? top.map(r => `
+        <div class="rank-row ${r.isMe ? 'me' : ''}">
+          <span class="rank-pos">${r.position}</span>
+          <span class="rank-name">${esc(r.name || '?')}<br>
+            <span class="rank-sub">${r.level ? t('ratingLevelLabel') + ' ' + esc(r.level) + ' · ' : ''}${r.played} ${esc(t('rankingMatchesShort'))}</span>
+          </span>
+          <span class="rank-rating">${r.rating}</span>
+        </div>`).join('')
+      : `<div class="stats-empty">${t('rankingEmptyState')}</div>`;
+  }catch(e){
+    console.log('Load ranking error:', e);
+    mine.style.display = 'none';
+    container.innerHTML = `<div class="stats-empty">${t('rankingError')}</div>`;
+  }
 }
 
 /* ---------------- "Looking for a game" board ----------------
@@ -2857,6 +2986,7 @@ function handleSave(){
   }
   saveMatches();
   render();
+  syncRating();
   closeAllSheets();
 
   if(savedMatch){
@@ -3058,6 +3188,11 @@ function updateRatingDisplay(){
   line.style.display = 'block';
   $('ratingVal').textContent = data.rating;
   $('ratingLevel').textContent = `${t('ratingLevelLabel')} ${levelFromRating(data.rating)}`;
+
+  const posEl = $('ratingPosition');
+  if(posEl){
+    posEl.textContent = lastKnownPosition ? `· #${lastKnownPosition}` : '';
+  }
 
   const last = data.history[data.history.length - 1];
   const deltaEl = $('ratingDelta');
@@ -3742,6 +3877,11 @@ $('nearbyShortcut').addEventListener('click', () => {
   setNearbyMode('courts');
   openSheet('nearbyPlayersSheet');
 });
+$('rankingShortcut').addEventListener('click', () => {
+  openSheet('rankingSheet');
+  syncRating().then(loadRanking);
+});
+$('closeRankingBtn').addEventListener('click', closeAllSheets);
 $('boardShortcut').addEventListener('click', () => {
   openSheet('gamesBoardSheet');
   if(!$('bDate').value) $('bDate').value = new Date().toISOString().slice(0,10);
