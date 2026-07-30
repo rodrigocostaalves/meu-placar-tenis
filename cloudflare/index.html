@@ -393,6 +393,46 @@
     font-family: inherit;
   }
   .field textarea{ resize: vertical; min-height: 50px; }
+
+  /* The native <select> option list is drawn by Android and can't be styled,
+     so the real select is kept for its value/events and hidden, while this
+     takes over the visuals. */
+  .app-select-wrap{ position: relative; }
+  .app-select-wrap select{
+    position:absolute; opacity:0; pointer-events:none; width:0; height:0;
+  }
+  .app-select-btn{
+    width:100%; text-align:left; background: var(--panel);
+    border: 1px solid var(--panel-line);
+    color: var(--chalk);
+    border-radius: 8px;
+    padding: 11px 34px 11px 12px;
+    font-size: 15px;
+    font-family: inherit;
+    cursor: pointer;
+    position: relative;
+  }
+  .app-select-btn::after{
+    content:''; position:absolute; right:14px; top:50%;
+    width:7px; height:7px; margin-top:-5px;
+    border-right:2px solid var(--muted); border-bottom:2px solid var(--muted);
+    transform: rotate(45deg);
+  }
+  .app-select-wrap.open .app-select-btn{ border-color: var(--ball); }
+  .app-select-menu{
+    display:none; position:absolute; left:0; right:0; top:calc(100% + 4px);
+    background: var(--court-deep); border:1px solid var(--panel-line);
+    border-radius:10px; overflow:hidden; z-index:40;
+    max-height: 260px; overflow-y:auto;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+  }
+  .app-select-wrap.open .app-select-menu{ display:block; }
+  .app-select-option{
+    padding: 12px 14px; font-size: 15px; color: var(--chalk); cursor:pointer;
+    border-bottom: 1px solid rgba(143,173,190,0.12);
+  }
+  .app-select-option:last-child{ border-bottom:none; }
+  .app-select-option.selected{ color: var(--ball); background: rgba(215,242,5,0.10); }
   .toggle-group{ display:flex; gap:10px; }
   .toggle-group button{
     flex:1; padding: 12px; border-radius: 8px;
@@ -1645,6 +1685,68 @@ function applyLanguage(){
     btn.classList.toggle('active', btn.dataset.lang === currentLang);
   });
 }
+
+/* Wraps a native <select> so it looks like the rest of the app. The select
+   itself stays in the DOM and keeps holding the value, so every existing
+   reader ($('recapMonth').value, populateRecapMonths rewriting innerHTML,
+   change listeners) goes on working untouched. */
+function enhanceSelect(id){
+  const sel = $(id);
+  if(!sel || sel.dataset.enhanced === '1') return;
+  sel.dataset.enhanced = '1';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'app-select-wrap';
+  sel.parentNode.insertBefore(wrap, sel);
+  wrap.appendChild(sel);
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'app-select-btn';
+  wrap.appendChild(btn);
+
+  const menu = document.createElement('div');
+  menu.className = 'app-select-menu';
+  wrap.appendChild(menu);
+
+  function syncLabel(){
+    const opt = sel.options[sel.selectedIndex];
+    btn.textContent = opt ? opt.textContent : '';
+  }
+
+  function buildMenu(){
+    // rebuilt on every open so dynamically filled selects stay correct
+    menu.innerHTML = '';
+    [...sel.options].forEach((opt, i) => {
+      const row = document.createElement('div');
+      row.className = 'app-select-option' + (i === sel.selectedIndex ? ' selected' : '');
+      row.textContent = opt.textContent;
+      row.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sel.selectedIndex = i;
+        syncLabel();
+        wrap.classList.remove('open');
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      menu.appendChild(row);
+    });
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const wasOpen = wrap.classList.contains('open');
+    document.querySelectorAll('.app-select-wrap.open').forEach(w => w.classList.remove('open'));
+    if(!wasOpen){ buildMenu(); wrap.classList.add('open'); }
+  });
+
+  sel.addEventListener('change', syncLabel);
+  sel._syncAppSelect = syncLabel;
+  syncLabel();
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.app-select-wrap.open').forEach(w => w.classList.remove('open'));
+});
 
 function esc(str){
   const div = document.createElement('div');
@@ -2940,6 +3042,7 @@ function populateRecapMonths(){
   const previous = sel.value;
   sel.innerHTML = keys.map(k => `<option value="${k}">${esc(monthLabel(k))}</option>`).join('');
   if(keys.includes(previous)) sel.value = previous;
+  if(sel._syncAppSelect) sel._syncAppSelect();
 }
 
 function recapData(monthKey){
@@ -4248,6 +4351,8 @@ function openLeagueMatchSheet(){
   $('lmP1').innerHTML = options;
   $('lmP2').innerHTML = options;
   $('lmP2').selectedIndex = 1;
+  if($('lmP1')._syncAppSelect) $('lmP1')._syncAppSelect();
+  if($('lmP2')._syncAppSelect) $('lmP2')._syncAppSelect();
   updateLeagueWinnerButtons();
   closeAllSheets();
   openSheet('leagueMatchSheet');
@@ -4543,6 +4648,7 @@ applyLanguage();
 updateMatchSheetTexts();
 render();
 setNearbyUnit(nearbyUnit);
+['recapMonth', 'courtAccessFilter', 'lmP1', 'lmP2'].forEach(enhanceSelect);
 refreshSyncStatus();
 autoRestoreIfEmpty();
 
