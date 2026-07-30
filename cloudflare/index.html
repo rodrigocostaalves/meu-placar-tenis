@@ -150,6 +150,14 @@
     background:#123A52; border:1px solid #1E4C68; border-radius:10px;
     padding:14px; margin-bottom:14px; text-align:center;
   }
+  .court-tag{
+    display:inline-block; font-size:10px; letter-spacing:1px;
+    text-transform:uppercase; padding:2px 7px; border-radius:10px;
+    margin-top:4px; border:1px solid var(--panel-line); color:var(--muted);
+  }
+  .court-tag.public{ color:#5FCB8D; border-color:#5FCB8D; }
+  .court-tag.fee{ color:#D7F205; border-color:#D7F205; }
+  .court-tag.private{ color:#E06B4E; border-color:#E06B4E; }
   .rank-mine .big{
     font-family:'Bebas Neue', sans-serif; font-size:34px; color:var(--ball);
     display:block; line-height:1.1;
@@ -1060,7 +1068,17 @@
       </div>
     </div>
   </div>
+  <div class="field">
+    <label data-i18n="courtAccessFilterLabel">Tipo de Acesso</label>
+    <select id="courtAccessFilter">
+      <option value="all" data-i18n="courtFilterAll">Todas</option>
+      <option value="public" data-i18n="courtFilterPublic">Públicas</option>
+      <option value="fee" data-i18n="courtFilterFee">Pagas</option>
+      <option value="private" data-i18n="courtFilterPrivate">Privadas / Condomínio</option>
+    </select>
+  </div>
   <button type="button" class="search-btn" id="searchNearbyBtn" data-i18n="btnSearchNearby">Buscar</button>
+  <p class="rating-note" data-i18n="courtAccessNote"></p>
   <div class="stats-list" id="nearbyContainer" style="margin-top:16px"></div>
   <div class="sheet-actions">
     <button class="btn-cancel" id="closeNearbyBtn" data-i18n="btnClose">Fechar</button>
@@ -1206,6 +1224,12 @@ const TRANSLATIONS = {
     syncError: "Não foi possível falar com o servidor agora.",
     syncAutoNote: "Salvo automaticamente a cada alteração.",
     syncSaving: "Salvando…", syncFailed: "⚠ O último backup automático falhou. Toque em Salvar na Nuvem.",
+    courtAccessFilterLabel: "Tipo de Acesso",
+    courtFilterAll: "Todas", courtFilterPublic: "Públicas", courtFilterFee: "Pagas", courtFilterPrivate: "Privadas / Condomínio",
+    courtAccessPublic: "Pública", courtAccessFee: "Paga", courtAccessPrivate: "Privada",
+    courtAccessUnknown: "Não informado",
+    courtAccessNote: "O tipo de acesso vem do OpenStreetMap e nem toda quadra tem essa informação preenchida. Ao filtrar por um tipo, as quadras sem informação não aparecem.",
+    courtsFilteredEmpty: "Nenhuma quadra desse tipo por aqui. Tente \"Todas\".",
     btnSettingsShort: "Config",
     btnAboutApp: "Sobre o App",
     aboutStory: "O Deuce Score nasceu da paixão pelo tênis. Criado por um jogador para jogadores que amam o esporte, o app existe para facilitar o dia a dia de quem joga: acompanhar cada partida, organizar torneios e ligas com os amigos, e nunca mais perder um jogo agendado. Um projeto feito com carinho, quadra a quadra.",
@@ -1369,6 +1393,12 @@ const TRANSLATIONS = {
     syncError: "Could not reach the server right now.",
     syncAutoNote: "Saved automatically on every change.",
     syncSaving: "Saving…", syncFailed: "⚠ The last automatic backup failed. Tap Save to Cloud.",
+    courtAccessFilterLabel: "Access Type",
+    courtFilterAll: "All", courtFilterPublic: "Public", courtFilterFee: "Paid", courtFilterPrivate: "Private / Residential",
+    courtAccessPublic: "Public", courtAccessFee: "Paid", courtAccessPrivate: "Private",
+    courtAccessUnknown: "Not specified",
+    courtAccessNote: "Access type comes from OpenStreetMap and not every court has it filled in. When you filter by a type, courts without that information are hidden.",
+    courtsFilteredEmpty: "No courts of that type around here. Try \"All\".",
     btnSettingsShort: "Settings",
     btnAboutApp: "About the App",
     aboutStory: "Deuce Score was born out of a love for tennis. Built by a player for players who love the game, the app makes it easy to track every match, organize tournaments and leagues with friends, and never miss a scheduled game again. A project made with care, court by court.",
@@ -1532,6 +1562,12 @@ const TRANSLATIONS = {
     syncError: "No se pudo contactar con el servidor ahora.",
     syncAutoNote: "Se guarda automáticamente en cada cambio.",
     syncSaving: "Guardando…", syncFailed: "⚠ La última copia automática falló. Toca Guardar en la Nube.",
+    courtAccessFilterLabel: "Tipo de Acceso",
+    courtFilterAll: "Todas", courtFilterPublic: "Públicas", courtFilterFee: "De pago", courtFilterPrivate: "Privadas / Condominio",
+    courtAccessPublic: "Pública", courtAccessFee: "De pago", courtAccessPrivate: "Privada",
+    courtAccessUnknown: "Sin información",
+    courtAccessNote: "El tipo de acceso viene de OpenStreetMap y no todas las canchas lo tienen indicado. Al filtrar por un tipo, las canchas sin esa información no aparecen.",
+    courtsFilteredEmpty: "No hay canchas de ese tipo por aquí. Prueba \"Todas\".",
     btnSettingsShort: "Config",
     btnAboutApp: "Acerca de la App",
     aboutStory: "Deuce Score nació del amor por el tenis. Creado por un jugador para jugadores que aman el deporte, la app existe para facilitar el día a día de quien juega: seguir cada partido, organizar torneos y ligas con amigos, y nunca más perder un partido agendado. Un proyecto hecho con cariño, cancha a cancha.",
@@ -1793,6 +1829,28 @@ function haversineKmClient(lat1, lng1, lat2, lng2){
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+/* OpenStreetMap already sends these tags in the response we were throwing
+   away. access/fee is the closest thing OSM has to "public park vs paid club
+   vs condo court" — there is no dedicated condominium tag, so a gated
+   residential court shows up as access=private.                          */
+function courtAccess(tags){
+  const g = tags || {};
+  const fee = (g.fee || '').toLowerCase();
+  const access = (g.access || '').toLowerCase();
+
+  if(fee === 'yes' || access === 'customers') return 'fee';
+  if(access === 'private' || access === 'no' || g.club) return 'private';
+  if(access === 'yes' || access === 'permissive' || fee === 'no') return 'public';
+  return 'unknown';
+}
+
+function courtAccessLabel(kind){
+  if(kind === 'fee') return t('courtAccessFee');
+  if(kind === 'private') return t('courtAccessPrivate');
+  if(kind === 'public') return t('courtAccessPublic');
+  return t('courtAccessUnknown');
+}
+
 async function searchCourts(){
   const coords = await getMyCoords();
   if(!coords){ showAlert(t('nearbyNeedZip')); return; }
@@ -1813,31 +1871,39 @@ async function searchCourts(){
       if(lat == null || lon == null) return null;
       return {
         name: (el.tags && el.tags.name) || t('courtDefaultName'),
+        access: courtAccess(el.tags),
         lat, lon,
         distanceKm: haversineKmClient(coords.lat, coords.lng, lat, lon)
       };
     }).filter(Boolean).sort((a,b) => a.distanceKm - b.distanceKm);
-    renderCourts(courts);
+
+    const wanted = $('courtAccessFilter').value;
+    // Unknowns stay visible under "all" — most OSM courts carry no access tag,
+    // so hiding them by default would empty the list.
+    const shown = wanted === 'all' ? courts : courts.filter(c => c.access === wanted);
+    renderCourts(shown, courts.length > 0 && shown.length === 0);
   }catch(e){
     console.log('Search courts error:', e);
     $('nearbyContainer').innerHTML = `<div class="stats-empty">${t('nearbyError')}</div>`;
   }
 }
 
-function renderCourts(courts){
+function renderCourts(courts, filteredOut){
   const container = $('nearbyContainer');
   if(courts.length === 0){
-    container.innerHTML = `<div class="stats-empty">${t('courtsEmptyState')}</div>`;
+    container.innerHTML = `<div class="stats-empty">${filteredOut ? t('courtsFilteredEmpty') : t('courtsEmptyState')}</div>`;
     return;
   }
   container.innerHTML = courts.map((c, i) => {
     const dist = nearbyUnit === 'mi' ? c.distanceKm * 0.621371 : c.distanceKm;
     const unitLabel = nearbyUnit === 'mi' ? 'mi' : 'km';
+    const tagClass = c.access === 'unknown' ? '' : c.access;
     return `
     <div class="nearby-row">
       <div class="nearby-info">
         <div class="nearby-name">${esc(c.name)}</div>
         <div class="nearby-dist">${dist.toFixed(1)} ${unitLabel}</div>
+        <span class="court-tag ${tagClass}">${esc(courtAccessLabel(c.access))}</span>
       </div>
       <button type="button" data-idx="${i}">${t('btnOpenMap')}</button>
     </div>`;
@@ -4427,6 +4493,9 @@ $('searchNearbyBtn').addEventListener('click', () => {
 $('unitKm').addEventListener('click', () => setNearbyUnit('km'));
 $('unitMi').addEventListener('click', () => setNearbyUnit('mi'));
 $('closeNearbyBtn').addEventListener('click', closeAllSheets);
+$('courtAccessFilter').addEventListener('change', () => {
+  if($('nearbyContainer').innerHTML.trim() !== '') searchCourts();
+});
 $('newLeagueBtn').addEventListener('click', () => {
   newLeaguePlayers = [];
   $('lgName').value = '';
