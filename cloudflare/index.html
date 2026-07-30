@@ -520,6 +520,7 @@
     <button type="button" class="activity-chip" id="tournamentsShortcut">🏆 <span data-i18n="chipTournament">Torneio</span></button>
     <button type="button" class="activity-chip" id="leaguesShortcut">🏅 <span data-i18n="chipLeague">Liga</span></button>
     <button type="button" class="activity-chip" id="nearbyShortcut">📍 <span data-i18n="modeLabelCourts">Quadras</span></button>
+    <button type="button" class="activity-chip" id="boardShortcut">🔎 <span data-i18n="chipBoard">Procuro Jogo</span></button>
   </div>
 </header>
 
@@ -930,6 +931,43 @@
   </div>
 </div>
 
+<div class="sheet" id="gamesBoardSheet">
+  <h2 data-i18n="boardTitle">Procuro Jogo</h2>
+  <p class="rating-note" data-i18n="boardIntro"></p>
+
+  <h3 data-i18n="boardMineTitle">Meu Anúncio</h3>
+  <div id="boardMineStatus" class="stats-list" style="margin-bottom:12px"></div>
+  <div class="field">
+    <label data-i18n="boardLabelWhen">Quando</label>
+    <div style="display:flex; gap:8px;">
+      <input type="date" id="bDate" style="flex:1">
+      <input type="time" id="bTime" style="flex:1">
+    </div>
+  </div>
+  <div class="field">
+    <label data-i18n="boardLabelWhere">Onde</label>
+    <input type="text" id="bLocation" data-i18n-ph="boardPhWhere" placeholder="Ex: Quadra do clube">
+  </div>
+  <div class="field">
+    <label data-i18n="boardLabelNote">Observação (opcional)</label>
+    <input type="text" id="bNote" data-i18n-ph="boardPhNote" placeholder="Ex: jogo tranquilo, 1h30">
+  </div>
+  <button type="button" class="search-btn" id="publishListingBtn" data-i18n="btnPublishListing">Publicar</button>
+  <button type="button" class="btn-cancel" id="removeListingBtn" data-i18n="btnRemoveListing" style="width:100%; margin-top:8px; display:none;">Remover meu anúncio</button>
+
+  <h3 data-i18n="boardOthersTitle" style="margin-top:26px">Jogos Disponíveis</h3>
+  <div class="field">
+    <label data-i18n="labelRadius">Raio de Busca</label>
+    <input type="number" id="boardRadius" value="25" min="1" max="500">
+  </div>
+  <button type="button" class="search-btn" id="searchListingsBtn" data-i18n="btnSearchNearby">Buscar</button>
+  <div class="stats-list" id="boardContainer" style="margin-top:16px"></div>
+
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeBoardBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
 <div class="sheet" id="nearbyPlayersSheet">
   <h2 data-i18n="modeLabelCourts">Quadras</h2>
   <div class="toggle-group" style="margin-bottom:14px; display:none">
@@ -1051,6 +1089,20 @@ const TRANSLATIONS = {
     ratingCurrent: "Rating atual", ratingBest: "Melhor rating", ratingPlayed: "Partidas contabilizadas",
     ratingExplain: "O rating começa em 1500 e sobe ou desce a cada partida registrada, conforme o nível do adversário e a diferença de games. Vencer alguém com rating alto vale mais. É recalculado do zero a partir do seu histórico, então editar ou apagar uma partida ajusta tudo automaticamente.",
     ratingEmptyState: "Registre uma partida para começar seu rating.",
+    chipBoard: "Procuro Jogo", boardTitle: "Procuro Jogo",
+    boardIntro: "Publique um horário em que você quer jogar e veja quem mais está procurando jogo perto de você. Seu anúncio expira sozinho depois do horário marcado.",
+    boardMineTitle: "Meu Anúncio", boardOthersTitle: "Jogos Disponíveis",
+    boardLabelWhen: "Quando", boardLabelWhere: "Onde", boardLabelNote: "Observação (opcional)",
+    boardPhWhere: "Ex: Quadra do clube", boardPhNote: "Ex: jogo tranquilo, 1h30",
+    btnPublishListing: "Publicar Anúncio", btnRemoveListing: "Remover meu anúncio",
+    boardNoListing: "Você não tem anúncio publicado.",
+    boardMineActive: "Publicado para",
+    boardPublished: "Anúncio publicado!", boardRemoved: "Anúncio removido.",
+    boardNeedProfile: "Salve seu perfil com e-mail verificado antes de publicar.",
+    boardNeedWhen: "Escolha a data e a hora.",
+    boardEmptyState: "Nenhum jogo disponível por aqui ainda.",
+    boardError: "Não foi possível carregar os anúncios agora.",
+    btnInvitePlayer: "Convidar",
     btnSettingsShort: "Config",
     btnAboutApp: "Sobre o App",
     aboutStory: "O Deuce Score nasceu da paixão pelo tênis. Criado por um jogador para jogadores que amam o esporte, o app existe para facilitar o dia a dia de quem joga: acompanhar cada partida, organizar torneios e ligas com os amigos, e nunca mais perder um jogo agendado. Um projeto feito com carinho, quadra a quadra.",
@@ -1172,6 +1224,20 @@ const TRANSLATIONS = {
     ratingCurrent: "Current rating", ratingBest: "Best rating", ratingPlayed: "Matches counted",
     ratingExplain: "Your rating starts at 1500 and moves after every recorded match, based on your opponent's level and the games margin. Beating a higher-rated player is worth more. It is recalculated from scratch off your history, so editing or deleting a match adjusts everything automatically.",
     ratingEmptyState: "Record a match to start your rating.",
+    chipBoard: "Find a Game", boardTitle: "Find a Game",
+    boardIntro: "Post a time you want to play and see who else is looking for a game near you. Your post expires on its own after the scheduled time.",
+    boardMineTitle: "My Post", boardOthersTitle: "Available Games",
+    boardLabelWhen: "When", boardLabelWhere: "Where", boardLabelNote: "Note (optional)",
+    boardPhWhere: "e.g. Club courts", boardPhNote: "e.g. casual hit, 1h30",
+    btnPublishListing: "Post It", btnRemoveListing: "Remove my post",
+    boardNoListing: "You have no post published.",
+    boardMineActive: "Posted for",
+    boardPublished: "Post published!", boardRemoved: "Post removed.",
+    boardNeedProfile: "Save your profile with a verified email before posting.",
+    boardNeedWhen: "Pick a date and time.",
+    boardEmptyState: "No games available around here yet.",
+    boardError: "Could not load the posts right now.",
+    btnInvitePlayer: "Invite",
     btnSettingsShort: "Settings",
     btnAboutApp: "About the App",
     aboutStory: "Deuce Score was born out of a love for tennis. Built by a player for players who love the game, the app makes it easy to track every match, organize tournaments and leagues with friends, and never miss a scheduled game again. A project made with care, court by court.",
@@ -1293,6 +1359,20 @@ const TRANSLATIONS = {
     ratingCurrent: "Rating actual", ratingBest: "Mejor rating", ratingPlayed: "Partidos contabilizados",
     ratingExplain: "El rating empieza en 1500 y sube o baja en cada partido registrado, según el nivel del rival y la diferencia de games. Ganarle a alguien con rating alto vale más. Se recalcula desde cero a partir de tu historial, así que editar o borrar un partido lo ajusta todo automáticamente.",
     ratingEmptyState: "Registra un partido para empezar tu rating.",
+    chipBoard: "Busco Partido", boardTitle: "Busco Partido",
+    boardIntro: "Publica un horario en el que quieres jugar y mira quién más está buscando partido cerca de ti. Tu anuncio expira solo después de la hora indicada.",
+    boardMineTitle: "Mi Anuncio", boardOthersTitle: "Partidos Disponibles",
+    boardLabelWhen: "Cuándo", boardLabelWhere: "Dónde", boardLabelNote: "Nota (opcional)",
+    boardPhWhere: "Ej: Canchas del club", boardPhNote: "Ej: partido tranquilo, 1h30",
+    btnPublishListing: "Publicar Anuncio", btnRemoveListing: "Eliminar mi anuncio",
+    boardNoListing: "No tienes ningún anuncio publicado.",
+    boardMineActive: "Publicado para",
+    boardPublished: "¡Anuncio publicado!", boardRemoved: "Anuncio eliminado.",
+    boardNeedProfile: "Guarda tu perfil con el correo verificado antes de publicar.",
+    boardNeedWhen: "Elige la fecha y la hora.",
+    boardEmptyState: "Todavía no hay partidos disponibles por aquí.",
+    boardError: "No se pudieron cargar los anuncios ahora.",
+    btnInvitePlayer: "Invitar",
     btnSettingsShort: "Config",
     btnAboutApp: "Acerca de la App",
     aboutStory: "Deuce Score nació del amor por el tenis. Creado por un jugador para jugadores que aman el deporte, la app existe para facilitar el día a día de quien juega: seguir cada partido, organizar torneos y ligas con amigos, y nunca más perder un partido agendado. Un proyecto hecho con cariño, cancha a cancha.",
@@ -2030,6 +2110,194 @@ function setNearbyUnit(u){
   $('unitMi').classList.toggle('active', u === 'mi');
   $('settingsUnitKm').classList.toggle('active', u === 'km');
   $('settingsUnitMi').classList.toggle('active', u === 'mi');
+}
+
+/* ---------------- "Looking for a game" board ----------------
+   Unlike the nearby-players search (which only tells you who exists),
+   a listing carries intent and a time, so it works even when only a
+   handful of players are online.                                      */
+
+function boardProfile(){
+  const raw = localStorage.getItem(PROFILE_KEY);
+  return raw ? JSON.parse(raw) : {};
+}
+
+function boardWhenLabel(iso){
+  const d = new Date(iso);
+  if(Number.isNaN(d.getTime())) return iso || '';
+  const date = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  const time = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  return `${date} ${time}`;
+}
+
+async function loadMyListing(){
+  const el = $('boardMineStatus');
+  const removeBtn = $('removeListingBtn');
+  const profile = boardProfile();
+  if(!profile.email){
+    el.innerHTML = `<div class="stats-empty">${t('boardNoListing')}</div>`;
+    removeBtn.style.display = 'none';
+    return;
+  }
+  try{
+    const res = await fetch('/api/get-my-listing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    if(data.listing){
+      const l = data.listing;
+      const parts = [boardWhenLabel(l.dateTime)];
+      if(l.location) parts.push(l.location);
+      el.innerHTML = statLineHTML(t('boardMineActive'), parts.join(' · '));
+      removeBtn.style.display = 'block';
+      // let the form mirror what is live, so editing is just re-publishing
+      const d = new Date(l.dateTime);
+      if(!Number.isNaN(d.getTime())){
+        $('bDate').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        $('bTime').value = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      }
+      $('bLocation').value = l.location || '';
+      $('bNote').value = l.note || '';
+    } else {
+      el.innerHTML = `<div class="stats-empty">${t('boardNoListing')}</div>`;
+      removeBtn.style.display = 'none';
+    }
+  }catch(e){
+    console.log('Load my listing error:', e);
+    el.innerHTML = `<div class="stats-empty">${t('boardError')}</div>`;
+    removeBtn.style.display = 'none';
+  }
+}
+
+async function publishListing(){
+  const profile = boardProfile();
+  if(!profile.email || !profile.emailVerified){
+    showAlert(t('boardNeedProfile'));
+    return;
+  }
+  const date = $('bDate').value;
+  const time = $('bTime').value;
+  if(!date || !time){
+    showAlert(t('boardNeedWhen'));
+    return;
+  }
+  const rating = computeRatings();
+  try{
+    const res = await fetch('/api/post-listing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: profile.email,
+        dateTime: new Date(`${date}T${time}`).toISOString(),
+        location: $('bLocation').value.trim(),
+        note: $('bNote').value.trim(),
+        rating: rating.played ? rating.rating : null,
+        level: rating.played ? levelFromRating(rating.rating) : '',
+        format: 'individual',
+        surface: 'rapida',
+        matchType: 'amistoso'
+      })
+    });
+    const data = await res.json();
+    if(data.ok){
+      showAlert(t('boardPublished'));
+      loadMyListing();
+      searchListings();
+    } else {
+      showAlert(t('boardError'));
+    }
+  }catch(e){
+    console.log('Publish listing error:', e);
+    showAlert(t('boardError'));
+  }
+}
+
+async function removeListing(){
+  const profile = boardProfile();
+  if(!profile.email) return;
+  try{
+    await fetch('/api/delete-listing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    showAlert(t('boardRemoved'));
+    loadMyListing();
+  }catch(e){
+    console.log('Remove listing error:', e);
+    showAlert(t('boardError'));
+  }
+}
+
+async function searchListings(){
+  const container = $('boardContainer');
+  const profile = boardProfile();
+  if(!profile.email){
+    container.innerHTML = `<div class="stats-empty">${t('boardNeedProfile')}</div>`;
+    return;
+  }
+  const radiusInput = parseFloat($('boardRadius').value) || 25;
+  const radiusKm = nearbyUnit === 'mi' ? radiusInput * 1.60934 : radiusInput;
+  container.innerHTML = `<div class="stats-empty">…</div>`;
+  try{
+    const res = await fetch('/api/get-listings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email, radiusKm })
+    });
+    const data = await res.json();
+    renderListings(Array.isArray(data.listings) ? data.listings : []);
+  }catch(e){
+    console.log('Search listings error:', e);
+    container.innerHTML = `<div class="stats-empty">${t('boardError')}</div>`;
+  }
+}
+
+function renderListings(listings){
+  const container = $('boardContainer');
+  if(!listings.length){
+    container.innerHTML = `<div class="stats-empty">${t('boardEmptyState')}</div>`;
+    return;
+  }
+  const unitLabel = nearbyUnit === 'mi' ? 'mi' : 'km';
+  container.innerHTML = listings.map((l, i) => {
+    const bits = [boardWhenLabel(l.dateTime)];
+    if(l.location) bits.push(l.location);
+    if(l.distanceKm != null){
+      const d = nearbyUnit === 'mi' ? l.distanceKm * 0.621371 : l.distanceKm;
+      bits.push(`${d.toFixed(1)} ${unitLabel}`);
+    }
+    const lvl = l.level ? ` · ${t('ratingLevelLabel')} ${l.level}` : '';
+    return `
+    <div class="nearby-row">
+      <div class="nearby-info">
+        <div class="nearby-name">${esc(l.name || '?')}${lvl}</div>
+        <div class="nearby-dist">${esc(bits.join(' · '))}</div>
+        ${l.note ? `<div class="nearby-dist">${esc(l.note)}</div>` : ''}
+      </div>
+      <button type="button" data-bidx="${i}">${t('btnInvitePlayer')}</button>
+    </div>
+  `;
+  }).join('');
+
+  container.querySelectorAll('button[data-bidx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const l = listings[parseInt(btn.dataset.bidx, 10)];
+      // hand the whole thing to the existing invite flow, pre-filled
+      closeAllSheets();
+      openMatchSheet(null, true);
+      $('fOpponent').value = l.name || '';
+      $('fOpponentEmail').value = l.email || '';
+      $('fLocation').value = l.location || '';
+      const d = new Date(l.dateTime);
+      if(!Number.isNaN(d.getTime())){
+        $('fDate').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        $('fTime').value = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      }
+    });
+  });
 }
 
 async function searchNearby(){
@@ -3474,6 +3742,16 @@ $('nearbyShortcut').addEventListener('click', () => {
   setNearbyMode('courts');
   openSheet('nearbyPlayersSheet');
 });
+$('boardShortcut').addEventListener('click', () => {
+  openSheet('gamesBoardSheet');
+  if(!$('bDate').value) $('bDate').value = new Date().toISOString().slice(0,10);
+  loadMyListing();
+  searchListings();
+});
+$('publishListingBtn').addEventListener('click', publishListing);
+$('removeListingBtn').addEventListener('click', removeListing);
+$('searchListingsBtn').addEventListener('click', searchListings);
+$('closeBoardBtn').addEventListener('click', closeAllSheets);
 $('modePlayers').addEventListener('click', () => setNearbyMode('players'));
 $('modeCourts').addEventListener('click', () => setNearbyMode('courts'));
 $('useMyLocationBtn').addEventListener('click', useMyLocation);
