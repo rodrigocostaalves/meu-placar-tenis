@@ -154,12 +154,12 @@
     font-family:'Bebas Neue', sans-serif; font-size:34px; color:var(--ball);
     display:block; line-height:1.1;
   }
-  /* every chip flexes, so a wrapped row divides evenly instead of
-     leaving a ragged gap on the right */
+  /* natural width first so labels never clip, wrap when the row is full,
+     then grow to fill the row so there is no ragged gap on the right */
   .activity-line{
     display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;
   }
-  .activity-line .activity-chip{ flex:1 1 0; min-width:0; }
+  .activity-line .activity-chip{ flex:1 0 auto; }
   .checkbox-field .checkbox-label{
     display:flex; align-items:center; gap:10px; font-size:14px; color:var(--chalk);
     text-transform:none; letter-spacing:0; cursor:pointer;
@@ -167,7 +167,7 @@
   .checkbox-field input[type="checkbox"]{ width:18px; height:18px; flex-shrink:0; accent-color: var(--ball); }
   .activity-chip{
     background: var(--panel); border:1px solid var(--panel-line); color:var(--chalk);
-    border-radius:20px; padding:8px 10px; font-size:12.5px; cursor:pointer;
+    border-radius:20px; padding:8px 12px; font-size:12.5px; cursor:pointer;
     font-family:inherit; white-space:nowrap; text-align:center;
   }
 
