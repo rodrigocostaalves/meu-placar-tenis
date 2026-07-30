@@ -1242,6 +1242,8 @@ const TRANSLATIONS = {
     btnInvitePlayer: "Convidar",
     chipRanking: "Ranking", rankingTitle: "Ranking Geral",
     rankingMyPosition: "Sua colocação", rankingUnranked: "Registre uma partida para entrar no ranking.",
+    rankingNeedEmail: "Para entrar no ranking: cadastre seu e-mail no perfil, confirme o código de verificação e registre uma partida.",
+    rankingNeedVerify: "Falta confirmar seu e-mail. Abra o perfil, digite o código de verificação e registre uma partida para entrar no ranking.",
     rankingOfTotal: "de", rankingPlayers: "jogadores",
     rankingEmptyState: "Ninguém no ranking ainda. Seja o primeiro!",
     rankingError: "Não foi possível carregar o ranking agora.",
@@ -1415,6 +1417,8 @@ const TRANSLATIONS = {
     btnInvitePlayer: "Invite",
     chipRanking: "Ranking", rankingTitle: "Global Ranking",
     rankingMyPosition: "Your position", rankingUnranked: "Record a match to enter the ranking.",
+    rankingNeedEmail: "To join the ranking: add your email in the profile, confirm the verification code, and record a match.",
+    rankingNeedVerify: "Your email still needs confirming. Open the profile, enter the verification code, and record a match to join the ranking.",
     rankingOfTotal: "of", rankingPlayers: "players",
     rankingEmptyState: "Nobody in the ranking yet. Be the first!",
     rankingError: "Could not load the ranking right now.",
@@ -1588,6 +1592,8 @@ const TRANSLATIONS = {
     btnInvitePlayer: "Invitar",
     chipRanking: "Ranking", rankingTitle: "Ranking General",
     rankingMyPosition: "Tu posición", rankingUnranked: "Registra un partido para entrar en el ranking.",
+    rankingNeedEmail: "Para entrar en el ranking: añade tu correo en el perfil, confirma el código de verificación y registra un partido.",
+    rankingNeedVerify: "Falta confirmar tu correo. Abre el perfil, escribe el código de verificación y registra un partido para entrar en el ranking.",
     rankingOfTotal: "de", rankingPlayers: "jugadores",
     rankingEmptyState: "Nadie en el ranking todavía. ¡Sé el primero!",
     rankingError: "No se pudo cargar el ranking ahora.",
@@ -2760,7 +2766,11 @@ async function loadRanking(){
         `<span class="rank-sub">${esc(t('rankingOfTotal'))} ${data.total} ${esc(t('rankingPlayers'))}</span>`;
     } else {
       mine.style.display = 'block';
-      mine.innerHTML = `<span class="rank-sub">${esc(t('rankingUnranked'))}</span>`;
+      let reason;
+      if(!profile.email) reason = t('rankingNeedEmail');
+      else if(!profile.emailVerified) reason = t('rankingNeedVerify');
+      else reason = t('rankingUnranked');
+      mine.innerHTML = `<span class="rank-sub">${esc(reason)}</span>`;
     }
 
     const rankRow = (r) => `
