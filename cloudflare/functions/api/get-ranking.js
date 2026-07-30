@@ -2,7 +2,7 @@
 // requester's own position, so a player outside the top still sees where
 // they stand.
 
-const TOP_LIMIT = 100;
+const TOP_LIMIT = 10;
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -25,11 +25,25 @@ export async function onRequestPost(context) {
 
     let myPosition = null;
     let myRating = null;
+    let me = null;
     if (key) {
       const idx = all.findIndex(r => r.email === key);
       if (idx > -1) {
         myPosition = idx + 1;
         myRating = all[idx].rating;
+        // Sent separately so a player outside the top ten still gets their own
+        // row to look at, appended below the list.
+        if (myPosition > TOP_LIMIT) {
+          const r = all[idx];
+          me = {
+            position: myPosition,
+            name: r.name || '',
+            rating: r.rating,
+            level: r.level || '',
+            played: r.played || 0,
+            isMe: true
+          };
+        }
       }
     }
 
@@ -47,6 +61,7 @@ export async function onRequestPost(context) {
       total: all.length,
       myPosition,
       myRating,
+      me,
       top
     }), {
       status: 200,
