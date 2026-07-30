@@ -39,13 +39,33 @@ export async function onRequestPost(context) {
     }
 
     const clamped = Math.min(MAX_RATING, Math.max(MIN_RATING, Math.round(value)));
+    const name = player.name || '';
+    const playedCount = Math.round(matches);
+    const lvl = level || '';
+
+    // The client re-sends the rating every time the ranking screen opens, which
+    // is usually identical to what is already stored. Skip the write in that
+    // case so repeated views don't eat into the daily KV write allowance.
+    const existing = await env.DEUCE_KV.get(`ratings:${key}`, 'json');
+    const unchanged = existing
+      && existing.rating === clamped
+      && existing.played === playedCount
+      && existing.level === lvl
+      && existing.name === name;
+
+    if (unchanged) {
+      return new Response(JSON.stringify({ ok: true, ranked: true, skipped: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
     await env.DEUCE_KV.put(`ratings:${key}`, JSON.stringify({
       email: key,
-      name: player.name || '',
+      name,
       rating: clamped,
-      level: level || '',
-      played: Math.round(matches),
+      level: lvl,
+      played: playedCount,
       updatedAt: new Date().toISOString()
     }));
 

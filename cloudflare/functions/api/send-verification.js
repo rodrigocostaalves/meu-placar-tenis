@@ -11,7 +11,11 @@ export async function onRequestPost(context) {
     }
     const key = email.trim().toLowerCase();
     const code = genCode();
-    await env.DEUCE_KV.put(`email-verifications:${key}`, JSON.stringify({ code, createdAt: Date.now() }));
+    // verify-email.js is still the authority on the 15-minute window; this TTL is
+    // just garbage collection, set longer so it can never expire a code early.
+    await env.DEUCE_KV.put(`email-verifications:${key}`, JSON.stringify({ code, createdAt: Date.now() }), {
+      expirationTtl: 1800
+    });
 
     if (!env.BREVO_API_KEY || !env.BREVO_SENDER_EMAIL) {
       console.error('BREVO_API_KEY or BREVO_SENDER_EMAIL not configured');
