@@ -158,6 +158,10 @@
   .court-tag.public{ color:#5FCB8D; border-color:#5FCB8D; }
   .court-tag.fee{ color:#D7F205; border-color:#D7F205; }
   .court-tag.private{ color:#E06B4E; border-color:#E06B4E; }
+  .rank-break{
+    text-align:center; color:var(--muted); font-size:14px;
+    letter-spacing:4px; padding:4px 0;
+  }
   .rank-mine .big{
     font-family:'Bebas Neue', sans-serif; font-size:34px; color:var(--ball);
     display:block; line-height:1.1;
@@ -1270,6 +1274,10 @@ const TRANSLATIONS = {
     courtAccessUnknown: "Não informado",
     courtAccessNote: "O tipo de acesso vem do OpenStreetMap e nem toda quadra tem essa informação preenchida. Ao filtrar por um tipo, as quadras sem informação não aparecem.",
     courtsFilteredEmpty: "Nenhuma quadra desse tipo por aqui. Tente \"Todas\".",
+    notifEnabled: "Notificações ativadas!",
+    notifDenied: "Você não permitiu as notificações.",
+    notifBlocked: "As notificações estão bloqueadas para este site. Libere nas configurações do navegador (cadeado ao lado do endereço → Notificações) e tente de novo.",
+    notifEnableError: "Não foi possível ativar as notificações agora.",
     btnSettingsShort: "Config",
     btnAboutApp: "Sobre o App",
     aboutStory: "O Deuce Score nasceu da paixão pelo tênis. Criado por um jogador para jogadores que amam o esporte, o app existe para facilitar o dia a dia de quem joga: acompanhar cada partida, organizar torneios e ligas com os amigos, e nunca mais perder um jogo agendado. Um projeto feito com carinho, quadra a quadra.",
@@ -1439,6 +1447,10 @@ const TRANSLATIONS = {
     courtAccessUnknown: "Not specified",
     courtAccessNote: "Access type comes from OpenStreetMap and not every court has it filled in. When you filter by a type, courts without that information are hidden.",
     courtsFilteredEmpty: "No courts of that type around here. Try \"All\".",
+    notifEnabled: "Notifications enabled!",
+    notifDenied: "You did not allow notifications.",
+    notifBlocked: "Notifications are blocked for this site. Allow them in your browser settings (the padlock next to the address → Notifications) and try again.",
+    notifEnableError: "Could not enable notifications right now.",
     btnSettingsShort: "Settings",
     btnAboutApp: "About the App",
     aboutStory: "Deuce Score was born out of a love for tennis. Built by a player for players who love the game, the app makes it easy to track every match, organize tournaments and leagues with friends, and never miss a scheduled game again. A project made with care, court by court.",
@@ -1608,6 +1620,10 @@ const TRANSLATIONS = {
     courtAccessUnknown: "Sin información",
     courtAccessNote: "El tipo de acceso viene de OpenStreetMap y no todas las canchas lo tienen indicado. Al filtrar por un tipo, las canchas sin esa información no aparecen.",
     courtsFilteredEmpty: "No hay canchas de ese tipo por aquí. Prueba \"Todas\".",
+    notifEnabled: "¡Notificaciones activadas!",
+    notifDenied: "No permitiste las notificaciones.",
+    notifBlocked: "Las notificaciones están bloqueadas para este sitio. Actívalas en la configuración del navegador (el candado junto a la dirección → Notificaciones) e inténtalo de nuevo.",
+    notifEnableError: "No se pudieron activar las notificaciones ahora.",
     btnSettingsShort: "Config",
     btnAboutApp: "Acerca de la App",
     aboutStory: "Deuce Score nació del amor por el tenis. Creado por un jugador para jugadores que aman el deporte, la app existe para facilitar el día a día de quien juega: seguir cada partido, organizar torneos y ligas con amigos, y nunca más perder un partido agendado. Un proyecto hecho con cariño, cancha a cancha.",
@@ -1788,25 +1804,58 @@ function urlBase64ToUint8Array(base64String){
   return outputArray;
 }
 
-async function ensurePushSubscription(){
+async function ensurePushSubscription(showFeedback){
   if(!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
   if(pushSubscription) return pushSubscription;
   try{
     const reg = await navigator.serviceWorker.ready;
     let sub = await reg.pushManager.getSubscription();
     if(!sub){
+      // A previously blocked site never gets a prompt again — requestPermission
+      // resolves 'denied' instantly and the tap looks like it did nothing.
+      if(Notification.permission === 'denied'){
+        if(showFeedback) showAlert(t('notifBlocked'));
+        return null;
+      }
       const permission = await Notification.requestPermission();
-      if(permission !== 'granted') return null;
+      if(permission !== 'granted'){
+        if(showFeedback) showAlert(t('notifDenied'));
+        return null;
+      }
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
     }
     pushSubscription = sub;
+    // The server was told subscription:null when notifications were turned off,
+    // so without this the switch back on would never reach it.
+    await savePushSubscription(sub);
+    if(showFeedback) showAlert(t('notifEnabled'));
     return sub;
   }catch(e){
     console.log('Push subscription error:', e);
+    if(showFeedback) showAlert(t('notifEnableError'));
     return null;
+  }
+}
+
+async function savePushSubscription(sub){
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+  if(!profile.email) return;
+  try{
+    await fetch('/api/save-player', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        playerId: getPlayerId(), name: profile.name || '', email: profile.email,
+        zip: profile.zip || '', shareLocation: !!profile.shareLocation,
+        subscription: sub
+      })
+    });
+  }catch(e){
+    console.log('Save subscription error:', e);
   }
 }
 
@@ -2714,17 +2763,24 @@ async function loadRanking(){
       mine.innerHTML = `<span class="rank-sub">${esc(t('rankingUnranked'))}</span>`;
     }
 
+    const rankRow = (r) => `
+      <div class="rank-row ${r.isMe ? 'me' : ''}">
+        <span class="rank-pos">${r.position}</span>
+        <span class="rank-name">${esc(r.name || '?')}<br>
+          <span class="rank-sub">${r.level ? t('ratingLevelLabel') + ' ' + esc(r.level) + ' · ' : ''}${r.played} ${esc(t('rankingMatchesShort'))}</span>
+        </span>
+        <span class="rank-rating">${r.rating}</span>
+      </div>`;
+
     const top = Array.isArray(data.top) ? data.top : [];
-    container.innerHTML = top.length
-      ? top.map(r => `
-        <div class="rank-row ${r.isMe ? 'me' : ''}">
-          <span class="rank-pos">${r.position}</span>
-          <span class="rank-name">${esc(r.name || '?')}<br>
-            <span class="rank-sub">${r.level ? t('ratingLevelLabel') + ' ' + esc(r.level) + ' · ' : ''}${r.played} ${esc(t('rankingMatchesShort'))}</span>
-          </span>
-          <span class="rank-rating">${r.rating}</span>
-        </div>`).join('')
-      : `<div class="stats-empty">${t('rankingEmptyState')}</div>`;
+    if(top.length){
+      let html = top.map(rankRow).join('');
+      // outside the top ten: show my own row below, after a break
+      if(data.me) html += `<div class="rank-break">⋯</div>` + rankRow(data.me);
+      container.innerHTML = html;
+    } else {
+      container.innerHTML = `<div class="stats-empty">${t('rankingEmptyState')}</div>`;
+    }
   }catch(e){
     console.log('Load ranking error:', e);
     mine.style.display = 'none';
@@ -4006,7 +4062,7 @@ async function toggleNotifications(){
       console.log('Unsubscribe error:', e);
     }
   } else {
-    await ensurePushSubscription();
+    await ensurePushSubscription(true);
   }
   updateNotifStatus();
 }
