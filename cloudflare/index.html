@@ -150,6 +150,17 @@
     background:#123A52; border:1px solid #1E4C68; border-radius:10px;
     padding:14px; margin-bottom:14px; text-align:center;
   }
+  .welcome-step{
+    display:flex; gap:12px; align-items:flex-start;
+    background: var(--panel); border:1px solid var(--panel-line);
+    border-radius:10px; padding:12px 14px; margin-bottom:10px;
+    font-size:14px; color:var(--chalk);
+  }
+  .welcome-num{
+    font-family:'Bebas Neue', sans-serif; font-size:22px; color:var(--ball);
+    line-height:1; min-width:20px;
+  }
+  .welcome-desc{ font-size:13px; color:var(--muted); }
   .link-btn{
     background:none; border:none; padding:4px 0 0; margin:0;
     color: var(--ball); font-family:inherit; font-size:12px;
@@ -927,6 +938,10 @@
   <div class="sheet-actions">
     <button class="btn-cancel" id="clearAllDataBtn" data-i18n="btnClearAllData">Limpar Todos os Dados</button>
   </div>
+  <p class="rating-note" data-i18n="deleteAccountNote"></p>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="deleteAccountBtn" data-i18n="btnDeleteAccount" style="color:var(--loss); border-color:var(--loss)">Excluir Minha Conta</button>
+  </div>
 
   <div class="sheet-actions">
     <button class="btn-cancel" id="closeSettingsBtn" data-i18n="btnClose">Fechar</button>
@@ -1054,6 +1069,30 @@
   </div>
   <div class="sheet-actions">
     <button class="btn-cancel" id="cancelVerifyBtn" data-i18n="btnCancel">Cancelar</button>
+  </div>
+</div>
+
+<div class="sheet" id="welcomeSheet">
+  <h2 data-i18n="welcomeTitle">Bem-vindo ao Deuce Score</h2>
+  <p class="rating-note" data-i18n="welcomeIntro"></p>
+  <div class="welcome-step">
+    <span class="welcome-num">1</span>
+    <div><strong data-i18n="welcomeStep1Title">Preencha seu perfil</strong><br>
+      <span class="welcome-desc" data-i18n="welcomeStep1Desc"></span></div>
+  </div>
+  <div class="welcome-step">
+    <span class="welcome-num">2</span>
+    <div><strong data-i18n="welcomeStep2Title">Confirme seu e-mail</strong><br>
+      <span class="welcome-desc" data-i18n="welcomeStep2Desc"></span></div>
+  </div>
+  <div class="welcome-step">
+    <span class="welcome-num">3</span>
+    <div><strong data-i18n="welcomeStep3Title">Registre sua primeira partida</strong><br>
+      <span class="welcome-desc" data-i18n="welcomeStep3Desc"></span></div>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="welcomeLaterBtn" data-i18n="btnWelcomeLater">Depois</button>
+    <button class="btn-save" id="welcomeStartBtn" data-i18n="btnWelcomeStart">Começar</button>
   </div>
 </div>
 
@@ -1241,6 +1280,20 @@ const TRANSLATIONS = {
     boardLabelWhen: "Quando", boardLabelWhere: "Onde", boardLabelNote: "Observação (opcional)",
     boardPhWhere: "Rua, número, bairro, cidade", boardPhNote: "Ex: jogo tranquilo, 1h30",
     labelInviteMessage: "Mensagem para o adversário (opcional)",
+    welcomeTitle: "Bem-vindo ao Deuce Score",
+    welcomeIntro: "Em três passos você já está jogando. Leva menos de dois minutos.",
+    welcomeStep1Title: "Preencha seu perfil",
+    welcomeStep1Desc: "Nome, e-mail e CEP. O CEP serve para mostrar o tempo e as quadras perto de você.",
+    welcomeStep2Title: "Confirme seu e-mail",
+    welcomeStep2Desc: "Enviamos um código de 6 dígitos. Sem essa confirmação você não recebe convites nem entra no ranking.",
+    welcomeStep3Title: "Registre sua primeira partida",
+    welcomeStep3Desc: "A partir daí o app calcula seu rating, suas estatísticas e suas conquistas.",
+    btnWelcomeStart: "Começar", btnWelcomeLater: "Depois",
+    btnDeleteAccount: "Excluir Minha Conta",
+    deleteAccountNote: "Limpar Todos os Dados apaga só este aparelho. Excluir Minha Conta remove também tudo o que está no servidor: cadastro, rating, backup, anúncios e convites.",
+    deleteAccountConfirm: "Isso apaga sua conta do servidor e todos os dados deste aparelho, incluindo partidas, torneios e ligas. Não tem como desfazer. Continuar?",
+    deleteAccountDone: "Conta excluída.",
+    deleteAccountError: "Não foi possível excluir a conta agora. Tente de novo.",
     phInviteMessage: "Ex: consigo às 9h, quadra 3. Confirma?",
     btnPublishListing: "Publicar Anúncio", btnRemoveListing: "Remover meu anúncio",
     boardNoListing: "Você não tem anúncio publicado.",
@@ -1418,6 +1471,20 @@ const TRANSLATIONS = {
     boardLabelWhen: "When", boardLabelWhere: "Where", boardLabelNote: "Note (optional)",
     boardPhWhere: "Street, number, neighbourhood, city", boardPhNote: "e.g. casual hit, 1h30",
     labelInviteMessage: "Message to your opponent (optional)",
+    welcomeTitle: "Welcome to Deuce Score",
+    welcomeIntro: "Three steps and you're playing. Takes under two minutes.",
+    welcomeStep1Title: "Fill in your profile",
+    welcomeStep1Desc: "Name, email and ZIP code. The ZIP is what powers the weather and nearby courts.",
+    welcomeStep2Title: "Confirm your email",
+    welcomeStep2Desc: "We send a 6-digit code. Without it you can't receive invites or join the ranking.",
+    welcomeStep3Title: "Record your first match",
+    welcomeStep3Desc: "From there the app builds your rating, your stats and your achievements.",
+    btnWelcomeStart: "Get Started", btnWelcomeLater: "Later",
+    btnDeleteAccount: "Delete My Account",
+    deleteAccountNote: "Clear All Data only wipes this device. Delete My Account also removes everything on the server: your registration, rating, backup, listings and invites.",
+    deleteAccountConfirm: "This deletes your account from the server and all data on this device, including matches, tournaments and leagues. It cannot be undone. Continue?",
+    deleteAccountDone: "Account deleted.",
+    deleteAccountError: "Could not delete the account right now. Please try again.",
     phInviteMessage: "e.g. I can do 9am, court 3. Works?",
     btnPublishListing: "Post It", btnRemoveListing: "Remove my post",
     boardNoListing: "You have no post published.",
@@ -1595,6 +1662,20 @@ const TRANSLATIONS = {
     boardLabelWhen: "Cuándo", boardLabelWhere: "Dónde", boardLabelNote: "Nota (opcional)",
     boardPhWhere: "Calle, número, barrio, ciudad", boardPhNote: "Ej: partido tranquilo, 1h30",
     labelInviteMessage: "Mensaje para tu rival (opcional)",
+    welcomeTitle: "Bienvenido a Deuce Score",
+    welcomeIntro: "En tres pasos ya estás jugando. Toma menos de dos minutos.",
+    welcomeStep1Title: "Completa tu perfil",
+    welcomeStep1Desc: "Nombre, correo y código postal. El código postal muestra el clima y las canchas cercanas.",
+    welcomeStep2Title: "Confirma tu correo",
+    welcomeStep2Desc: "Enviamos un código de 6 dígitos. Sin él no recibes invitaciones ni entras en el ranking.",
+    welcomeStep3Title: "Registra tu primer partido",
+    welcomeStep3Desc: "A partir de ahí la app calcula tu rating, tus estadísticas y tus logros.",
+    btnWelcomeStart: "Empezar", btnWelcomeLater: "Después",
+    btnDeleteAccount: "Eliminar Mi Cuenta",
+    deleteAccountNote: "Borrar Todos los Datos solo limpia este dispositivo. Eliminar Mi Cuenta borra también todo lo que está en el servidor: registro, rating, copia, anuncios e invitaciones.",
+    deleteAccountConfirm: "Esto elimina tu cuenta del servidor y todos los datos de este dispositivo, incluidos partidos, torneos y ligas. No se puede deshacer. ¿Continuar?",
+    deleteAccountDone: "Cuenta eliminada.",
+    deleteAccountError: "No se pudo eliminar la cuenta ahora. Inténtalo de nuevo.",
     phInviteMessage: "Ej: puedo a las 9h, cancha 3. ¿Confirmas?",
     btnPublishListing: "Publicar Anuncio", btnRemoveListing: "Eliminar mi anuncio",
     boardNoListing: "No tienes ningún anuncio publicado.",
@@ -2525,6 +2606,62 @@ function setNearbyUnit(u){
   $('unitMi').classList.toggle('active', u === 'mi');
   $('settingsUnitKm').classList.toggle('active', u === 'km');
   $('settingsUnitMi').classList.toggle('active', u === 'mi');
+}
+
+/* ---------------- First-run walkthrough ---------------- */
+const WELCOME_KEY = 'tennis_welcome_v1';
+
+function maybeShowWelcome(){
+  if(localStorage.getItem(WELCOME_KEY)) return;
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+  // Someone who already has data doesn't need the tour.
+  if(profile.email || matches.length) {
+    localStorage.setItem(WELCOME_KEY, '1');
+    return;
+  }
+  setTimeout(() => openSheet('welcomeSheet'), 400);
+}
+
+function dismissWelcome(openProfile){
+  localStorage.setItem(WELCOME_KEY, '1');
+  closeAllSheets();
+  if(openProfile){
+    setTimeout(() => {
+      loadProfile(); renderStats(); renderAchievements();
+      openSheet('menuSheet');
+    }, 260);
+  }
+}
+
+/* ---------------- Account deletion ---------------- */
+async function deleteAccount(){
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+
+  if(!await askConfirm(t('deleteAccountConfirm'))) return;
+
+  if(profile.email){
+    try{
+      const res = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: profile.email })
+      });
+      const data = await res.json();
+      if(!data.ok){ showAlert(t('deleteAccountError')); return; }
+    }catch(e){
+      console.log('Delete account error:', e);
+      showAlert(t('deleteAccountError'));
+      return;
+    }
+  }
+
+  // Only wipe the device after the server confirmed, so a failed call can't
+  // leave the player with nothing locally and everything still online.
+  try{ localStorage.clear(); }catch(e){ console.log('Clear error:', e); }
+  showAlert(t('deleteAccountDone'));
+  setTimeout(() => location.reload(), 1200);
 }
 
 /* ---------------- Cloud backup ----------------
@@ -4631,6 +4768,9 @@ $('saveProfileBtn').addEventListener('click', saveProfile);
 $('langPt').addEventListener('click', () => setLanguage('pt'));
 $('langEn').addEventListener('click', () => setLanguage('en'));
 $('langEs').addEventListener('click', () => setLanguage('es'));
+$('welcomeStartBtn').addEventListener('click', () => dismissWelcome(true));
+$('welcomeLaterBtn').addEventListener('click', () => dismissWelcome(false));
+$('deleteAccountBtn').addEventListener('click', deleteAccount);
 $('syncPushBtn').addEventListener('click', () => pushSync(true));
 $('syncPullBtn').addEventListener('click', pullSync);
 $('exportBtn').addEventListener('click', exportData);
@@ -4754,6 +4894,7 @@ setNearbyUnit(nearbyUnit);
 ['recapMonth', 'courtAccessFilter', 'lmP1', 'lmP2'].forEach(enhanceSelect);
 refreshSyncStatus();
 autoRestoreIfEmpty();
+maybeShowWelcome();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
