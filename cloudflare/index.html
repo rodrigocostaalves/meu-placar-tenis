@@ -150,6 +150,11 @@
     background:#123A52; border:1px solid #1E4C68; border-radius:10px;
     padding:14px; margin-bottom:14px; text-align:center;
   }
+  .link-btn{
+    background:none; border:none; padding:4px 0 0; margin:0;
+    color: var(--ball); font-family:inherit; font-size:12px;
+    text-decoration:underline; cursor:pointer;
+  }
   .court-tag{
     display:inline-block; font-size:10px; letter-spacing:1px;
     text-transform:uppercase; padding:2px 7px; border-radius:10px;
@@ -685,6 +690,10 @@
   <div class="field" id="opponentEmailWrap">
     <label data-i18n="labelOpponentEmail">E-mail do Adversário (opcional)</label>
     <input type="email" id="fOpponentEmail">
+    <div id="inviteMessageField" style="display:none; margin-top:10px">
+      <label data-i18n="labelInviteMessage" style="display:block; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Mensagem para o adversário (opcional)</label>
+      <input type="text" id="fInviteMessage" data-i18n-ph="phInviteMessage" placeholder="Ex: consigo às 9h, quadra 3. Confirma?" style="width:100%; background:var(--panel); border:1px solid var(--panel-line); color:var(--chalk); border-radius:8px; padding:11px 12px; font-size:15px; font-family:inherit;">
+    </div>
     <button type="button" class="add-set-btn" id="inviteBtn" style="margin-top:8px" data-i18n="btnInvite">Convidar por notificação</button>
     <button type="button" class="add-set-btn" id="sendResultBtn" style="margin-top:8px; display:none" data-i18n="btnSendResult">Enviar Resultado para Confirmação</button>
   </div>
@@ -1073,7 +1082,7 @@
   </div>
   <div class="field">
     <label data-i18n="boardLabelWhere">Onde</label>
-    <input type="text" id="bLocation" data-i18n-ph="boardPhWhere" placeholder="Ex: Quadra do clube">
+    <input type="text" id="bLocation" data-i18n-ph="boardPhWhere" placeholder="Rua, número, bairro, cidade">
   </div>
   <div class="field">
     <label data-i18n="boardLabelNote">Observação (opcional)</label>
@@ -1230,7 +1239,9 @@ const TRANSLATIONS = {
     boardIntro: "Publique um horário em que você quer jogar e veja quem mais está procurando jogo perto de você. Seu anúncio expira sozinho depois do horário marcado.",
     boardMineTitle: "Meu Anúncio", boardOthersTitle: "Jogos Disponíveis",
     boardLabelWhen: "Quando", boardLabelWhere: "Onde", boardLabelNote: "Observação (opcional)",
-    boardPhWhere: "Ex: Quadra do clube", boardPhNote: "Ex: jogo tranquilo, 1h30",
+    boardPhWhere: "Rua, número, bairro, cidade", boardPhNote: "Ex: jogo tranquilo, 1h30",
+    labelInviteMessage: "Mensagem para o adversário (opcional)",
+    phInviteMessage: "Ex: consigo às 9h, quadra 3. Confirma?",
     btnPublishListing: "Publicar Anúncio", btnRemoveListing: "Remover meu anúncio",
     boardNoListing: "Você não tem anúncio publicado.",
     boardMineActive: "Publicado para",
@@ -1405,7 +1416,9 @@ const TRANSLATIONS = {
     boardIntro: "Post a time you want to play and see who else is looking for a game near you. Your post expires on its own after the scheduled time.",
     boardMineTitle: "My Post", boardOthersTitle: "Available Games",
     boardLabelWhen: "When", boardLabelWhere: "Where", boardLabelNote: "Note (optional)",
-    boardPhWhere: "e.g. Club courts", boardPhNote: "e.g. casual hit, 1h30",
+    boardPhWhere: "Street, number, neighbourhood, city", boardPhNote: "e.g. casual hit, 1h30",
+    labelInviteMessage: "Message to your opponent (optional)",
+    phInviteMessage: "e.g. I can do 9am, court 3. Works?",
     btnPublishListing: "Post It", btnRemoveListing: "Remove my post",
     boardNoListing: "You have no post published.",
     boardMineActive: "Posted for",
@@ -1580,7 +1593,9 @@ const TRANSLATIONS = {
     boardIntro: "Publica un horario en el que quieres jugar y mira quién más está buscando partido cerca de ti. Tu anuncio expira solo después de la hora indicada.",
     boardMineTitle: "Mi Anuncio", boardOthersTitle: "Partidos Disponibles",
     boardLabelWhen: "Cuándo", boardLabelWhere: "Dónde", boardLabelNote: "Nota (opcional)",
-    boardPhWhere: "Ej: Canchas del club", boardPhNote: "Ej: partido tranquilo, 1h30",
+    boardPhWhere: "Calle, número, barrio, ciudad", boardPhNote: "Ej: partido tranquilo, 1h30",
+    labelInviteMessage: "Mensaje para tu rival (opcional)",
+    phInviteMessage: "Ej: puedo a las 9h, cancha 3. ¿Confirmas?",
     btnPublishListing: "Publicar Anuncio", btnRemoveListing: "Eliminar mi anuncio",
     boardNoListing: "No tienes ningún anuncio publicado.",
     boardMineActive: "Publicado para",
@@ -2128,10 +2143,13 @@ function toggleWantsSendResult(){
   $('sendResultBtn').classList.toggle('active', wantsSendResult);
 }
 
+let pendingListingId = null;
+
 async function sendInvite(){
   const date = $('fDate').value;
   const toEmail = $('fOpponentEmail').value.trim();
-  if(!date || !toEmail){ showAlert(t('inviteNeedInfo')); return; }
+  // one of the two is enough: a typed address, or a handle from the board
+  if(!date || (!toEmail && !pendingListingId)){ showAlert(t('inviteNeedInfo')); return; }
   try{
     const profileRaw = localStorage.getItem(PROFILE_KEY);
     const profile = profileRaw ? JSON.parse(profileRaw) : {};
@@ -2143,8 +2161,11 @@ async function sendInvite(){
         fromName: profile.name || t('defaultOpponent'),
         fromEmail: profile.email || '',
         toEmail,
+        listingId: pendingListingId,
         dateTime: localDateTime.toISOString(),
-        opponent: $('fOpponent').value.trim()
+        opponent: $('fOpponent').value.trim(),
+        location: $('fLocation').value.trim(),
+        message: $('fInviteMessage').value.trim()
       })
     });
     const data = await res.json();
@@ -2231,6 +2252,8 @@ function renderInbox(){
     <div class="inbox-card">
       <div class="inbox-tag">${t('inviteTag')}</div>
       <div class="inbox-text"><strong>${esc(inv.fromName || '')}</strong> ${t('inviteFromLabel')} ${esc(dateStr)}</div>
+      ${inv.location ? `<div class="inbox-text" style="font-size:13px">📍 ${esc(inv.location)}</div>` : ''}
+      ${inv.message ? `<div class="inbox-text" style="font-size:13px; font-style:italic">"${esc(inv.message)}"</div>` : ''}
       <div class="invite-actions">
         <button data-kind="invite" data-id="${inv.id}" data-action="accepted" class="invite-accept">${t('btnAcceptInvite')}</button>
         <button data-kind="invite" data-id="${inv.id}" data-action="dismissed" class="invite-dismiss">${t('btnDismissInvite')}</button>
@@ -2962,11 +2985,19 @@ function renderListings(listings){
         <div class="nearby-name">${esc(l.name || '?')}${lvl}</div>
         <div class="nearby-dist">${esc(bits.join(' · '))}</div>
         ${l.note ? `<div class="nearby-dist">${esc(l.note)}</div>` : ''}
+        ${l.location ? `<button type="button" class="link-btn" data-bmap="${i}">${t('btnOpenMap')}</button>` : ''}
       </div>
       <button type="button" data-bidx="${i}">${t('btnInvitePlayer')}</button>
     </div>
   `;
   }).join('');
+
+  container.querySelectorAll('button[data-bmap]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const l = listings[parseInt(btn.dataset.bmap, 10)];
+      window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(l.location), '_blank');
+    });
+  });
 
   container.querySelectorAll('button[data-bidx]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -2974,8 +3005,9 @@ function renderListings(listings){
       // hand the whole thing to the existing invite flow, pre-filled
       closeAllSheets();
       openMatchSheet(null, true);
+      pendingListingId = l.listingId || null;
       $('fOpponent').value = l.name || '';
-      $('fOpponentEmail').value = l.email || '';
+      $('fOpponentEmail').value = '';
       $('fLocation').value = l.location || '';
       const d = new Date(l.dateTime);
       if(!Number.isNaN(d.getTime())){
@@ -3633,6 +3665,11 @@ function openMatchSheet(matchToEdit, isScheduling){
     repeatBtn.style.display = (!matchToEdit && lastPlayedMatch()) ? 'block' : 'none';
   }
   $('inviteBtn').style.display = schedulingMode ? 'block' : 'none';
+  $('inviteMessageField').style.display = schedulingMode ? 'block' : 'none';
+  if(!matchToEdit){
+    $('fInviteMessage').value = '';
+    pendingListingId = null;
+  }
   $('sendResultBtn').style.display = schedulingMode ? 'none' : 'block';
   wantsInvite = false;
   wantsSendResult = false;
