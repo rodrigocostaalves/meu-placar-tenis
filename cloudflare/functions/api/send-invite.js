@@ -4,12 +4,21 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   try {
     const body = await request.json();
-    const { fromName, fromEmail, toEmail, dateTime, opponent } = body;
-    if (!toEmail || !dateTime) {
+    const { fromName, fromEmail, toEmail, listingId, dateTime, opponent, location, message } = body;
+
+    // Either an address typed by the user, or a board listing handle that only
+    // the server can turn back into an address.
+    let resolvedEmail = (toEmail || '').trim().toLowerCase();
+    if (!resolvedEmail && listingId) {
+      const ref = await env.DEUCE_KV.get(`listingref:${listingId}`, 'json');
+      if (ref && ref.email) resolvedEmail = ref.email;
+    }
+
+    if (!resolvedEmail || !dateTime) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
     }
 
-    const key = toEmail.trim().toLowerCase();
+    const key = resolvedEmail;
     const player = await env.DEUCE_KV.get(`players:${key}`, 'json');
 
     const inviteId = 'inv_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
@@ -20,6 +29,8 @@ export async function onRequestPost(context) {
       toEmail: key,
       dateTime,
       opponent: opponent || '',
+      location: (location || '').slice(0, 200),
+      message: (message || '').slice(0, 300),
       status: 'pending',
       createdAt: new Date().toISOString()
     }));
@@ -31,7 +42,9 @@ export async function onRequestPost(context) {
         const message = {
           data: JSON.stringify({
             title: `🎾 Convite de ${fromName || 'um jogador'}`,
-            body: 'Você recebeu um convite para jogar. Abra o app para ver os detalhes.'
+            body: message
+              ? String(message).slice(0, 120)
+              : 'Você recebeu um convite para jogar. Abra o app para ver os detalhes.'
           })
         };
         const payload = await buildPushPayload(message, player.subscription, vapid);

@@ -38,13 +38,18 @@ export async function onRequestPost(context) {
       });
     }
 
+    // Opaque handle published in place of the email, so browsing the board
+    // can never be used to harvest addresses.
+    const listingId = 'lst_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+
     const listing = {
+      id: listingId,
       email: key,
       name: player.name || '',
       rating: Number.isFinite(body.rating) ? Math.round(body.rating) : null,
       level: body.level || '',
       dateTime,
-      location: (body.location || '').slice(0, 120),
+      location: (body.location || '').slice(0, 200),
       format: body.format === 'duplas' ? 'duplas' : 'individual',
       surface: body.surface || 'rapida',
       matchType: body.matchType || 'amistoso',
@@ -54,9 +59,10 @@ export async function onRequestPost(context) {
       createdAt: new Date().toISOString()
     };
 
-    await env.DEUCE_KV.put(`listings:${key}`, JSON.stringify(listing), {
-      expirationTtl: ttlFor(dateTime)
-    });
+    const ttl = ttlFor(dateTime);
+    await env.DEUCE_KV.put(`listings:${key}`, JSON.stringify(listing), { expirationTtl: ttl });
+    // Reverse pointer, readable only by the server. Expires with the listing.
+    await env.DEUCE_KV.put(`listingref:${listingId}`, JSON.stringify({ email: key }), { expirationTtl: ttl });
 
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,

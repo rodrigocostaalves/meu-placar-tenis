@@ -48,7 +48,8 @@ export async function onRequestPost(context) {
 
         listings.push({
           name: l.name,
-          email: l.email,
+          // deliberately NOT l.email — the invite travels by listingId instead
+          listingId: l.id || null,
           rating: l.rating != null ? l.rating : null,
           level: l.level || '',
           dateTime: l.dateTime,
