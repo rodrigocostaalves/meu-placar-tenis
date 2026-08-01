@@ -27,20 +27,21 @@ export async function onRequestPost(context) {
       });
     }
 
-    const matches = Number(played);
+    // A verified player enters the ranking immediately at the base rating,
+    // before playing anything — zero matches is a valid state here.
+    const raw = Number(played);
+    const matches = Number.isFinite(raw) ? Math.max(0, Math.round(raw)) : 0;
     const value = Number(rating);
-    if (!Number.isFinite(value) || !Number.isFinite(matches) || matches < 1) {
-      // nothing worth ranking yet — drop any stale entry and stop
-      await env.DEUCE_KV.delete(`ratings:${key}`);
-      return new Response(JSON.stringify({ ok: true, ranked: false }), {
-        status: 200,
+    if (!Number.isFinite(value)) {
+      return new Response(JSON.stringify({ ok: false, error: 'bad_rating' }), {
+        status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
     const clamped = Math.min(MAX_RATING, Math.max(MIN_RATING, Math.round(value)));
     const name = player.name || '';
-    const playedCount = Math.round(matches);
+    const playedCount = matches;
     const lvl = level || '';
 
     // The client re-sends the rating every time the ranking screen opens, which
