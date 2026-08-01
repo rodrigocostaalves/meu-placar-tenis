@@ -1281,6 +1281,7 @@ const TRANSLATIONS = {
     boardPhWhere: "Rua, número, bairro, cidade", boardPhNote: "Ex: jogo tranquilo, 1h30",
     labelInviteMessage: "Mensagem para o adversário (opcional)",
     shareYouLabel: "Você",
+    rankingProvisional: "Sem partidas ainda · provisório",
     welcomeTitle: "Bem-vindo ao Deuce Score",
     welcomeIntro: "Em três passos você já está jogando. Leva menos de dois minutos.",
     welcomeStep1Title: "Preencha seu perfil",
@@ -1473,6 +1474,7 @@ const TRANSLATIONS = {
     boardPhWhere: "Street, number, neighbourhood, city", boardPhNote: "e.g. casual hit, 1h30",
     labelInviteMessage: "Message to your opponent (optional)",
     shareYouLabel: "You",
+    rankingProvisional: "No matches yet · provisional",
     welcomeTitle: "Welcome to Deuce Score",
     welcomeIntro: "Three steps and you're playing. Takes under two minutes.",
     welcomeStep1Title: "Fill in your profile",
@@ -1665,6 +1667,7 @@ const TRANSLATIONS = {
     boardPhWhere: "Calle, número, barrio, ciudad", boardPhNote: "Ej: partido tranquilo, 1h30",
     labelInviteMessage: "Mensaje para tu rival (opcional)",
     shareYouLabel: "Tú",
+    rankingProvisional: "Sin partidos aún · provisional",
     welcomeTitle: "Bienvenido a Deuce Score",
     welcomeIntro: "En tres pasos ya estás jugando. Toma menos de dos minutos.",
     welcomeStep1Title: "Completa tu perfil",
@@ -2508,6 +2511,7 @@ function saveProfile(){
     sendVerificationCode(p.email);
   } else if(p.email){
     syncPlayerProfile(p);
+    setTimeout(syncRating, 1500);
   }
   refreshInbox();
 }
@@ -2549,11 +2553,23 @@ async function confirmVerificationCode(){
     if(data.ok){
       profile.emailVerified = true;
       profile.verifiedEmailValue = profile.email;
+
+      // Coming back on a new device (or the iOS Home Screen app, which has
+      // storage separate from Safari): fill in whatever this device is missing
+      // from what the server already holds, without overwriting what's typed.
+      if(data.existing){
+        if(!profile.name && data.existing.name) profile.name = data.existing.name;
+        if(!profile.zip && data.existing.zip) profile.zip = data.existing.zip;
+        if(profile.shareLocation === undefined) profile.shareLocation = data.existing.shareLocation;
+      }
+
       localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
       showAlert(t('verifyEmailSuccess'));
       closeAllSheets();
       loadProfile();
       syncPlayerProfile(profile);
+      restoreAfterVerify();
+      setTimeout(syncRating, 1500);
     } else {
       showAlert(t('verifyEmailWrongCode'));
     }
@@ -2846,6 +2862,38 @@ async function refreshSyncStatus(){
   }
 }
 
+// Right after a successful verification, offer back whatever this account
+// already has in the cloud. On an empty device it just restores; if there is
+// local data it asks first, because that data could be newer.
+async function restoreAfterVerify(){
+  const profile = syncProfile();
+  if(!profile.email) return;
+  try{
+    const res = await fetch('/api/sync-pull', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    if(!data.found || !data.payload){
+      renderSyncStatus(data.savedAt || null);
+      return;
+    }
+    const hasLocal = matches.length || tournaments.length || leagues.length;
+    if(hasLocal && !await askConfirm(t('syncConfirmRestore'))) return;
+
+    applySyncPayload(data.payload);
+    render();
+    renderTournamentsList();
+    renderLeaguesList();
+    renderSyncStatus(data.savedAt);
+    syncRating();
+    showAlert(t('syncRestored'));
+  }catch(e){
+    console.log('Restore after verify error:', e);
+  }
+}
+
 // On a device with no data at all, restoring is what the user wants and
 // there is nothing to lose, so do it without prompting.
 async function autoRestoreIfEmpty(){
@@ -2892,8 +2940,8 @@ async function syncRating(){
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: profile.email,
-        rating: data.played ? data.rating : null,
-        level: data.played ? levelFromRating(data.rating) : '',
+        rating: data.rating,
+        level: levelFromRating(data.rating),
         played: data.played
       })
     });
@@ -2940,7 +2988,7 @@ async function loadRanking(){
       <div class="rank-row ${r.isMe ? 'me' : ''}">
         <span class="rank-pos">${r.position}</span>
         <span class="rank-name">${esc(r.name || '?')}<br>
-          <span class="rank-sub">${r.level ? t('ratingLevelLabel') + ' ' + esc(r.level) + ' · ' : ''}${r.played} ${esc(t('rankingMatchesShort'))}</span>
+          <span class="rank-sub">${r.played ? (r.level ? t('ratingLevelLabel') + ' ' + esc(r.level) + ' · ' : '') + r.played + ' ' + esc(t('rankingMatchesShort')) : esc(t('rankingProvisional'))}</span>
         </span>
         <span class="rank-rating">${r.rating}</span>
       </div>`;
