@@ -1280,6 +1280,7 @@ const TRANSLATIONS = {
     boardLabelWhen: "Quando", boardLabelWhere: "Onde", boardLabelNote: "Observação (opcional)",
     boardPhWhere: "Rua, número, bairro, cidade", boardPhNote: "Ex: jogo tranquilo, 1h30",
     labelInviteMessage: "Mensagem para o adversário (opcional)",
+    shareYouLabel: "Você",
     welcomeTitle: "Bem-vindo ao Deuce Score",
     welcomeIntro: "Em três passos você já está jogando. Leva menos de dois minutos.",
     welcomeStep1Title: "Preencha seu perfil",
@@ -1471,6 +1472,7 @@ const TRANSLATIONS = {
     boardLabelWhen: "When", boardLabelWhere: "Where", boardLabelNote: "Note (optional)",
     boardPhWhere: "Street, number, neighbourhood, city", boardPhNote: "e.g. casual hit, 1h30",
     labelInviteMessage: "Message to your opponent (optional)",
+    shareYouLabel: "You",
     welcomeTitle: "Welcome to Deuce Score",
     welcomeIntro: "Three steps and you're playing. Takes under two minutes.",
     welcomeStep1Title: "Fill in your profile",
@@ -1662,6 +1664,7 @@ const TRANSLATIONS = {
     boardLabelWhen: "Cuándo", boardLabelWhere: "Dónde", boardLabelNote: "Nota (opcional)",
     boardPhWhere: "Calle, número, barrio, ciudad", boardPhNote: "Ej: partido tranquilo, 1h30",
     labelInviteMessage: "Mensaje para tu rival (opcional)",
+    shareYouLabel: "Tú",
     welcomeTitle: "Bienvenido a Deuce Score",
     welcomeIntro: "En tres pasos ya estás jugando. Toma menos de dos minutos.",
     welcomeStep1Title: "Completa tu perfil",
@@ -3414,46 +3417,110 @@ function shareRecapImage(){
   }, 'image/png');
 }
 
-function shareMatchImage(matchId){
+async function shareMatchImage(matchId){
   const m = matches.find(x => x.id === matchId);
   if(!m) return;
+
+  // Bebas/Space Mono come from Google Fonts; without this the canvas can fall
+  // back to a system face on the first share of a session.
+  try{ await document.fonts.ready; }catch(e){}
+
+  const W = 800, H = 800;
+  const won = m.result === 'V';
+  const accent = won ? '#5FCB8D' : '#E06B4E';
   const canvas = document.createElement('canvas');
-  canvas.width = 800; canvas.height = 800;
+  canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
   ctx.fillStyle = '#0A2B3D';
-  ctx.fillRect(0, 0, 800, 800);
-  ctx.fillStyle = m.result === 'V' ? '#5FCB8D' : '#E06B4E';
-  ctx.fillRect(0, 0, 16, 800);
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, 16, H);
 
+  // header
   ctx.fillStyle = '#D7F205';
-  ctx.beginPath(); ctx.arc(72, 88, 13, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(76, 84, 14, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#F3F6F2';
-  ctx.font = "bold 42px sans-serif";
-  ctx.fillText('DEUCE SCORE', 100, 100);
+  ctx.font = "56px 'Bebas Neue', sans-serif";
+  ctx.fillText('DEUCE SCORE', 104, 100);
 
-  ctx.fillStyle = m.result === 'V' ? '#5FCB8D' : '#E06B4E';
-  ctx.font = "bold 32px sans-serif";
-  ctx.fillText(m.result === 'V' ? t('resultTagWin') : t('resultTagLoss'), 70, 220);
+  // result pill
+  const label = (won ? t('resultTagWin') : t('resultTagLoss')).toUpperCase();
+  ctx.font = "34px 'Bebas Neue', sans-serif";
+  const pillW = ctx.measureText(label).width + 44;
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(70, 150, pillW, 52, 26);
+  else ctx.rect(70, 150, pillW, 52);
+  ctx.fill();
+  ctx.fillStyle = '#0A2B3D';
+  ctx.fillText(label, 92, 187);
 
-  ctx.fillStyle = '#F3F6F2';
-  ctx.font = "bold 50px sans-serif";
-  wrapCanvasText(ctx, opponentDisplayPlain(m), 70, 290, 660, 56);
+  // --- scoreboard: both names, so nobody has to guess who won ---
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+  const myName = (profile.name || '').trim() || t('shareYouLabel');
+  const theirName = opponentDisplayPlain(m) || '—';
+  const sets = Array.isArray(m.sets) ? m.sets.filter(x => x.a !== '' || x.b !== '') : [];
 
+  function drawPlayerRow(name, scores, isWinner, y){
+    ctx.fillStyle = isWinner ? '#D7F205' : '#8FADBE';
+    ctx.font = "44px 'Bebas Neue', sans-serif";
+    let text = name;
+    while(ctx.measureText(text).width > 430 && text.length > 3){
+      text = text.slice(0, -2);
+    }
+    if(text !== name) text += '…';
+    ctx.fillText(text, 70, y);
+
+    if(isWinner){
+      ctx.font = "34px sans-serif";
+      ctx.fillText('🏆', 500, y);
+    }
+
+    ctx.font = "bold 42px 'Space Mono', monospace";
+    ctx.fillStyle = isWinner ? '#F3F6F2' : '#8FADBE';
+    scores.forEach((v, i) => {
+      ctx.fillText(String(v), 560 + i * 62, y);
+    });
+  }
+
+  const rowY = 300;
+  drawPlayerRow(myName, sets.map(x => x.a), won, rowY);
+  ctx.strokeStyle = 'rgba(143,173,190,0.25)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(70, rowY + 30); ctx.lineTo(W - 70, rowY + 30); ctx.stroke();
+  drawPlayerRow(theirName, sets.map(x => x.b), !won, rowY + 90);
+
+  // rating movement — the part people actually react to
+  const ratingInfo = computeRatings().history.find(h => h.id === m.id);
+  if(ratingInfo){
+    ctx.fillStyle = '#8FADBE';
+    ctx.font = "24px 'Bebas Neue', sans-serif";
+    ctx.fillText(t('ratingLabel').toUpperCase(), 70, 500);
+    ctx.fillStyle = '#D7F205';
+    ctx.font = "62px 'Bebas Neue', sans-serif";
+    ctx.fillText(String(ratingInfo.rating), 70, 560);
+    const sign = ratingInfo.delta > 0 ? '+' : '';
+    ctx.fillStyle = ratingInfo.delta >= 0 ? '#5FCB8D' : '#E06B4E';
+    ctx.font = "34px 'Bebas Neue', sans-serif";
+    ctx.fillText(`${sign}${ratingInfo.delta}`, 70 + ctx.measureText(String(ratingInfo.rating)).width + 90, 560);
+  }
+
+  // meta
   ctx.fillStyle = '#8FADBE';
-  ctx.font = "26px sans-serif";
-  ctx.fillText(`${formatDate(m.date)} · ${typeLabel(m.matchType)} · ${surfaceLabel(m.surface)}`, 70, 400);
-
-  const scoreStr = scoreDisplay(m);
-  if(scoreStr){
-    ctx.fillStyle = '#F3F6F2';
-    ctx.font = "40px monospace";
-    ctx.fillText(scoreStr, 70, 460);
+  ctx.font = "26px Inter, sans-serif";
+  ctx.fillText(`${formatDate(m.date)} · ${typeLabel(m.matchType)} · ${surfaceLabel(m.surface)}`, 70, 650);
+  if(m.location){
+    let loc = m.location;
+    while(ctx.measureText(loc).width > 640 && loc.length > 4) loc = loc.slice(0, -2);
+    if(loc !== m.location) loc += '…';
+    ctx.fillText('📍 ' + loc, 70, 692);
   }
 
   ctx.fillStyle = '#8FADBE';
-  ctx.font = "22px sans-serif";
-  ctx.fillText('🎾 Deuce Score', 70, 760);
+  ctx.font = "22px Inter, sans-serif";
+  ctx.fillText('🎾 Deuce Score', 70, 762);
 
   canvas.toBlob(async (blob) => {
     if(!blob) return;
