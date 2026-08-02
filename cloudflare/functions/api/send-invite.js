@@ -39,7 +39,7 @@ export async function onRequestPost(context) {
     if (player && player.subscription && env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
       try {
         const vapid = { subject: env.VAPID_SUBJECT, publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY };
-        const message = {
+        const pushMessage = {
           data: JSON.stringify({
             title: `🎾 Convite de ${fromName || 'um jogador'}`,
             body: message
@@ -47,7 +47,7 @@ export async function onRequestPost(context) {
               : 'Você recebeu um convite para jogar. Abra o app para ver os detalhes.'
           })
         };
-        const payload = await buildPushPayload(message, player.subscription, vapid);
+        const payload = await buildPushPayload(pushMessage, player.subscription, vapid);
         const res = await fetch(player.subscription.endpoint, payload);
         notified = res.ok;
       } catch (err) {
