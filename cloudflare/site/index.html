@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deuce Score · Liga, torneio e amistoso em um só app</title>
-<meta name="description" content="Registre suas partidas de tênis, acompanhe seu rating, encontre adversários perto de você e agende jogos. Grátis.">
+<title>Deuce Score</title>
+<meta name="description" id="metaDesc" content="Anote o placar das suas partidas de tênis, monte a liga do seu grupo e compartilhe o resultado.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -220,6 +220,20 @@
     .screen{ transition:none; }
     .btn{ transition:none; }
   }
+</style><style>
+  .lang-switch{ display:flex; gap:6px; margin-right:14px; }
+  .lang-switch button{
+    background:none; border:1px solid var(--panel-line); color:var(--muted);
+    border-radius:14px; padding:5px 11px; font-size:11px; font-family:'Space Mono',monospace;
+    letter-spacing:1px; cursor:pointer;
+  }
+  .lang-switch button.active{ background:var(--ball); border-color:var(--ball); color:var(--court-deep); font-weight:700; }
+  .lang-switch button:focus-visible{ outline:2px solid var(--ball); outline-offset:2px; }
+  .top .wrap .right{ display:flex; align-items:center; }
+  @media (max-width:600px){
+    .lang-switch button{ padding:4px 8px; font-size:10px; }
+    .top .wrap{ gap:8px; }
+  }
 </style>
 </head>
 <body>
@@ -227,7 +241,14 @@
 <header class="top">
   <div class="wrap">
     <div class="brand"><i class="ball-dot"></i><span>DEUCE SCORE</span><span class="beta">BETA</span></div>
-    <a class="btn primary" href="#instalar">Instalar</a>
+    <div class="right">
+      <div class="lang-switch">
+        <button type="button" data-lang="pt">PT</button>
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="es">ES</button>
+      </div>
+      <a class="btn primary" href="#instalar" data-t="navInstall">Instalar</a>
+    </div>
   </div>
 </header>
 
@@ -235,61 +256,54 @@
 <div class="hero">
   <div class="wrap">
     <div>
-      <div class="eyebrow">Versão beta · Android e iPhone</div>
-      <h1>Todo jogo conta.<br><em>Anote o seu.</em></h1>
-      <p class="lede">
-        Anote o placar das suas partidas, monte a liga do seu grupo e compartilhe
-        o resultado. Liga, torneio e amistoso em um só app.
-      </p>
+      <div class="eyebrow" data-t="heroEyebrow"></div>
+      <h1 data-t-html="heroTitle"></h1>
+      <p class="lede" data-t="heroLede"></p>
       <div class="cta-row">
-        <a class="btn primary" href="#instalar">Começar agora</a>
-        <a class="btn" href="#recursos">Ver o que faz</a>
+        <a class="btn primary" href="#instalar" data-t="ctaStart"></a>
+        <a class="btn" href="#recursos" data-t="ctaSee"></a>
       </div>
-      <p class="cta-note">Funciona no navegador ou instalado como app.</p>
+      <p class="cta-note" data-t="ctaNote"></p>
       <div class="beta-note">
-        <b>EM DESENVOLVIMENTO</b><br>
-        O Deuce Score está em fase beta. Já dá para usar tudo, e novidades entram
-        toda semana. Se algo parecer estranho, escreva para
+        <b data-t="betaTitle"></b><br>
+        <span data-t="betaBody"></span>
         <a href="mailto:deucescore@gmail.com" style="color:var(--ball)">deucescore@gmail.com</a>.
       </div>
     </div>
 
-    <!-- signature: the app playing itself -->
     <div class="phone">
       <div class="progress" id="progress"></div>
-      <button type="button" class="nav-arrow prev" id="demoPrev" aria-label="Tela anterior">‹</button>
-      <button type="button" class="nav-arrow next" id="demoNext" aria-label="Próxima tela">›</button>
+      <button type="button" class="nav-arrow prev" id="demoPrev" aria-label="Anterior">‹</button>
+      <button type="button" class="nav-arrow next" id="demoNext" aria-label="Próxima">›</button>
       <div class="phone-screen">
 
         <!-- 1. início -->
         <div class="screen on">
-          <div class="m-head">
-            <div class="m-logo"><i></i>DEUCE SCORE</div><div class="m-burger"></div>
-          </div>
+          <div class="m-head"><div class="m-logo"><i></i>DEUCE SCORE</div><div class="m-burger"></div></div>
           <div class="m-record">
-            <div><div class="m-num w">12</div><div class="m-cap">Vitórias</div></div>
-            <div><div class="m-num l">7</div><div class="m-cap">Derrotas</div></div>
-            <div><div class="m-num p">63%</div><div class="m-cap">Aproveit.</div></div>
+            <div><div class="m-num w">12</div><div class="m-cap" data-t="sWins"></div></div>
+            <div><div class="m-num l">7</div><div class="m-cap" data-t="sLosses"></div></div>
+            <div><div class="m-num p">63%</div><div class="m-cap" data-t="sRate"></div></div>
           </div>
           <div class="m-strip">
-            <div class="m-cell"><div class="m-cap">Sequência</div><b style="color:var(--win)">3V</b></div>
+            <div class="m-cell"><div class="m-cap" data-t="sStreak"></div><b style="color:var(--win)">3V</b></div>
             <div class="m-cell"><div class="m-cap">Rating</div><b style="color:var(--ball)">1584</b> <span style="color:var(--win);font-size:10px">+18</span></div>
           </div>
           <div class="m-chips">
-            <div class="m-chip">🏆 Torneio</div><div class="m-chip">🥇 Liga</div>
-            <div class="m-chip">📍 Quadras</div><div class="m-chip">🔎 Procuro Jogo</div>
+            <div class="m-chip" data-t="sChipTour"></div><div class="m-chip" data-t="sChipLeague"></div>
+            <div class="m-chip" data-t="sChipCourts"></div><div class="m-chip" data-t="sChipBoard"></div>
           </div>
           <hr class="chalk">
-          <div class="m-label">PRÓXIMOS JOGOS</div>
+          <div class="m-label" data-t="sUpcoming"></div>
           <div class="m-card">
             <div class="who">Samuel</div>
-            <div class="meta">Sáb, 08:00 · Amistoso · Rápida</div>
+            <div class="meta" data-t="sUpcomingMeta"></div>
             <div class="meta" style="margin-top:4px">🌤 24°C–31°C</div>
           </div>
-          <div class="m-label">ÚLTIMAS PARTIDAS</div>
+          <div class="m-label" data-t="sRecent"></div>
           <div class="m-card">
             <div class="who">Ana</div>
-            <div class="meta">28/07 · Liga · Saibro</div>
+            <div class="meta" data-t="sRecentMeta"></div>
             <div class="m-score">6-4, 7-5</div>
           </div>
         </div>
@@ -298,40 +312,53 @@
         <div class="screen">
           <div class="m-head"><div class="m-logo"><i></i>RANKING</div><div class="m-burger"></div></div>
           <div class="m-mine">
-            <div class="m-cap">Sua colocação</div>
+            <div class="m-cap" data-t="sYourPos"></div>
             <b>#4</b>
-            <div class="m-cap">de 28 jogadores</div>
+            <div class="m-cap" data-t="sOf28"></div>
           </div>
-          <div class="m-rank"><span class="pos">1</span><span class="nm">Marcos R.<br><span class="m-cap">Nível 6.8 · 31 partidas</span></span><span class="rt">1712</span></div>
-          <div class="m-rank"><span class="pos">2</span><span class="nm">Ana P.<br><span class="m-cap">Nível 6.2 · 24 partidas</span></span><span class="rt">1655</span></div>
-          <div class="m-rank"><span class="pos">3</span><span class="nm">Samuel L.<br><span class="m-cap">Nível 5.9 · 19 partidas</span></span><span class="rt">1620</span></div>
-          <div class="m-rank me"><span class="pos">4</span><span class="nm">Você<br><span class="m-cap">Nível 5.7 · 19 partidas</span></span><span class="rt">1584</span></div>
-          <div class="m-rank"><span class="pos">5</span><span class="nm">Carla M.<br><span class="m-cap">Nível 5.4 · 12 partidas</span></span><span class="rt">1541</span></div>
-          <div class="m-rank"><span class="pos">6</span><span class="nm">Tiago F.<br><span class="m-cap">Nível 5.1 · 9 partidas</span></span><span class="rt">1502</span></div>
+          <div class="m-rank"><span class="pos">1</span><span class="nm">Marcos R.<br><span class="m-cap" data-t="sM31"></span></span><span class="rt">1712</span></div>
+          <div class="m-rank"><span class="pos">2</span><span class="nm">Ana P.<br><span class="m-cap" data-t="sM24"></span></span><span class="rt">1655</span></div>
+          <div class="m-rank"><span class="pos">3</span><span class="nm">Samuel L.<br><span class="m-cap" data-t="sM19"></span></span><span class="rt">1620</span></div>
+          <div class="m-rank me"><span class="pos">4</span><span class="nm" data-t-html="sYouRow"></span><span class="rt">1584</span></div>
+          <div class="m-rank"><span class="pos">5</span><span class="nm">Carla M.<br><span class="m-cap" data-t="sM12"></span></span><span class="rt">1541</span></div>
+          <div class="m-rank"><span class="pos">6</span><span class="nm">Tiago F.<br><span class="m-cap" data-t="sM9"></span></span><span class="rt">1502</span></div>
         </div>
 
-        <!-- 3. procuro jogo -->
+        <!-- 3. duplas -->
         <div class="screen">
-          <div class="m-head"><div class="m-logo"><i></i>PROCURO JOGO</div><div class="m-burger"></div></div>
-          <div class="m-label">MEU ANÚNCIO</div>
-          <div class="m-field">Sáb, 09:00 · Winter Garden</div>
-          <div class="m-label">JOGOS DISPONÍVEIS</div>
-          <div class="m-card" style="border-left-color:var(--panel-line)">
-            <div class="who">Carla M. · Nível 5.4</div>
-            <div class="meta">Dom 07:30 · Central Park Courts · 3,2 mi</div>
-            <div class="meta" style="margin-top:4px">“Jogo tranquilo, 1h30”</div>
+          <div class="m-head"><div class="m-logo"><i></i><span data-t="sNewMatch"></span></div><div class="m-burger"></div></div>
+          <div class="m-label" data-t="sDoubles"></div>
+          <div class="m-card">
+            <div class="who" data-t="sTeamA"></div>
+            <div class="meta" data-t="sVersus"></div>
+            <div class="who" style="margin-top:4px">Samuel + Ana</div>
           </div>
-          <div class="m-card" style="border-left-color:var(--panel-line)">
-            <div class="who">Tiago F. · Nível 5.1</div>
-            <div class="meta">Seg 18:00 · Clube Lakeside · 5,8 mi</div>
+          <div class="m-label" data-t="sScoreSets"></div>
+          <div style="display:flex; gap:7px; align-items:center; margin-bottom:7px">
+            <span class="m-cap" style="width:36px">Set 1</span>
+            <div class="m-field" style="flex:1; text-align:center; margin:0; font-family:'Space Mono',monospace; font-size:14px; color:var(--chalk)">6</div>
+            <span style="color:var(--muted)">-</span>
+            <div class="m-field" style="flex:1; text-align:center; margin:0; font-family:'Space Mono',monospace; font-size:14px; color:var(--chalk)">4</div>
           </div>
-          <div class="m-btn">CONVIDAR</div>
+          <div style="display:flex; gap:7px; align-items:center; margin-bottom:7px">
+            <span class="m-cap" style="width:36px">Set 2</span>
+            <div class="m-field" style="flex:1; text-align:center; margin:0; font-family:'Space Mono',monospace; font-size:14px; color:var(--chalk)">3</div>
+            <span style="color:var(--muted)">-</span>
+            <div class="m-field" style="flex:1; text-align:center; margin:0; font-family:'Space Mono',monospace; font-size:14px; color:var(--chalk)">6</div>
+          </div>
+          <div style="display:flex; gap:7px; align-items:center">
+            <span class="m-cap" style="width:36px">Set 3</span>
+            <div class="m-field" style="flex:1; text-align:center; margin:0; font-family:'Space Mono',monospace; font-size:14px; color:var(--ball); border-color:var(--ball)">10</div>
+            <span style="color:var(--muted)">-</span>
+            <div class="m-field" style="flex:1; text-align:center; margin:0; font-family:'Space Mono',monospace; font-size:14px; color:var(--chalk)">8</div>
+          </div>
+          <div class="m-btn" data-t="sSaveMatch"></div>
         </div>
 
         <!-- 4. estatísticas -->
         <div class="screen">
-          <div class="m-head"><div class="m-logo"><i></i>ESTATÍSTICAS</div><div class="m-burger"></div></div>
-          <div class="m-label">EVOLUÇÃO DO RATING</div>
+          <div class="m-head"><div class="m-logo"><i></i><span data-t="sStats"></span></div><div class="m-burger"></div></div>
+          <div class="m-label" data-t="sRatingEvo"></div>
           <div style="display:flex;align-items:flex-end;gap:3px;height:56px;margin-bottom:12px">
             <div style="flex:1;background:var(--win);height:40%;border-radius:2px 2px 0 0"></div>
             <div style="flex:1;background:var(--loss);height:22%;border-radius:2px 2px 0 0"></div>
@@ -342,52 +369,51 @@
             <div style="flex:1;background:var(--win);height:56%;border-radius:2px 2px 0 0"></div>
             <div style="flex:1;background:var(--loss);height:26%;border-radius:2px 2px 0 0"></div>
           </div>
-          <div class="m-label">POR SUPERFÍCIE</div>
-          <div class="m-rank"><span class="nm">Saibro</span><span class="rt" style="font-size:12px;color:var(--chalk)">7V · 2D &nbsp;<span style="color:var(--muted)">78%</span></span></div>
-          <div class="m-rank"><span class="nm">Rápida</span><span class="rt" style="font-size:12px;color:var(--chalk)">4V · 4D &nbsp;<span style="color:var(--muted)">50%</span></span></div>
-          <div class="m-rank"><span class="nm">Grama</span><span class="rt" style="font-size:12px;color:var(--chalk)">1V · 1D &nbsp;<span style="color:var(--muted)">50%</span></span></div>
-          <div class="m-label">CONQUISTAS</div>
+          <div class="m-label" data-t="sBySurface"></div>
+          <div class="m-rank"><span class="nm" data-t="sClay"></span><span class="rt" style="font-size:12px;color:var(--chalk)">7V · 2D &nbsp;<span style="color:var(--muted)">78%</span></span></div>
+          <div class="m-rank"><span class="nm" data-t="sHard"></span><span class="rt" style="font-size:12px;color:var(--chalk)">4V · 4D &nbsp;<span style="color:var(--muted)">50%</span></span></div>
+          <div class="m-rank"><span class="nm" data-t="sGrass"></span><span class="rt" style="font-size:12px;color:var(--chalk)">1V · 1D &nbsp;<span style="color:var(--muted)">50%</span></span></div>
+          <div class="m-label" data-t="sAchievements"></div>
           <div class="m-chips">
-            <div class="m-chip" style="border-color:var(--ball);color:var(--ball)">🎾 Primeira Vitória</div>
-            <div class="m-chip" style="border-color:var(--ball);color:var(--ball)">🔥 Sequência de Fogo</div>
-            <div class="m-chip" style="opacity:.4">🏅 10 Vitórias</div>
+            <div class="m-chip" style="border-color:var(--ball);color:var(--ball)" data-t="sAch1"></div>
+            <div class="m-chip" style="border-color:var(--ball);color:var(--ball)" data-t="sAch2"></div>
+            <div class="m-chip" style="opacity:.4" data-t="sAch3"></div>
           </div>
         </div>
 
-        <!-- 5. compartilhar resultado -->
+        <!-- 5. compartilhar -->
         <div class="screen">
-          <div class="m-head"><div class="m-logo"><i></i>COMPARTILHAR</div><div class="m-burger"></div></div>
+          <div class="m-head"><div class="m-logo"><i></i><span data-t="sShare"></span></div><div class="m-burger"></div></div>
           <div style="border-left:4px solid var(--win); background:#0d3247; border-radius:10px; padding:14px 13px;">
             <div class="m-logo" style="font-size:16px; margin-bottom:12px"><i></i>DEUCE SCORE</div>
-            <div style="display:inline-block; background:var(--win); color:var(--court-deep); font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:1px; padding:3px 11px; border-radius:12px; margin-bottom:12px;">VITÓRIA</div>
+            <div style="display:inline-block; background:var(--win); color:var(--court-deep); font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:1px; padding:3px 11px; border-radius:12px; margin-bottom:12px;" data-t="sWin"></div>
             <div style="display:flex; align-items:center; margin-bottom:6px;">
-              <span style="flex:1; font-family:'Bebas Neue',sans-serif; font-size:17px; color:var(--ball)">Você 🏆</span>
-              <span style="font-family:'Space Mono',monospace; font-size:14px">3&nbsp; 7&nbsp; 6</span>
+              <span style="flex:1; font-family:'Bebas Neue',sans-serif; font-size:15px; color:var(--ball)" data-t="sTeamAWin"></span>
+              <span style="font-family:'Space Mono',monospace; font-size:13px">6&nbsp; 3&nbsp; 10</span>
             </div>
             <div style="border-top:1px solid rgba(143,173,190,0.22); margin:6px 0"></div>
             <div style="display:flex; align-items:center;">
-              <span style="flex:1; font-family:'Bebas Neue',sans-serif; font-size:17px; color:var(--muted)">Samuel</span>
-              <span style="font-family:'Space Mono',monospace; font-size:14px; color:var(--muted)">6&nbsp; 5&nbsp; 1</span>
+              <span style="flex:1; font-family:'Bebas Neue',sans-serif; font-size:15px; color:var(--muted)">Samuel + Ana</span>
+              <span style="font-family:'Space Mono',monospace; font-size:13px; color:var(--muted)">4&nbsp; 6&nbsp; 8</span>
             </div>
             <div class="m-cap" style="margin-top:14px">Rating</div>
             <div><span style="font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--ball)">1584</span>
               <span style="color:var(--win); font-size:12px; margin-left:6px">+18</span></div>
-            <div class="m-cap" style="margin-top:10px">01/08/2026 · Amistoso · Rápida</div>
           </div>
-          <div class="m-btn">COMPARTILHAR IMAGEM</div>
+          <div class="m-btn" data-t="sShareImage"></div>
         </div>
 
         <!-- 6. liga -->
         <div class="screen">
-          <div class="m-head"><div class="m-logo"><i></i>LIGA DE VERÃO</div><div class="m-burger"></div></div>
-          <div class="m-cap" style="margin-bottom:8px">8 JOGADORES · RODADA 5 DE 7</div>
-          <div class="m-rank"><span class="pos">1</span><span class="nm">Marcos R.<br><span class="m-cap">6 jogos · 5V 1D</span></span><span class="rt">15</span></div>
-          <div class="m-rank"><span class="pos">2</span><span class="nm">Ana P.<br><span class="m-cap">6 jogos · 4V 2D</span></span><span class="rt">12</span></div>
-          <div class="m-rank me"><span class="pos">3</span><span class="nm">Você<br><span class="m-cap">6 jogos · 4V 2D</span></span><span class="rt">12</span></div>
-          <div class="m-rank"><span class="pos">4</span><span class="nm">Samuel L.<br><span class="m-cap">6 jogos · 3V 3D</span></span><span class="rt">9</span></div>
-          <div class="m-rank"><span class="pos">5</span><span class="nm">Carla M.<br><span class="m-cap">5 jogos · 2V 3D</span></span><span class="rt">6</span></div>
-          <div class="m-rank"><span class="pos">6</span><span class="nm">Tiago F.<br><span class="m-cap">5 jogos · 1V 4D</span></span><span class="rt">3</span></div>
-          <div class="m-btn">REGISTRAR RODADA</div>
+          <div class="m-head"><div class="m-logo"><i></i><span data-t="sLeagueName"></span></div><div class="m-burger"></div></div>
+          <div class="m-cap" style="margin-bottom:8px" data-t="sLeagueMeta"></div>
+          <div class="m-rank"><span class="pos">1</span><span class="nm">Marcos R.<br><span class="m-cap">5V 1D</span></span><span class="rt">15</span></div>
+          <div class="m-rank"><span class="pos">2</span><span class="nm">Ana P.<br><span class="m-cap">4V 2D</span></span><span class="rt">12</span></div>
+          <div class="m-rank me"><span class="pos">3</span><span class="nm" data-t-html="sYouLeague"></span><span class="rt">12</span></div>
+          <div class="m-rank"><span class="pos">4</span><span class="nm">Samuel L.<br><span class="m-cap">3V 3D</span></span><span class="rt">9</span></div>
+          <div class="m-rank"><span class="pos">5</span><span class="nm">Carla M.<br><span class="m-cap">2V 3D</span></span><span class="rt">6</span></div>
+          <div class="m-rank"><span class="pos">6</span><span class="nm">Tiago F.<br><span class="m-cap">1V 4D</span></span><span class="rt">3</span></div>
+          <div class="m-btn" data-t="sLogRound"></div>
         </div>
 
       </div>
@@ -401,26 +427,23 @@
 <section id="porque">
   <div class="wrap">
     <div class="score-eyebrow">15</div>
-    <h2>O jogo acaba.<br>E o placar some.</h2>
-    <p class="sub">
-      Placar anotado no grupo do WhatsApp desaparece na terça-feira. Sem registro,
-      cada partida vira uma sensação, e sensação não mostra progresso.
-    </p>
+    <h2 data-t-html="whyTitle"></h2>
+    <p class="sub" data-t="whySub"></p>
     <div class="cards">
       <div class="card">
         <div class="ico">📈</div>
-        <h3>Um número que é seu</h3>
-        <p>Seu rating sobe quando você ganha e cai quando perde, e mexe mais ainda se o adversário era mais forte. É o que transforma "acho que joguei bem" em algo que dá para acompanhar.</p>
+        <h3 data-t="why1Title"></h3>
+        <p data-t="why1Body"></p>
       </div>
       <div class="card">
         <div class="ico">🎯</div>
-        <h3>Descubra seus padrões</h3>
-        <p>Você rende melhor no saibro? Perde mais nos jogos de manhã? Trava contra um adversário específico? Depois de vinte partidas registradas, isso deixa de ser palpite.</p>
+        <h3 data-t="why2Title"></h3>
+        <p data-t="why2Body"></p>
       </div>
       <div class="card">
         <div class="ico">🏆</div>
-        <h3>A liga do grupo, organizada</h3>
-        <p>Monte a liga com os amigos do clube, registre cada rodada e deixe a classificação se atualizar sozinha. Sem planilha, sem discussão sobre quem está na frente.</p>
+        <h3 data-t="why3Title"></h3>
+        <p data-t="why3Body"></p>
       </div>
     </div>
   </div>
@@ -432,17 +455,17 @@
 <section id="recursos">
   <div class="wrap">
     <div class="score-eyebrow">30</div>
-    <h2>O que dá para fazer</h2>
-    <p class="sub">Tudo em um app só, em português, inglês e espanhol.</p>
+    <h2 data-t="featTitle"></h2>
+    <p class="sub" data-t="featSub"></p>
     <div class="feats">
-      <div class="feat"><div class="ico">🎾</div><div><b>Registrar partidas</b><span>Placar por set, superfície, tipo de jogo, local, foto e até a corda da raquete.</span></div></div>
-      <div class="feat"><div class="ico">📊</div><div><b>Rating e ranking</b><span>Seu número evolui a cada jogo, e você vê sua colocação entre todos os jogadores.</span></div></div>
-      <div class="feat"><div class="ico">🤝</div><div><b>Duplas</b><span>Registre com parceiro e os dois adversários. O placar entra no histórico de quem jogou.</span></div></div>
-      <div class="feat"><div class="ico">✅</div><div><b>Placar confirmado</b><span>Envie o resultado para o adversário validar. Nada de placar inventado no ranking.</span></div></div>
-      <div class="feat"><div class="ico">🏆</div><div><b>Torneios e ligas</b><span>Monte chaveamento, acompanhe classificação e registre as rodadas.</span></div></div>
-      <div class="feat"><div class="ico">📤</div><div><b>Compartilhar resultado</b><span>Gere uma imagem do placar com os dois lados e o seu rating, pronta para o grupo.</span></div></div>
-      <div class="feat"><div class="ico">📅</div><div><b>Agendar e convidar</b><span>Convide pelo app, o adversário aceita, e os dois recebem lembrete 24h e 1h antes.</span></div></div>
-      <div class="feat"><div class="ico">☁️</div><div><b>Histórico protegido</b><span>Backup na nuvem ligado ao seu e-mail. Trocou de celular, restaurou.</span></div></div>
+      <div class="feat"><div class="ico">🎾</div><div><b data-t="f1t"></b><span data-t="f1b"></span></div></div>
+      <div class="feat"><div class="ico">📊</div><div><b data-t="f2t"></b><span data-t="f2b"></span></div></div>
+      <div class="feat"><div class="ico">🤝</div><div><b data-t="f3t"></b><span data-t="f3b"></span></div></div>
+      <div class="feat"><div class="ico">✅</div><div><b data-t="f4t"></b><span data-t="f4b"></span></div></div>
+      <div class="feat"><div class="ico">🏆</div><div><b data-t="f5t"></b><span data-t="f5b"></span></div></div>
+      <div class="feat"><div class="ico">📤</div><div><b data-t="f6t"></b><span data-t="f6b"></span></div></div>
+      <div class="feat"><div class="ico">📅</div><div><b data-t="f7t"></b><span data-t="f7b"></span></div></div>
+      <div class="feat"><div class="ico">☁️</div><div><b data-t="f8t"></b><span data-t="f8b"></span></div></div>
     </div>
   </div>
 </section>
@@ -453,30 +476,30 @@
 <section id="instalar">
   <div class="wrap">
     <div class="score-eyebrow">40</div>
-    <h2>Instalar leva um minuto</h2>
+    <h2 data-t="instTitle"></h2>
+
     <div class="install-grid">
       <div>
         <p class="platform-title">🤖 Android</p>
-        <p class="sub" style="margin-bottom:18px">Baixe o arquivo de instalação e abra no celular.</p>
+        <p class="sub" style="margin-bottom:18px" data-t="andSub"></p>
         <div class="steps" style="grid-template-columns:1fr">
-          <div class="step"><div class="n">1</div><p>Toque no botão abaixo para baixar o APK.</p></div>
-          <div class="step"><div class="n">2</div><p>Abra o arquivo baixado e confirme a instalação. O Android vai pedir permissão para instalar de fonte desconhecida.</p></div>
-          <div class="step"><div class="n">3</div><p>Abra o Deuce Score e permita as notificações.</p></div>
+          <div class="step"><div class="n">1</div><p data-t="and1"></p></div>
+          <div class="step"><div class="n">2</div><p data-t="and2"></p></div>
+          <div class="step"><div class="n">3</div><p data-t="and3"></p></div>
         </div>
-        <!-- APK fica na raiz do site (cloudflare/deuce-score.apk) -->
-        <a class="btn primary" href="/deuce-score.apk" download style="margin-top:16px">Baixar o APK</a>
-        <div class="warn">Em breve também na Google Play.</div>
+        <a class="btn primary" href="/deuce-score.apk" download style="margin-top:16px" data-t="andBtn"></a>
+        <div class="warn" data-t="andWarn"></div>
       </div>
 
       <div>
         <p class="platform-title">📱 iPhone</p>
-        <p class="sub" style="margin-bottom:18px">No iPhone o Deuce Score roda pelo navegador. Abra o link no <strong style="color:var(--chalk)">Safari</strong>, não no Chrome nem pelo navegador do Instagram ou WhatsApp.</p>
+        <p class="sub" style="margin-bottom:18px" data-t-html="iosSub"></p>
         <div class="steps" style="grid-template-columns:1fr">
-          <div class="step"><div class="n">1</div><p>Toque no botão de compartilhar (o quadrado com a seta para cima).</p></div>
-          <div class="step"><div class="n">2</div><p>Escolha <strong style="color:var(--chalk)">Adicionar à Tela de Início</strong>.</p></div>
-          <div class="step"><div class="n">3</div><p>Abra pelo ícone criado e permita as notificações.</p></div>
+          <div class="step"><div class="n">1</div><p data-t="ios1"></p></div>
+          <div class="step"><div class="n">2</div><p data-t-html="ios2"></p></div>
+          <div class="step"><div class="n">3</div><p data-t="ios3"></p></div>
         </div>
-        <a class="btn primary" href="https://meu-placar-tenis.pages.dev" style="margin-top:16px">Abrir no Safari</a>
+        <a class="btn primary" href="https://meu-placar-tenis.pages.dev" style="margin-top:16px" data-t="iosBtn"></a>
       </div>
     </div>
   </div>
@@ -488,10 +511,9 @@
 <section class="closer">
   <div class="wrap">
     <div class="score-eyebrow">GAME</div>
-    <h2>Sua próxima partida<br>merece ser registrada.</h2>
-    <p class="sub" style="margin:0 auto 30px">Leva menos de dois minutos para criar o perfil. Depois é só jogar.</p>
-    <!-- Trocar as 3 ocorrências desta URL quando o domínio estiver no ar -->
-    <a class="btn primary" href="https://meu-placar-tenis.pages.dev" style="font-size:20px; padding:15px 34px;">Abrir o Deuce Score</a>
+    <h2 data-t-html="closeTitle"></h2>
+    <p class="sub" style="margin:0 auto 30px" data-t="closeSub"></p>
+    <a class="btn primary" href="https://meu-placar-tenis.pages.dev" style="font-size:20px; padding:15px 34px;" data-t="closeBtn"></a>
   </div>
 </section>
 
@@ -499,55 +521,277 @@
   <div class="wrap">
     <div>© 2026 Deuce Score</div>
     <div>
-      <a href="/privacy.html">Política de Privacidade</a> ·
+      <a href="/privacy.html" data-t="footPrivacy"></a> ·
       <a href="mailto:deucescore@gmail.com">deucescore@gmail.com</a>
     </div>
   </div>
 </footer>
-
 <script>
-  // The demo cycles on its own; each screen gets a segment in the progress bar,
-  // like a story. Pauses when the tab is hidden so it isn't running unseen.
-  (function(){
-    const screens = document.querySelectorAll('.screen');
-    const bar = document.getElementById('progress');
-    if(!screens.length || !bar) return;
+const TXT = {
+  pt: {
+    navInstall:"Instalar",
+    heroEyebrow:"Versão beta · Android e iPhone",
+    heroTitle:"O jogo acaba.<br><em>O placar fica.</em>",
+    heroLede:"Anote o placar das suas partidas, monte a liga do seu grupo e compartilhe o resultado. Liga, torneio e amistoso em um só app.",
+    ctaStart:"Começar agora", ctaSee:"Ver o que faz",
+    ctaNote:"Funciona no navegador ou instalado como app.",
+    betaTitle:"EM DESENVOLVIMENTO",
+    betaBody:"O Deuce Score está em fase beta. Já dá para usar tudo, e novidades entram toda semana. Se algo parecer estranho, escreva para ",
+    sWins:"Vitórias", sLosses:"Derrotas", sRate:"Aproveit.", sStreak:"Sequência",
+    sChipTour:"🏆 Torneio", sChipLeague:"🥇 Liga", sChipCourts:"📍 Quadras", sChipBoard:"🔎 Procuro Jogo",
+    sUpcoming:"PRÓXIMOS JOGOS", sUpcomingMeta:"Sáb, 08:00 · Amistoso · Rápida",
+    sRecent:"ÚLTIMAS PARTIDAS", sRecentMeta:"28/07 · Liga · Saibro",
+    sYourPos:"Sua colocação", sOf28:"de 28 jogadores",
+    sM31:"31 partidas", sM24:"24 partidas", sM19:"19 partidas", sM12:"12 partidas", sM9:"9 partidas",
+    sYouRow:"Você<br><span class='m-cap'>19 partidas</span>",
+    sNewMatch:"NOVA PARTIDA", sDoubles:"DUPLAS", sTeamA:"Você + Rafael", sVersus:"contra",
+    sScoreSets:"PLACAR (SETS)", sSaveMatch:"SALVAR PARTIDA",
+    sStats:"ESTATÍSTICAS", sRatingEvo:"EVOLUÇÃO DO RATING", sBySurface:"POR SUPERFÍCIE",
+    sClay:"Saibro", sHard:"Rápida", sGrass:"Grama", sAchievements:"CONQUISTAS",
+    sAch1:"🎾 Primeira Vitória", sAch2:"🔥 Sequência de Fogo", sAch3:"🏅 10 Vitórias",
+    sShare:"COMPARTILHAR", sWin:"VITÓRIA", sTeamAWin:"Você + Rafael 🏆", sShareImage:"COMPARTILHAR IMAGEM",
+    sLeagueName:"LIGA DE VERÃO", sLeagueMeta:"8 JOGADORES · RODADA 5 DE 7",
+    sYouLeague:"Você<br><span class='m-cap'>4V 2D</span>", sLogRound:"REGISTRAR RODADA",
+    whyTitle:"O jogo acaba.<br>E o placar some.",
+    whySub:"Placar anotado no grupo do WhatsApp desaparece na terça-feira. Sem registro, cada partida vira uma sensação, e sensação não mostra progresso.",
+    why1Title:"Um número que é seu",
+    why1Body:"Seu rating sobe quando você ganha e cai quando perde, e mexe mais ainda se o adversário era mais forte. É o que transforma \"acho que joguei bem\" em algo que dá para acompanhar.",
+    why2Title:"Descubra seus padrões",
+    why2Body:"Você rende melhor no saibro? Perde mais nos jogos de manhã? Trava contra um adversário específico? Depois de vinte partidas registradas, isso deixa de ser palpite.",
+    why3Title:"A liga do grupo, organizada",
+    why3Body:"Monte a liga com os amigos do clube, registre cada rodada e deixe a classificação se atualizar sozinha. Sem planilha, sem discussão sobre quem está na frente.",
+    featTitle:"O que dá para fazer",
+    featSub:"Tudo em um app só, em português, inglês e espanhol.",
+    f1t:"Registrar partidas", f1b:"Placar por set, superfície, tipo de jogo, local, foto e até a corda da raquete.",
+    f2t:"Rating e ranking", f2b:"Seu número evolui a cada jogo, e você vê sua colocação entre todos os jogadores.",
+    f3t:"Duplas", f3b:"Registre com parceiro e os dois adversários. O placar entra no histórico de quem jogou.",
+    f4t:"Placar confirmado", f4b:"Envie o resultado para o adversário validar. Nada de placar inventado no ranking.",
+    f5t:"Torneios e ligas", f5b:"Monte chaveamento, acompanhe classificação e registre as rodadas.",
+    f6t:"Compartilhar resultado", f6b:"Gere uma imagem do placar com os dois lados e o seu rating, pronta para o grupo.",
+    f7t:"Agendar e convidar", f7b:"Convide pelo app, o adversário aceita, e os dois recebem lembrete 24h e 1h antes.",
+    f8t:"Histórico protegido", f8b:"Backup na nuvem ligado ao seu e-mail. Trocou de celular, restaurou.",
+    instTitle:"Instalar leva um minuto",
+    andSub:"Baixe o arquivo de instalação e abra no celular.",
+    and1:"Toque no botão abaixo para baixar o APK.",
+    and2:"Abra o arquivo baixado e confirme a instalação. O Android vai pedir permissão para instalar de fonte desconhecida.",
+    and3:"Abra o Deuce Score e permita as notificações.",
+    andBtn:"Baixar o APK", andWarn:"Em breve também na Google Play.",
+    iosSub:"No iPhone o Deuce Score roda pelo navegador. Abra o link no <strong style='color:var(--chalk)'>Safari</strong>, não no Chrome nem pelo navegador do Instagram ou WhatsApp.",
+    ios1:"Toque no botão de compartilhar (o quadrado com a seta para cima).",
+    ios2:"Escolha <strong style='color:var(--chalk)'>Adicionar à Tela de Início</strong>.",
+    ios3:"Abra pelo ícone criado e permita as notificações.",
+    iosBtn:"Abrir no Safari",
+    closeTitle:"Sua próxima partida<br>merece ser registrada.",
+    closeSub:"Leva menos de dois minutos para criar o perfil. Depois é só jogar.",
+    closeBtn:"Abrir o Deuce Score",
+    footPrivacy:"Política de Privacidade",
+    metaDesc:"Anote o placar das suas partidas de tênis, monte a liga do seu grupo e compartilhe o resultado.",
+    docTitle:"Deuce Score · Liga, torneio e amistoso em um só app"
+  },
 
-    screens.forEach(() => bar.appendChild(document.createElement('i')));
-    const segs = bar.querySelectorAll('i');
-    let i = 0;
+  en: {
+    navInstall:"Install",
+    heroEyebrow:"Beta · Android and iPhone",
+    heroTitle:"The match ends.<br><em>The score stays.</em>",
+    heroLede:"Log your match scores, run your group's league and share the result. League, tournament and casual play in one app.",
+    ctaStart:"Get started", ctaSee:"See what it does",
+    ctaNote:"Works in the browser or installed as an app.",
+    betaTitle:"IN DEVELOPMENT",
+    betaBody:"Deuce Score is in beta. Everything works, and new things ship every week. If something looks off, write to ",
+    sWins:"Wins", sLosses:"Losses", sRate:"Win rate", sStreak:"Streak",
+    sChipTour:"🏆 Tournament", sChipLeague:"🥇 League", sChipCourts:"📍 Courts", sChipBoard:"🔎 Find a Game",
+    sUpcoming:"UPCOMING", sUpcomingMeta:"Sat, 8:00 · Casual · Hard",
+    sRecent:"RECENT MATCHES", sRecentMeta:"Jul 28 · League · Clay",
+    sYourPos:"Your position", sOf28:"of 28 players",
+    sM31:"31 matches", sM24:"24 matches", sM19:"19 matches", sM12:"12 matches", sM9:"9 matches",
+    sYouRow:"You<br><span class='m-cap'>19 matches</span>",
+    sNewMatch:"NEW MATCH", sDoubles:"DOUBLES", sTeamA:"You + Rafael", sVersus:"vs",
+    sScoreSets:"SCORE (SETS)", sSaveMatch:"SAVE MATCH",
+    sStats:"STATS", sRatingEvo:"RATING PROGRESSION", sBySurface:"BY SURFACE",
+    sClay:"Clay", sHard:"Hard", sGrass:"Grass", sAchievements:"ACHIEVEMENTS",
+    sAch1:"🎾 First Win", sAch2:"🔥 Hot Streak", sAch3:"🏅 10 Wins",
+    sShare:"SHARE", sWin:"WIN", sTeamAWin:"You + Rafael 🏆", sShareImage:"SHARE IMAGE",
+    sLeagueName:"SUMMER LEAGUE", sLeagueMeta:"8 PLAYERS · ROUND 5 OF 7",
+    sYouLeague:"You<br><span class='m-cap'>4W 2L</span>", sLogRound:"LOG ROUND",
+    whyTitle:"The match ends.<br>And the score is gone.",
+    whySub:"A score typed into the group chat is gone by Tuesday. With no record, every match becomes a feeling, and a feeling doesn't show progress.",
+    why1Title:"A number that's yours",
+    why1Body:"Your rating goes up when you win and down when you lose, and moves further when the opponent was stronger. It turns \"I think I played well\" into something you can actually follow.",
+    why2Title:"Find your patterns",
+    why2Body:"Do you play better on clay? Lose more in morning matches? Freeze against one particular opponent? Twenty logged matches in, that stops being a guess.",
+    why3Title:"Your league, organised",
+    why3Body:"Set up the league with your club friends, log each round and let the standings update themselves. No spreadsheet, no argument about who is ahead.",
+    featTitle:"What you can do",
+    featSub:"All in one app, in Portuguese, English and Spanish.",
+    f1t:"Log matches", f1b:"Score by set, surface, match type, location, photo and even your string setup.",
+    f2t:"Rating and ranking", f2b:"Your number moves with every match, and you see where you stand among all players.",
+    f3t:"Doubles", f3b:"Record your partner and both opponents. The score lands in everyone's history.",
+    f4t:"Confirmed scores", f4b:"Send the result for your opponent to validate. No invented scores in the ranking.",
+    f5t:"Tournaments and leagues", f5b:"Build the bracket, follow the standings and log each round.",
+    f6t:"Share the result", f6b:"Generate an image of the scoreline with both sides and your rating, ready for the group.",
+    f7t:"Schedule and invite", f7b:"Invite from the app, your opponent accepts, and both get reminders 24h and 1h before.",
+    f8t:"History protected", f8b:"Cloud backup tied to your email. New phone, restored.",
+    instTitle:"Installing takes a minute",
+    andSub:"Download the install file and open it on your phone.",
+    and1:"Tap the button below to download the APK.",
+    and2:"Open the downloaded file and confirm. Android will ask permission to install from an unknown source.",
+    and3:"Open Deuce Score and allow notifications.",
+    andBtn:"Download the APK", andWarn:"Coming to Google Play soon.",
+    iosSub:"On iPhone, Deuce Score runs in the browser. Open the link in <strong style='color:var(--chalk)'>Safari</strong>, not in Chrome or the in-app browser of Instagram or WhatsApp.",
+    ios1:"Tap the share button (the square with an arrow pointing up).",
+    ios2:"Choose <strong style='color:var(--chalk)'>Add to Home Screen</strong>.",
+    ios3:"Open it from the new icon and allow notifications.",
+    iosBtn:"Open in Safari",
+    closeTitle:"Your next match<br>deserves to be recorded.",
+    closeSub:"Setting up your profile takes under two minutes. Then just play.",
+    closeBtn:"Open Deuce Score",
+    footPrivacy:"Privacy Policy",
+    metaDesc:"Log your tennis match scores, run your group's league and share the result.",
+    docTitle:"Deuce Score · League, tournament and casual play in one app"
+  },
 
-    function paint(){
-      screens.forEach((s, n) => s.classList.toggle('on', n === i));
-      segs.forEach((s, n) => s.classList.toggle('done', n === i));
-    }
-    paint();
+  es: {
+    navInstall:"Instalar",
+    heroEyebrow:"Versión beta · Android y iPhone",
+    heroTitle:"El partido termina.<br><em>El marcador queda.</em>",
+    heroLede:"Anota el marcador de tus partidos, arma la liga de tu grupo y comparte el resultado. Liga, torneo y amistoso en una sola app.",
+    ctaStart:"Empezar ahora", ctaSee:"Ver qué hace",
+    ctaNote:"Funciona en el navegador o instalada como app.",
+    betaTitle:"EN DESARROLLO",
+    betaBody:"Deuce Score está en fase beta. Ya se puede usar todo, y entran novedades cada semana. Si algo parece raro, escribe a ",
+    sWins:"Victorias", sLosses:"Derrotas", sRate:"Rendim.", sStreak:"Racha",
+    sChipTour:"🏆 Torneo", sChipLeague:"🥇 Liga", sChipCourts:"📍 Canchas", sChipBoard:"🔎 Busco Partido",
+    sUpcoming:"PRÓXIMOS PARTIDOS", sUpcomingMeta:"Sáb, 08:00 · Amistoso · Rápida",
+    sRecent:"ÚLTIMOS PARTIDOS", sRecentMeta:"28/07 · Liga · Polvo de ladrillo",
+    sYourPos:"Tu posición", sOf28:"de 28 jugadores",
+    sM31:"31 partidos", sM24:"24 partidos", sM19:"19 partidos", sM12:"12 partidos", sM9:"9 partidos",
+    sYouRow:"Tú<br><span class='m-cap'>19 partidos</span>",
+    sNewMatch:"NUEVO PARTIDO", sDoubles:"DOBLES", sTeamA:"Tú + Rafael", sVersus:"contra",
+    sScoreSets:"MARCADOR (SETS)", sSaveMatch:"GUARDAR PARTIDO",
+    sStats:"ESTADÍSTICAS", sRatingEvo:"EVOLUCIÓN DEL RATING", sBySurface:"POR SUPERFICIE",
+    sClay:"Polvo", sHard:"Rápida", sGrass:"Césped", sAchievements:"LOGROS",
+    sAch1:"🎾 Primera Victoria", sAch2:"🔥 Racha de Fuego", sAch3:"🏅 10 Victorias",
+    sShare:"COMPARTIR", sWin:"VICTORIA", sTeamAWin:"Tú + Rafael 🏆", sShareImage:"COMPARTIR IMAGEN",
+    sLeagueName:"LIGA DE VERANO", sLeagueMeta:"8 JUGADORES · FECHA 5 DE 7",
+    sYouLeague:"Tú<br><span class='m-cap'>4V 2D</span>", sLogRound:"REGISTRAR FECHA",
+    whyTitle:"El partido termina.<br>Y el marcador desaparece.",
+    whySub:"Un marcador anotado en el grupo de WhatsApp desaparece el martes. Sin registro, cada partido se vuelve una sensación, y una sensación no muestra progreso.",
+    why1Title:"Un número que es tuyo",
+    why1Body:"Tu rating sube cuando ganas y baja cuando pierdes, y se mueve más si el rival era más fuerte. Es lo que convierte \"creo que jugué bien\" en algo que puedes seguir.",
+    why2Title:"Descubre tus patrones",
+    why2Body:"¿Rindes mejor en polvo de ladrillo? ¿Pierdes más por la mañana? ¿Te trabas contra un rival concreto? Después de veinte partidos registrados, deja de ser una corazonada.",
+    why3Title:"La liga del grupo, organizada",
+    why3Body:"Arma la liga con los amigos del club, registra cada fecha y deja que la clasificación se actualice sola. Sin planilla y sin discusiones sobre quién va adelante.",
+    featTitle:"Lo que puedes hacer",
+    featSub:"Todo en una sola app, en portugués, inglés y español.",
+    f1t:"Registrar partidos", f1b:"Marcador por set, superficie, tipo de partido, lugar, foto y hasta el encordado.",
+    f2t:"Rating y ranking", f2b:"Tu número evoluciona con cada partido, y ves tu posición entre todos los jugadores.",
+    f3t:"Dobles", f3b:"Registra a tu compañero y a los dos rivales. El marcador entra en el historial de todos.",
+    f4t:"Marcador confirmado", f4b:"Envía el resultado para que tu rival lo valide. Nada de marcadores inventados en el ranking.",
+    f5t:"Torneos y ligas", f5b:"Arma el cuadro, sigue la clasificación y registra cada fecha.",
+    f6t:"Compartir resultado", f6b:"Genera una imagen del marcador con los dos lados y tu rating, lista para el grupo.",
+    f7t:"Agendar e invitar", f7b:"Invita desde la app, tu rival acepta, y ambos reciben recordatorio 24h y 1h antes.",
+    f8t:"Historial protegido", f8b:"Copia en la nube vinculada a tu correo. Cambiaste de teléfono, lo restauras.",
+    instTitle:"Instalar toma un minuto",
+    andSub:"Descarga el archivo de instalación y ábrelo en el teléfono.",
+    and1:"Toca el botón de abajo para descargar el APK.",
+    and2:"Abre el archivo descargado y confirma. Android pedirá permiso para instalar de origen desconocido.",
+    and3:"Abre Deuce Score y permite las notificaciones.",
+    andBtn:"Descargar el APK", andWarn:"Pronto también en Google Play.",
+    iosSub:"En iPhone, Deuce Score funciona desde el navegador. Abre el enlace en <strong style='color:var(--chalk)'>Safari</strong>, no en Chrome ni en el navegador de Instagram o WhatsApp.",
+    ios1:"Toca el botón de compartir (el cuadrado con la flecha hacia arriba).",
+    ios2:"Elige <strong style='color:var(--chalk)'>Añadir a pantalla de inicio</strong>.",
+    ios3:"Ábrela desde el icono creado y permite las notificaciones.",
+    iosBtn:"Abrir en Safari",
+    closeTitle:"Tu próximo partido<br>merece quedar registrado.",
+    closeSub:"Crear el perfil toma menos de dos minutos. Después, solo juega.",
+    closeBtn:"Abrir Deuce Score",
+    footPrivacy:"Política de Privacidad",
+    metaDesc:"Anota el marcador de tus partidos de tenis, arma la liga de tu grupo y comparte el resultado.",
+    docTitle:"Deuce Score · Liga, torneo y amistoso en una sola app"
+  }
+};
 
-    let timer = null;
-    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const HTML_LANG = { pt:'pt-BR', en:'en', es:'es' };
+const LANG_KEY = 'tennis_lang_v1';   // same key the app uses, so both agree
 
-    function step(){ go(i + 1); }
-    function go(n){
-      i = (n + screens.length) % screens.length;
-      paint();
-    }
-    function play(){
-      if(still) return;
-      clearInterval(timer);
-      timer = setInterval(step, 3800);
-    }
+function pickLang(){
+  // 1. explicit ?lang= wins, so a shared link can force a language
+  const param = new URLSearchParams(location.search).get('lang');
+  if(param && TXT[param]) return param;
+  // 2. what they already chose inside the app (same origin, same storage)
+  try{
+    const saved = localStorage.getItem(LANG_KEY);
+    if(saved && TXT[saved]) return saved;
+  }catch(e){}
+  // 3. the browser's languages, in the visitor's own order of preference
+  const list = navigator.languages && navigator.languages.length
+    ? navigator.languages : [navigator.language || ''];
+  for(const raw of list){
+    const code = String(raw).slice(0,2).toLowerCase();
+    if(TXT[code]) return code;
+  }
+  return 'pt';
+}
 
-    // Tapping an arrow hands control to the reader: restart the clock so the
-    // screen they chose doesn't vanish half a second later.
-    document.getElementById('demoPrev').addEventListener('click', () => { go(i - 1); play(); });
-    document.getElementById('demoNext').addEventListener('click', () => { go(i + 1); play(); });
+function setLang(lang){
+  const d = TXT[lang] || TXT.pt;
+  document.documentElement.lang = HTML_LANG[lang] || 'pt-BR';
+  document.title = d.docTitle;
+  const meta = document.getElementById('metaDesc');
+  if(meta) meta.setAttribute('content', d.metaDesc);
 
-    play();
-    document.addEventListener('visibilitychange', () => {
-      clearInterval(timer);
-      if(!document.hidden) play();
-    });
-  })();
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const v = d[el.getAttribute('data-t')];
+    if(v !== undefined) el.textContent = v;
+  });
+  document.querySelectorAll('[data-t-html]').forEach(el => {
+    const v = d[el.getAttribute('data-t-html')];
+    if(v !== undefined) el.innerHTML = v;
+  });
+  document.querySelectorAll('.lang-switch button').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  try{ localStorage.setItem(LANG_KEY, lang); }catch(e){}
+}
+
+document.querySelectorAll('.lang-switch button').forEach(b => {
+  b.addEventListener('click', () => setLang(b.dataset.lang));
+});
+setLang(pickLang());
+
+// ---- demo carousel ----
+(function(){
+  const screens = document.querySelectorAll('.screen');
+  const bar = document.getElementById('progress');
+  if(!screens.length || !bar) return;
+
+  screens.forEach(() => bar.appendChild(document.createElement('i')));
+  const segs = bar.querySelectorAll('i');
+  let i = 0, timer = null;
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function paint(){
+    screens.forEach((s, n) => s.classList.toggle('on', n === i));
+    segs.forEach((s, n) => s.classList.toggle('done', n === i));
+  }
+  function go(n){ i = (n + screens.length) % screens.length; paint(); }
+  function step(){ go(i + 1); }
+  function play(){
+    if(still) return;
+    clearInterval(timer);
+    timer = setInterval(step, 3800);
+  }
+
+  paint();
+  document.getElementById('demoPrev').addEventListener('click', () => { go(i - 1); play(); });
+  document.getElementById('demoNext').addEventListener('click', () => { go(i + 1); play(); });
+  play();
+  document.addEventListener('visibilitychange', () => {
+    clearInterval(timer);
+    if(!document.hidden) play();
+  });
+})();
 </script>
 
 </body>
