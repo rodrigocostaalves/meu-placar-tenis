@@ -701,6 +701,8 @@
   <div class="field" id="opponentEmailWrap">
     <label data-i18n="labelOpponentEmail">E-mail do Adversário (opcional)</label>
     <input type="email" id="fOpponentEmail">
+    <div id="extraOpponents"></div>
+    <button type="button" class="add-set-btn" id="addOpponentBtn" style="margin-top:8px; display:none" data-i18n="btnAddOpponent">+ Adicionar jogador</button>
     <div id="inviteMessageField" style="display:none; margin-top:10px">
       <label data-i18n="labelInviteMessage" style="display:block; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Mensagem para o adversário (opcional)</label>
       <input type="text" id="fInviteMessage" data-i18n-ph="phInviteMessage" placeholder="Ex: consigo às 9h, quadra 3. Confirma?" style="width:100%; background:var(--panel); border:1px solid var(--panel-line); color:var(--chalk); border-radius:8px; padding:11px 12px; font-size:15px; font-family:inherit;">
@@ -1282,6 +1284,10 @@ const TRANSLATIONS = {
     labelInviteMessage: "Mensagem para o adversário (opcional)",
     shareYouLabel: "Você",
     rankingProvisional: "Sem partidas ainda · provisório",
+    btnAddOpponent: "+ Adicionar jogador", btnDismiss: "OK",
+    invitesSentMany: "{sent} convites enviados ({notified} com notificação).",
+    respAcceptedTag: "CONVITE ACEITO", respDeclinedTag: "CONVITE RECUSADO",
+    respAcceptedText: "aceitou seu convite para", respDeclinedText: "recusou seu convite para",
     welcomeTitle: "Bem-vindo ao Deuce Score",
     welcomeIntro: "Em três passos você já está jogando. Leva menos de dois minutos.",
     welcomeStep1Title: "Preencha seu perfil",
@@ -1475,6 +1481,10 @@ const TRANSLATIONS = {
     labelInviteMessage: "Message to your opponent (optional)",
     shareYouLabel: "You",
     rankingProvisional: "No matches yet · provisional",
+    btnAddOpponent: "+ Add player", btnDismiss: "OK",
+    invitesSentMany: "{sent} invites sent ({notified} with a notification).",
+    respAcceptedTag: "INVITE ACCEPTED", respDeclinedTag: "INVITE DECLINED",
+    respAcceptedText: "accepted your invite for", respDeclinedText: "declined your invite for",
     welcomeTitle: "Welcome to Deuce Score",
     welcomeIntro: "Three steps and you're playing. Takes under two minutes.",
     welcomeStep1Title: "Fill in your profile",
@@ -1668,6 +1678,10 @@ const TRANSLATIONS = {
     labelInviteMessage: "Mensaje para tu rival (opcional)",
     shareYouLabel: "Tú",
     rankingProvisional: "Sin partidos aún · provisional",
+    btnAddOpponent: "+ Añadir jugador", btnDismiss: "OK",
+    invitesSentMany: "{sent} invitaciones enviadas ({notified} con notificación).",
+    respAcceptedTag: "INVITACIÓN ACEPTADA", respDeclinedTag: "INVITACIÓN RECHAZADA",
+    respAcceptedText: "aceptó tu invitación para", respDeclinedText: "rechazó tu invitación para",
     welcomeTitle: "Bienvenido a Deuce Score",
     welcomeIntro: "En tres pasos ya estás jugando. Toma menos de dos minutos.",
     welcomeStep1Title: "Completa tu perfil",
@@ -2219,6 +2233,7 @@ async function cancelScheduledMatch(matchId){
 // ---------- Inbox: Invites + Pending Results ----------
 let pendingInvites = [];
 let pendingResults = [];
+let inviteResponses = [];
 
 function toggleWantsInvite(){
   wantsInvite = !wantsInvite;
@@ -2232,31 +2247,69 @@ function toggleWantsSendResult(){
 
 let pendingListingId = null;
 
+function addOpponentField(){
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex; gap:8px; margin-top:8px;';
+  wrap.innerHTML = `
+    <input type="email" class="extra-opponent" placeholder="email@exemplo.com"
+      style="flex:1; background:var(--panel); border:1px solid var(--panel-line); color:var(--chalk); border-radius:8px; padding:11px 12px; font-size:15px; font-family:inherit;">
+    <button type="button" class="btn-cancel" style="width:52px; padding:0;">✕</button>`;
+  wrap.querySelector('button').addEventListener('click', () => wrap.remove());
+  $('extraOpponents').appendChild(wrap);
+  wrap.querySelector('input').focus();
+}
+
+// Every recipient gets their own invite record, so each one accepts or
+// declines independently instead of the first answer settling it for all.
+function inviteRecipients(){
+  const list = [];
+  const first = $('fOpponentEmail').value.trim();
+  if(first) list.push(first);
+  $('extraOpponents').querySelectorAll('.extra-opponent').forEach(el => {
+    const v = el.value.trim();
+    if(v && !list.some(x => x.toLowerCase() === v.toLowerCase())) list.push(v);
+  });
+  return list;
+}
+
 async function sendInvite(){
   const date = $('fDate').value;
-  const toEmail = $('fOpponentEmail').value.trim();
-  // one of the two is enough: a typed address, or a handle from the board
-  if(!date || (!toEmail && !pendingListingId)){ showAlert(t('inviteNeedInfo')); return; }
+  const recipients = inviteRecipients();
+  // one of the two is enough: typed addresses, or a handle from the board
+  if(!date || (!recipients.length && !pendingListingId)){ showAlert(t('inviteNeedInfo')); return; }
   try{
     const profileRaw = localStorage.getItem(PROFILE_KEY);
     const profile = profileRaw ? JSON.parse(profileRaw) : {};
     const localDateTime = new Date(`${date}T${$('fTime').value || '09:00'}:00`);
-    const res = await fetch('/api/send-invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fromName: profile.name || t('defaultOpponent'),
-        fromEmail: profile.email || '',
-        toEmail,
-        listingId: pendingListingId,
-        dateTime: localDateTime.toISOString(),
-        opponent: $('fOpponent').value.trim(),
-        location: $('fLocation').value.trim(),
-        message: $('fInviteMessage').value.trim()
-      })
-    });
-    const data = await res.json();
-    showAlert(data.notified ? t('inviteSentNotified') : t('inviteSentNoAccount'));
+
+    const targets = recipients.length ? recipients : [null];
+    let notified = 0, sent = 0;
+
+    for(const toEmail of targets){
+      const res = await fetch('/api/send-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromName: profile.name || t('defaultOpponent'),
+          fromEmail: profile.email || '',
+          toEmail: toEmail || '',
+          listingId: toEmail ? null : pendingListingId,
+          dateTime: localDateTime.toISOString(),
+          opponent: $('fOpponent').value.trim(),
+          location: $('fLocation').value.trim(),
+          message: $('fInviteMessage').value.trim()
+        })
+      });
+      const data = await res.json();
+      if(data.ok !== false) sent++;
+      if(data.notified) notified++;
+    }
+
+    if(targets.length > 1){
+      showAlert(t('invitesSentMany').replace('{sent}', sent).replace('{notified}', notified));
+    } else {
+      showAlert(notified ? t('inviteSentNotified') : t('inviteSentNoAccount'));
+    }
   }catch(e){
     console.log('Send invite error:', e);
     showAlert(t('inviteError'));
@@ -2298,6 +2351,7 @@ async function refreshInbox(){
   if(!profile.email){
     pendingInvites = [];
     pendingResults = [];
+    inviteResponses = [];
     renderInbox();
     return;
   }
@@ -2315,6 +2369,7 @@ async function refreshInbox(){
     const invData = await invRes.json();
     const resData = await resRes.json();
     pendingInvites = Array.isArray(invData.invites) ? invData.invites : [];
+    inviteResponses = Array.isArray(invData.responses) ? invData.responses : [];
     pendingResults = Array.isArray(resData.results) ? resData.results : [];
   }catch(e){
     console.log('Refresh inbox error:', e);
@@ -2325,13 +2380,30 @@ async function refreshInbox(){
 function renderInbox(){
   const section = $('inboxSection');
   section.style.display = 'block';
-  const total = pendingInvites.length + pendingResults.length;
+  const total = pendingInvites.length + pendingResults.length + inviteResponses.length;
   if(total === 0){
     $('inboxList').innerHTML = `<div class="inbox-card inbox-empty" id="inboxEmptyCard"><div class="inbox-text">${t('inboxEmptyState')}</div></div>`;
     $('inboxEmptyCard').addEventListener('click', () => openMatchSheet(null, true));
     return;
   }
   let html = '';
+
+  // answers to invites I sent
+  inviteResponses.forEach(inv => {
+    const d = new Date(inv.dateTime);
+    const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
+    const accepted = inv.status === 'accepted';
+    const who = inv.toName || inv.opponent || '';
+    html += `
+    <div class="inbox-card">
+      <div class="inbox-tag" style="color:${accepted ? 'var(--win)' : 'var(--loss)'}">${accepted ? t('respAcceptedTag') : t('respDeclinedTag')}</div>
+      <div class="inbox-text"><strong>${esc(who)}</strong> ${accepted ? t('respAcceptedText') : t('respDeclinedText')} ${esc(dateStr)}</div>
+      <div class="invite-actions">
+        <button type="button" class="btn-cancel" data-seen="${esc(inv.id)}">${t('btnDismiss')}</button>
+      </div>
+    </div>`;
+  });
+
   pendingInvites.forEach(inv => {
     const d = new Date(inv.dateTime);
     const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
@@ -2366,6 +2438,20 @@ function renderInbox(){
   });
   $('inboxList').querySelectorAll('button[data-kind="result"]').forEach(btn => {
     btn.addEventListener('click', () => respondResult(btn.dataset.id, btn.dataset.action));
+  });
+  $('inboxList').querySelectorAll('button[data-seen]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.seen;
+      inviteResponses = inviteResponses.filter(r => r.id !== id);
+      renderInbox();
+      try{
+        await fetch('/api/mark-invite-seen', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ inviteId: id })
+        });
+      }catch(e){ console.log('Dismiss response error:', e); }
+    });
   });
 }
 
@@ -3918,9 +4004,11 @@ function openMatchSheet(matchToEdit, isScheduling){
   }
   $('inviteBtn').style.display = schedulingMode ? 'block' : 'none';
   $('inviteMessageField').style.display = schedulingMode ? 'block' : 'none';
+  $('addOpponentBtn').style.display = schedulingMode ? 'block' : 'none';
   if(!matchToEdit){
     $('fInviteMessage').value = '';
     pendingListingId = null;
+    $('extraOpponents').innerHTML = '';
   }
   $('sendResultBtn').style.display = schedulingMode ? 'none' : 'block';
   wantsInvite = false;
@@ -4883,6 +4971,7 @@ $('saveProfileBtn').addEventListener('click', saveProfile);
 $('langPt').addEventListener('click', () => setLanguage('pt'));
 $('langEn').addEventListener('click', () => setLanguage('en'));
 $('langEs').addEventListener('click', () => setLanguage('es'));
+$('addOpponentBtn').addEventListener('click', addOpponentField);
 $('welcomeStartBtn').addEventListener('click', () => dismissWelcome(true));
 $('welcomeLaterBtn').addEventListener('click', () => dismissWelcome(false));
 $('deleteAccountBtn').addEventListener('click', deleteAccount);
