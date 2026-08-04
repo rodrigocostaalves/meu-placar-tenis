@@ -161,6 +161,15 @@
     line-height:1; min-width:20px;
   }
   .welcome-desc{ font-size:13px; color:var(--muted); }
+  .refer-options{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+  .refer-opt{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    background: var(--panel); border:1px solid var(--panel-line); color:var(--chalk);
+    border-radius:12px; padding:18px 10px; font-family:inherit; font-size:13px;
+    cursor:pointer;
+  }
+  .refer-opt:active{ border-color: var(--ball); }
+  .refer-ico{ font-size:26px; line-height:1; }
   .link-btn{
     background:none; border:none; padding:4px 0 0; margin:0;
     color: var(--ball); font-family:inherit; font-size:12px;
@@ -861,6 +870,10 @@
   </div>
   <button type="button" class="search-btn" id="recapShareBtn" data-i18n="btnShareRecap">Compartilhar Retrospectiva</button>
 
+  <h3 data-i18n="referTitle">Indicar o App</h3>
+  <p class="rating-note" data-i18n="referIntro"></p>
+  <button type="button" class="search-btn" id="referBtn" data-i18n="btnRefer">Indicar para um amigo</button>
+
   <div class="sheet-actions">
     <button class="btn-cancel" id="openAboutBtn" data-i18n="btnAboutApp">Sobre o App</button>
   </div>
@@ -1098,6 +1111,32 @@
   </div>
 </div>
 
+<div class="sheet" id="referSheet">
+  <h2 data-i18n="referSheetTitle">Indicar para um amigo</h2>
+  <p class="rating-note" data-i18n="referSheetIntro"></p>
+  <div class="refer-options">
+    <button type="button" class="refer-opt" id="referWhats">
+      <span class="refer-ico">💬</span>
+      <span data-i18n="referWhatsApp">WhatsApp</span>
+    </button>
+    <button type="button" class="refer-opt" id="referMail">
+      <span class="refer-ico">✉️</span>
+      <span data-i18n="referEmail">E-mail</span>
+    </button>
+    <button type="button" class="refer-opt" id="referSms">
+      <span class="refer-ico">📱</span>
+      <span data-i18n="referSms">SMS</span>
+    </button>
+    <button type="button" class="refer-opt" id="referCopy">
+      <span class="refer-ico">🔗</span>
+      <span data-i18n="referCopy">Copiar link</span>
+    </button>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeReferBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
 <div class="sheet" id="rankingSheet">
   <h2 data-i18n="rankingTitle">Ranking Geral</h2>
   <div class="rank-mine" id="rankingMine"></div>
@@ -1321,6 +1360,13 @@ const TRANSLATIONS = {
     rankingError: "Não foi possível carregar o ranking agora.",
     rankingNote: "Ranking geral de todos os jogadores do Deuce Score. O rating de cada um é calculado a partir do próprio histórico, então a comparação fica mais precisa conforme vocês jogam entre si e contra adversários em comum.",
     rankingMatchesShort: "partidas",
+    referTitle: "Indicar o App", btnRefer: "Indicar para um amigo",
+    referIntro: "Quanto mais gente do seu grupo registrando partidas, mais o ranking e as ligas fazem sentido.",
+    referSheetTitle: "Indicar para um amigo", referSheetIntro: "Escolha por onde enviar. Seu amigo abre o link e escolhe se é Android ou iPhone.",
+    referWhatsApp: "WhatsApp", referEmail: "E-mail", referSms: "SMS", referCopy: "Copiar link",
+    referSubject: "Conhece o Deuce Score?",
+    referMessage: "Estou usando o Deuce Score para anotar meus jogos de tênis: placar, ranking e as ligas do grupo. Dá uma olhada: {link}",
+    referCopied: "Link copiado!",
     recapTitle: "Retrospectiva", recapLabelMonth: "Mês",
     recapIntro: "Gere um resumo do mês em imagem para compartilhar.",
     btnShareRecap: "Compartilhar Retrospectiva",
@@ -1518,6 +1564,13 @@ const TRANSLATIONS = {
     rankingError: "Could not load the ranking right now.",
     rankingNote: "Global ranking of every Deuce Score player. Each rating is computed from that player's own history, so the comparison gets sharper as you play each other and share opponents.",
     rankingMatchesShort: "matches",
+    referTitle: "Share the App", btnRefer: "Recommend to a friend",
+    referIntro: "The more people from your group logging matches, the more the ranking and leagues mean.",
+    referSheetTitle: "Recommend to a friend", referSheetIntro: "Pick how to send it. Your friend opens the link and chooses Android or iPhone.",
+    referWhatsApp: "WhatsApp", referEmail: "Email", referSms: "SMS", referCopy: "Copy link",
+    referSubject: "Have you seen Deuce Score?",
+    referMessage: "I am using Deuce Score to log my tennis matches: scores, ranking and our group leagues. Take a look: {link}",
+    referCopied: "Link copied!",
     recapTitle: "Monthly Recap", recapLabelMonth: "Month",
     recapIntro: "Generate a shareable image summing up the month.",
     btnShareRecap: "Share Recap",
@@ -1715,6 +1768,13 @@ const TRANSLATIONS = {
     rankingError: "No se pudo cargar el ranking ahora.",
     rankingNote: "Ranking general de todos los jugadores de Deuce Score. El rating de cada uno se calcula a partir de su propio historial, así que la comparación gana precisión a medida que juegan entre sí y contra rivales en común.",
     rankingMatchesShort: "partidos",
+    referTitle: "Recomendar la App", btnRefer: "Recomendar a un amigo",
+    referIntro: "Cuanta más gente de tu grupo registre partidos, más sentido tienen el ranking y las ligas.",
+    referSheetTitle: "Recomendar a un amigo", referSheetIntro: "Elige por dónde enviarlo. Tu amigo abre el enlace y elige si es Android o iPhone.",
+    referWhatsApp: "WhatsApp", referEmail: "Correo", referSms: "SMS", referCopy: "Copiar enlace",
+    referSubject: "¿Conoces Deuce Score?",
+    referMessage: "Estoy usando Deuce Score para anotar mis partidos de tenis: marcador, ranking y las ligas del grupo. Échale un vistazo: {link}",
+    referCopied: "¡Enlace copiado!",
     recapTitle: "Retrospectiva", recapLabelMonth: "Mes",
     recapIntro: "Genera un resumen del mes en imagen para compartir.",
     btnShareRecap: "Compartir Retrospectiva",
@@ -3384,6 +3444,55 @@ function opponentDisplayPlain(m){
   return base;
 }
 
+/* ---------------- Refer a friend ----------------
+   Everyone is sent to the SITE, not straight to the app, because the site is
+   where the visitor picks Android or iPhone and gets the right instructions.
+   Change SITE_URL here when the custom domain goes live.              */
+const SITE_URL = 'https://meu-placar-tenis.pages.dev/site';
+
+function isIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function referMessage(){
+  return t('referMessage').replace('{link}', SITE_URL);
+}
+
+function openReferSheet(){
+  closeAllSheets();
+  setTimeout(() => openSheet('referSheet'), 220);
+}
+
+function referVia(channel){
+  const msg = referMessage();
+  const enc = encodeURIComponent(msg);
+  let url;
+
+  if(channel === 'whatsapp'){
+    url = 'https://wa.me/?text=' + enc;
+  } else if(channel === 'email'){
+    url = 'mailto:?subject=' + encodeURIComponent(t('referSubject')) + '&body=' + enc;
+  } else if(channel === 'sms'){
+    // iOS wants sms:&body=, Android wants sms:?body= — using the wrong one
+    // opens Messages with an empty draft.
+    url = isIOS() ? 'sms:&body=' + enc : 'sms:?body=' + enc;
+  }
+
+  if(url) window.open(url, '_blank');
+}
+
+async function referCopyLink(){
+  try{
+    await navigator.clipboard.writeText(referMessage());
+    showAlert(t('referCopied'));
+  }catch(e){
+    // clipboard is blocked outside a secure context or on older browsers
+    console.log('Copy error:', e);
+    showAlert(SITE_URL);
+  }
+}
+
 /* ---------------- Monthly recap card ---------------- */
 
 function recapLocale(){
@@ -5025,6 +5134,12 @@ $('rankingShortcut').addEventListener('click', () => {
 });
 $('closeRankingBtn').addEventListener('click', closeAllSheets);
 $('recapShareBtn').addEventListener('click', shareRecapImage);
+$('referBtn').addEventListener('click', openReferSheet);
+$('closeReferBtn').addEventListener('click', closeAllSheets);
+$('referWhats').addEventListener('click', () => referVia('whatsapp'));
+$('referMail').addEventListener('click', () => referVia('email'));
+$('referSms').addEventListener('click', () => referVia('sms'));
+$('referCopy').addEventListener('click', referCopyLink);
 $('boardShortcut').addEventListener('click', () => {
   openSheet('gamesBoardSheet');
   if(!$('bDate').value) $('bDate').value = new Date().toISOString().slice(0,10);
