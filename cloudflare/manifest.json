@@ -2,20 +2,19 @@
   "id": "/",
   "name": "Deuce Score",
   "short_name": "Deuce Score",
-  "description": "Registre suas partidas de tênis, acompanhe estatísticas, agende jogos e convide adversários.",
+  "description": "Registre suas partidas de tênis, acompanhe seu rating, monte ligas e torneios e compartilhe o resultado.",
   "lang": "pt-BR",
   "dir": "ltr",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0A2B3D",
-  "theme_color": "#0A2B3D",
+  "background_color": "#0B1E2B",
+  "theme_color": "#0B1E2B",
   "orientation": "portrait",
   "categories": ["sports", "lifestyle"],
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
