@@ -511,8 +511,15 @@
     font-family:'Bebas Neue', sans-serif; font-size:15px; letter-spacing:1px;
     cursor:pointer;
   }
+  .btn-cancel, .btn-save{
+    padding: 13px; border-radius: 8px; border:none;
+    font-family:'Bebas Neue', sans-serif; font-size:15px; letter-spacing:1px;
+    cursor:pointer; -webkit-appearance:none; appearance:none;
+  }
   .btn-cancel{ background: var(--panel); color: var(--muted); }
   .btn-save{ background: var(--ball); color: var(--court-deep); }
+  /* buttons sitting next to the avatar shouldn't stretch across the row */
+  .photo-row .btn-cancel{ padding: 10px 16px; font-size:14px; }
 
   /* Dialogos internos - substituem os dialogos nativos do navegador */
   .dialog-overlay{
@@ -2548,6 +2555,31 @@ async function respondInvite(inviteId, response){
   }
 }
 
+// Finds the pending scheduled entry that this confirmed result belongs to.
+// Prefers an exact date match, then falls back to the nearest scheduled game
+// with the same opponent that isn't in the future, since matches often get
+// played a day or two off what was agreed.
+function findScheduledMatch(email, name, date){
+  const key = (email || '').trim().toLowerCase();
+  const nick = (name || '').trim().toLowerCase();
+
+  const samePlayer = matches.filter(m => {
+    if(m.result) return false;
+    const mEmail = (m.opponentEmail || '').trim().toLowerCase();
+    const mName = (m.opponent || '').trim().toLowerCase();
+    return (key && mEmail === key) || (nick && mName === nick);
+  });
+  if(!samePlayer.length) return null;
+
+  const exact = samePlayer.find(m => (m.date || '') === date);
+  if(exact) return exact;
+
+  const past = samePlayer
+    .filter(m => (m.date || '') <= date)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  return past[0] || null;
+}
+
 async function respondResult(resultId, response){
   try{
     await fetch('/api/respond-result', {
@@ -2560,19 +2592,39 @@ async function respondResult(resultId, response){
       if(r){
         const mirroredResult = r.result === 'V' ? 'D' : 'V';
         const mirroredSets = (r.sets || []).map(s => ({a: s.b, b: s.a}));
-        const newMatch = {
-          id: Date.now().toString(),
-          date: r.date || new Date().toISOString().slice(0,10),
-          time: '',
-          opponent: r.fromName || '',
-          opponentEmail: r.fromEmail || '',
-          format: 'individual', partner: '', opponent2: '',
-          result: mirroredResult, matchType: r.matchType || 'amistoso', surface: r.surface || 'rapida',
-          sets: mirroredSets, location: '', notes: '', photo: null
-        };
-        matches.push(newMatch);
+        const date = r.date || new Date().toISOString().slice(0,10);
+
+        // The match was very likely already sitting in this player's schedule
+        // from when they accepted the invite. Fill THAT entry in instead of
+        // adding a second one, otherwise the game shows up in the history and
+        // stays in "Próximos jogos" at the same time.
+        const scheduled = findScheduledMatch(r.fromEmail, r.fromName, date);
+
+        if(scheduled){
+          scheduled.result = mirroredResult;
+          scheduled.sets = mirroredSets;
+          scheduled.matchType = r.matchType || scheduled.matchType || 'amistoso';
+          scheduled.surface = r.surface || scheduled.surface || 'rapida';
+          scheduled.date = date;
+        } else {
+          matches.push({
+            id: Date.now().toString(),
+            date,
+            time: '',
+            opponent: r.fromName || '',
+            opponentEmail: r.fromEmail || '',
+            format: 'individual', partner: '', opponent2: '',
+            result: mirroredResult, matchType: r.matchType || 'amistoso', surface: r.surface || 'rapida',
+            sets: mirroredSets, location: '', notes: '', photo: null
+          });
+        }
+
         saveMatches();
         render();
+        renderStats();
+        renderAchievements();
+        // without this the result never reaches the ranking on this side
+        syncRating();
         showAlert(t('resultAccepted'));
       }
     }
