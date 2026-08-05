@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deuce Score</title>
+<meta name="robots" content="index,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --court-deep:#0A2B3D; --panel:#123A52; --panel-line:#1E4C68;
+    --ball:#D7F205; --chalk:#F3F6F2; --muted:#8FADBE; --loss:#E06B4E;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--court-deep); color:var(--chalk);
+    font-family:Inter, -apple-system, Roboto, sans-serif; line-height:1.65;
+    padding:28px 20px 70px;
+  }
+  .wrap{ max-width:720px; margin:0 auto; }
+  .brand{ display:flex; align-items:center; gap:10px; margin-bottom:26px; }
+  .brand i{ width:13px; height:13px; border-radius:50%; background:var(--ball); box-shadow:0 0 14px rgba(215,242,5,.55); }
+  .brand span{ font-family:'Bebas Neue',sans-serif; font-size:25px; letter-spacing:1px; }
+  h1{ font-family:'Bebas Neue',sans-serif; font-weight:400; font-size:38px; letter-spacing:1px; margin:0 0 6px; }
+  .updated{ color:var(--muted); font-size:13px; margin-bottom:26px; }
+  h2{ font-family:'Bebas Neue',sans-serif; font-weight:400; font-size:23px; letter-spacing:1px; color:var(--ball); margin:32px 0 8px; }
+  p, li{ font-size:15.5px; color:var(--chalk); }
+  ul{ padding-left:20px; }
+  a{ color:var(--ball); }
+  .lang-switch{ display:flex; gap:7px; margin-bottom:24px; }
+  .lang-switch button{
+    background:none; border:1px solid var(--panel-line); color:var(--muted);
+    border-radius:16px; padding:6px 13px; font-size:12px; font-family:inherit;
+    letter-spacing:1px; cursor:pointer;
+  }
+  .lang-switch button.active{ background:var(--ball); border-color:var(--ball); color:var(--court-deep); font-weight:600; }
+  .box{
+    background:var(--panel); border:1px solid var(--panel-line);
+    border-radius:12px; padding:18px 20px; margin-top:12px;
+  }
+  .box.warn{ border-color:var(--loss); }
+  .steps{ counter-reset:s; list-style:none; padding:0; margin:12px 0 0; }
+  .steps li{
+    counter-increment:s; position:relative; padding-left:38px; margin-bottom:12px;
+  }
+  .steps li::before{
+    content:counter(s); position:absolute; left:0; top:-2px;
+    font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--ball);
+  }
+  .btn{
+    display:inline-block; background:var(--ball); color:var(--court-deep);
+    font-family:'Bebas Neue',sans-serif; letter-spacing:1.5px; font-size:17px;
+    padding:13px 26px; border-radius:24px; text-decoration:none; margin-top:14px;
+  }
+  footer{ margin-top:44px; border-top:1px solid var(--panel-line); padding-top:18px; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><i></i><span>DEUCE SCORE</span></div>
+
+  <div class="lang-switch">
+    <button type="button" data-lang="pt">Português</button>
+    <button type="button" data-lang="en">English</button>
+    <button type="button" data-lang="es">Español</button>
+  </div>
+
+  <div id="content"></div>
+
+  <footer>
+    <a href="/privacy.html" id="privLink">Política de Privacidade</a> ·
+    <a href="mailto:deucescore@gmail.com">deucescore@gmail.com</a>
+  </footer>
+</div>
+
+<script>
+const CONTACT = 'deucescore@gmail.com';
+
+const CONTENT = {
+  pt: `
+  <h1>Excluir sua conta</h1>
+  <div class="updated">Última atualização: agosto de 2026</div>
+
+  <p>Esta página explica como excluir sua conta do Deuce Score e o que acontece com seus dados. Existem duas formas, e as duas apagam a mesma coisa.</p>
+
+  <h2>1. Pelo aplicativo (imediato)</h2>
+  <p>Se você ainda tem o app instalado, este é o caminho mais rápido e a exclusão acontece na hora:</p>
+  <ol class="steps">
+    <li>Abra o Deuce Score e toque no menu, no canto superior direito.</li>
+    <li>Toque em <strong>Config</strong>.</li>
+    <li>Role até <strong>Zona de Risco</strong> e toque em <strong>Excluir Minha Conta</strong>.</li>
+    <li>Confirme. A ação não pode ser desfeita.</li>
+  </ol>
+
+  <h2>2. Por e-mail (se você já desinstalou)</h2>
+  <p>Se o app não está mais no seu aparelho, envie um e-mail para <a href="mailto:${CONTACT}?subject=Excluir%20minha%20conta%20Deuce%20Score">${CONTACT}</a> com o assunto <strong>“Excluir minha conta”</strong>.</p>
+  <div class="box warn">
+    <p style="margin:0"><strong>Importante:</strong> o pedido precisa ser enviado do mesmo endereço de e-mail cadastrado na conta. É assim que confirmamos que o pedido é seu, já que não temos outra forma de verificar sua identidade.</p>
+  </div>
+  <a class="btn" href="mailto:${CONTACT}?subject=Excluir%20minha%20conta%20Deuce%20Score&body=Quero%20excluir%20minha%20conta%20do%20Deuce%20Score%20e%20todos%20os%20dados%20associados.">Pedir exclusão por e-mail</a>
+
+  <h2>O que é apagado</h2>
+  <p>Nos dois casos, removemos do servidor:</p>
+  <ul>
+    <li>Seu cadastro: nome, e-mail e coordenadas aproximadas do CEP</li>
+    <li>Seu rating e sua posição no ranking</li>
+    <li>O backup do seu histórico na nuvem</li>
+    <li>Seus anúncios em “Procuro Jogo”</li>
+    <li>Os convites que você enviou e recebeu</li>
+    <li>Qualquer código de verificação pendente</li>
+    <li>Sua inscrição de notificações</li>
+  </ul>
+  <p>Ao excluir pelo aplicativo, os dados guardados no próprio aparelho — partidas, torneios, ligas e fotos — também são apagados no mesmo momento.</p>
+
+  <h2>O que é mantido</h2>
+  <p>Nada da sua conta é mantido no servidor após a exclusão. Duas ressalvas honestas:</p>
+  <ul>
+    <li>Se você excluiu por e-mail e ainda tem o app instalado em algum aparelho, os dados naquele aparelho continuam lá até você apagá-los pelo próprio app ou desinstalá-lo.</li>
+    <li>Partidas que você jogou contra outra pessoa continuam no histórico <em>dela</em>, com o seu nome, porque aquele registro pertence a ela. Não temos como apagar o histórico de outro jogador.</li>
+    <li>Registros técnicos do servidor (logs de acesso, sem conteúdo de conta) podem permanecer por até 30 dias por segurança, e depois são descartados automaticamente.</li>
+  </ul>
+
+  <h2>Prazo</h2>
+  <p>Pelo aplicativo, a exclusão é imediata. Por e-mail, processamos em até <strong>7 dias</strong>, e você recebe uma confirmação quando estiver concluída. O prazo máximo é de 30 dias.</p>
+
+  <h2>Dúvidas</h2>
+  <p>Escreva para <a href="mailto:${CONTACT}">${CONTACT}</a>.</p>
+  `,
+
+  en: `
+  <h1>Delete your account</h1>
+  <div class="updated">Last updated: August 2026</div>
+
+  <p>This page explains how to delete your Deuce Score account and what happens to your data. There are two routes, and both remove the same things.</p>
+
+  <h2>1. In the app (immediate)</h2>
+  <p>If you still have the app installed, this is the fastest route and deletion happens right away:</p>
+  <ol class="steps">
+    <li>Open Deuce Score and tap the menu in the top right.</li>
+    <li>Tap <strong>Settings</strong>.</li>
+    <li>Scroll to <strong>Danger Zone</strong> and tap <strong>Delete My Account</strong>.</li>
+    <li>Confirm. This cannot be undone.</li>
+  </ol>
+
+  <h2>2. By email (if you already uninstalled)</h2>
+  <p>If the app is no longer on your device, email <a href="mailto:${CONTACT}?subject=Delete%20my%20Deuce%20Score%20account">${CONTACT}</a> with the subject <strong>“Delete my account”</strong>.</p>
+  <div class="box warn">
+    <p style="margin:0"><strong>Important:</strong> the request must come from the same email address registered on the account. That is how we confirm the request is yours, since we have no other way to verify your identity.</p>
+  </div>
+  <a class="btn" href="mailto:${CONTACT}?subject=Delete%20my%20Deuce%20Score%20account&body=I%20want%20to%20delete%20my%20Deuce%20Score%20account%20and%20all%20associated%20data.">Request deletion by email</a>
+
+  <h2>What gets deleted</h2>
+  <p>In both cases we remove from the server:</p>
+  <ul>
+    <li>Your registration: name, email and the approximate coordinates from your ZIP code</li>
+    <li>Your rating and ranking position</li>
+    <li>Your cloud backup</li>
+    <li>Your “Find a Game” posts</li>
+    <li>Invites you sent and received</li>
+    <li>Any pending verification code</li>
+    <li>Your notification subscription</li>
+  </ul>
+  <p>When you delete from inside the app, the data held on the device itself — matches, tournaments, leagues and photos — is erased at the same moment.</p>
+
+  <h2>What is kept</h2>
+  <p>Nothing from your account remains on the server after deletion. Two honest caveats:</p>
+  <ul>
+    <li>If you deleted by email and still have the app installed somewhere, the data on that device stays there until you clear it in the app or uninstall it.</li>
+    <li>Matches you played against someone else remain in <em>their</em> history, with your name on them, because that record belongs to them. We cannot erase another player's history.</li>
+    <li>Technical server records (access logs, with no account content) may persist for up to 30 days for security, then are discarded automatically.</li>
+  </ul>
+
+  <h2>Timing</h2>
+  <p>In the app, deletion is immediate. By email, we process within <strong>7 days</strong> and you receive confirmation once it is done. The maximum is 30 days.</p>
+
+  <h2>Questions</h2>
+  <p>Write to <a href="mailto:${CONTACT}">${CONTACT}</a>.</p>
+  `,
+
+  es: `
+  <h1>Eliminar tu cuenta</h1>
+  <div class="updated">Última actualización: agosto de 2026</div>
+
+  <p>Esta página explica cómo eliminar tu cuenta de Deuce Score y qué pasa con tus datos. Hay dos formas, y ambas borran lo mismo.</p>
+
+  <h2>1. Desde la app (inmediato)</h2>
+  <p>Si todavía tienes la app instalada, esta es la vía más rápida y la eliminación ocurre al instante:</p>
+  <ol class="steps">
+    <li>Abre Deuce Score y toca el menú, arriba a la derecha.</li>
+    <li>Toca <strong>Configuración</strong>.</li>
+    <li>Baja hasta <strong>Zona de Riesgo</strong> y toca <strong>Eliminar Mi Cuenta</strong>.</li>
+    <li>Confirma. No se puede deshacer.</li>
+  </ol>
+
+  <h2>2. Por correo (si ya desinstalaste)</h2>
+  <p>Si la app ya no está en tu dispositivo, escribe a <a href="mailto:${CONTACT}?subject=Eliminar%20mi%20cuenta%20de%20Deuce%20Score">${CONTACT}</a> con el asunto <strong>“Eliminar mi cuenta”</strong>.</p>
+  <div class="box warn">
+    <p style="margin:0"><strong>Importante:</strong> la solicitud debe enviarse desde el mismo correo registrado en la cuenta. Así confirmamos que la solicitud es tuya, ya que no tenemos otra forma de verificar tu identidad.</p>
+  </div>
+  <a class="btn" href="mailto:${CONTACT}?subject=Eliminar%20mi%20cuenta%20de%20Deuce%20Score&body=Quiero%20eliminar%20mi%20cuenta%20de%20Deuce%20Score%20y%20todos%20los%20datos%20asociados.">Solicitar eliminación por correo</a>
+
+  <h2>Qué se elimina</h2>
+  <p>En ambos casos eliminamos del servidor:</p>
+  <ul>
+    <li>Tu registro: nombre, correo y las coordenadas aproximadas de tu código postal</li>
+    <li>Tu rating y tu posición en el ranking</li>
+    <li>Tu copia de seguridad en la nube</li>
+    <li>Tus anuncios de “Busco Partido”</li>
+    <li>Las invitaciones que enviaste y recibiste</li>
+    <li>Cualquier código de verificación pendiente</li>
+    <li>Tu suscripción de notificaciones</li>
+  </ul>
+  <p>Al eliminar desde la app, los datos guardados en el propio dispositivo — partidos, torneos, ligas y fotos — se borran en ese mismo momento.</p>
+
+  <h2>Qué se conserva</h2>
+  <p>Nada de tu cuenta permanece en el servidor tras la eliminación. Dos aclaraciones honestas:</p>
+  <ul>
+    <li>Si eliminaste por correo y aún tienes la app instalada en algún dispositivo, los datos de ese dispositivo siguen ahí hasta que los borres desde la app o la desinstales.</li>
+    <li>Los partidos que jugaste contra otra persona siguen en el historial <em>de ella</em>, con tu nombre, porque ese registro le pertenece. No podemos borrar el historial de otro jugador.</li>
+    <li>Los registros técnicos del servidor (logs de acceso, sin contenido de cuenta) pueden conservarse hasta 30 días por seguridad y luego se descartan automáticamente.</li>
+  </ul>
+
+  <h2>Plazo</h2>
+  <p>Desde la app, la eliminación es inmediata. Por correo, la procesamos en un máximo de <strong>7 días</strong> y recibes una confirmación al completarse. El plazo máximo es de 30 días.</p>
+
+  <h2>Preguntas</h2>
+  <p>Escribe a <a href="mailto:${CONTACT}">${CONTACT}</a>.</p>
+  `
+};
+
+const HTML_LANG = { pt:'pt-BR', en:'en', es:'es' };
+const TITLES = {
+  pt:'Excluir sua conta · Deuce Score',
+  en:'Delete your account · Deuce Score',
+  es:'Eliminar tu cuenta · Deuce Score'
+};
+const PRIV = { pt:'Política de Privacidade', en:'Privacy Policy', es:'Política de Privacidad' };
+
+function pickLang(){
+  const param = new URLSearchParams(location.search).get('lang');
+  if(param && CONTENT[param]) return param;
+  try{
+    const saved = localStorage.getItem('tennis_lang_v1');
+    if(saved && CONTENT[saved]) return saved;
+  }catch(e){}
+  const list = navigator.languages && navigator.languages.length
+    ? navigator.languages : [navigator.language || ''];
+  for(const raw of list){
+    const code = String(raw).slice(0,2).toLowerCase();
+    if(CONTENT[code]) return code;
+  }
+  return 'pt';
+}
+
+function setLang(lang){
+  document.getElementById('content').innerHTML = CONTENT[lang];
+  document.documentElement.lang = HTML_LANG[lang];
+  document.title = TITLES[lang];
+  document.getElementById('privLink').textContent = PRIV[lang];
+  document.querySelectorAll('.lang-switch button').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+}
+
+document.querySelectorAll('.lang-switch button').forEach(b => {
+  b.addEventListener('click', () => setLang(b.dataset.lang));
+});
+setLang(pickLang());
+</script>
+</body>
+</html>
