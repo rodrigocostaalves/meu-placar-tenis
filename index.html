@@ -70,7 +70,8 @@
   .menu-btn span::before{ position:absolute; top:-6px; }
   .menu-btn span::after{ position:absolute; top:6px; }
   .record{
-    display:flex; gap:22px; align-items:flex-end;
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;
+    align-items:end;
   }
   .record-item{
     display:flex; flex-direction:column; align-items:flex-start;
@@ -90,14 +91,112 @@
   .record-item.wins .num{ color: var(--win); }
   .record-item.losses .num{ color: var(--loss); }
   .record-item.pct .num{ color: var(--ball); font-size: 28px; }
-  .streak-line{
-    margin-top: 12px; font-size: 13px; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 1px;
+  .info-strip{
+    display:flex; gap:10px; margin-top:16px;
   }
-  .streak-line .streak-val{ font-weight: 700; text-transform: none; letter-spacing: 0; }
-  .streak-line .streak-val.win{ color: var(--win); }
-  .streak-line .streak-val.loss{ color: var(--loss); }
-  .activity-line{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  .info-cell{
+    flex:1; background: rgba(10,43,61,0.45);
+    border:1px solid var(--panel-line); border-radius:10px;
+    padding:8px 10px; min-width:0;
+  }
+  .info-cell .cap{
+    display:block; font-size:10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom:2px;
+  }
+  .info-cell .body{
+    display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;
+  }
+  .streak-val{
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+    letter-spacing: 1px; color: var(--chalk);
+  }
+  .streak-val.win{ color: var(--win); }
+  .streak-val.loss{ color: var(--loss); }
+  .rating-line .rating-val{
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+    color: var(--ball); letter-spacing: 1px;
+  }
+  .rating-line .rating-delta{ font-size: 12px; letter-spacing: 0; }
+  .rating-line .rating-delta.up{ color: var(--win); }
+  .rating-line .rating-delta.down{ color: var(--loss); }
+  .rating-line .rating-level{
+    font-size: 11px; color: var(--muted); letter-spacing: 0;
+  }
+  .rating-note{
+    font-size: 12px; color: var(--muted); line-height: 1.5;
+    margin: -4px 0 14px;
+  }
+  .rating-spark{
+    display: flex; align-items: flex-end; gap: 3px; height: 44px;
+    margin-bottom: 10px;
+  }
+  .rating-spark .bar{ flex: 1; border-radius: 2px 2px 0 0; min-height: 2px; }
+  .rating-spark .bar.up{ background: var(--win); }
+  .rating-spark .bar.down{ background: var(--loss); }
+  .rank-row{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-bottom:1px solid rgba(143,173,190,0.12);
+  }
+  .rank-row.me{ background: rgba(215,242,5,0.10); border-radius:8px; }
+  .rank-pos{
+    font-family:'Bebas Neue', sans-serif; font-size:18px; color:var(--muted);
+    min-width:34px;
+  }
+  .rank-row.me .rank-pos{ color: var(--ball); }
+  .rank-name{ flex:1; font-size:14px; }
+  .rank-rating{ font-family:'Bebas Neue', sans-serif; font-size:18px; color:var(--ball); }
+  .rank-sub{ font-size:11px; color:var(--muted); }
+  .rank-mine{
+    background:#123A52; border:1px solid #1E4C68; border-radius:10px;
+    padding:14px; margin-bottom:14px; text-align:center;
+  }
+  .welcome-step{
+    display:flex; gap:12px; align-items:flex-start;
+    background: var(--panel); border:1px solid var(--panel-line);
+    border-radius:10px; padding:12px 14px; margin-bottom:10px;
+    font-size:14px; color:var(--chalk);
+  }
+  .welcome-num{
+    font-family:'Bebas Neue', sans-serif; font-size:22px; color:var(--ball);
+    line-height:1; min-width:20px;
+  }
+  .welcome-desc{ font-size:13px; color:var(--muted); }
+  .refer-options{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+  .refer-opt{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    background: var(--panel); border:1px solid var(--panel-line); color:var(--chalk);
+    border-radius:12px; padding:18px 10px; font-family:inherit; font-size:13px;
+    cursor:pointer;
+  }
+  .refer-opt:active{ border-color: var(--ball); }
+  .refer-ico{ font-size:26px; line-height:1; }
+  .link-btn{
+    background:none; border:none; padding:4px 0 0; margin:0;
+    color: var(--ball); font-family:inherit; font-size:12px;
+    text-decoration:underline; cursor:pointer;
+  }
+  .court-tag{
+    display:inline-block; font-size:10px; letter-spacing:1px;
+    text-transform:uppercase; padding:2px 7px; border-radius:10px;
+    margin-top:4px; border:1px solid var(--panel-line); color:var(--muted);
+  }
+  .court-tag.public{ color:#5FCB8D; border-color:#5FCB8D; }
+  .court-tag.fee{ color:#D7F205; border-color:#D7F205; }
+  .court-tag.private{ color:#E06B4E; border-color:#E06B4E; }
+  .rank-break{
+    text-align:center; color:var(--muted); font-size:14px;
+    letter-spacing:4px; padding:4px 0;
+  }
+  .rank-mine .big{
+    font-family:'Bebas Neue', sans-serif; font-size:34px; color:var(--ball);
+    display:block; line-height:1.1;
+  }
+  /* natural width first so labels never clip, wrap when the row is full,
+     then grow to fill the row so there is no ragged gap on the right */
+  .activity-line{
+    display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;
+  }
+  .activity-line .activity-chip{ flex:1 0 auto; }
   .checkbox-field .checkbox-label{
     display:flex; align-items:center; gap:10px; font-size:14px; color:var(--chalk);
     text-transform:none; letter-spacing:0; cursor:pointer;
@@ -105,7 +204,8 @@
   .checkbox-field input[type="checkbox"]{ width:18px; height:18px; flex-shrink:0; accent-color: var(--ball); }
   .activity-chip{
     background: var(--panel); border:1px solid var(--panel-line); color:var(--chalk);
-    border-radius:20px; padding:7px 14px; font-size:12.5px; cursor:pointer; font-family:inherit;
+    border-radius:20px; padding:8px 12px; font-size:12.5px; cursor:pointer;
+    font-family:inherit; white-space:nowrap; text-align:center;
   }
 
   main{ padding: 18px 16px 0; }
@@ -151,6 +251,7 @@
   .card .row1{
     display:flex; justify-content:space-between; align-items:flex-start;
     gap: 10px;
+    padding-right: 74px;
   }
   .card .opponent{
     font-weight:600; font-size:15px;
@@ -207,7 +308,8 @@
     background: var(--panel); border:1px solid var(--panel-line); border-radius:10px;
     padding:12px 6px; text-align:center; opacity:0.35;
   }
-  .achievement-badge.earned{ opacity:1; border-color: var(--ball); background: rgba(215,242,5,0.08); }
+  .achievement-badge.earned{ opacity:1; border-color: var(--ball); background: rgba(215,242,5,0.10); }
+  .achievement-badge.earned .achievement-name{ color: var(--ball); font-weight:600; }
   .achievement-icon{ font-size:24px; margin-bottom:4px; }
   .achievement-name{ font-size:10px; color:var(--chalk); line-height:1.2; }
 
@@ -320,6 +422,46 @@
     font-family: inherit;
   }
   .field textarea{ resize: vertical; min-height: 50px; }
+
+  /* The native <select> option list is drawn by Android and can't be styled,
+     so the real select is kept for its value/events and hidden, while this
+     takes over the visuals. */
+  .app-select-wrap{ position: relative; }
+  .app-select-wrap select{
+    position:absolute; opacity:0; pointer-events:none; width:0; height:0;
+  }
+  .app-select-btn{
+    width:100%; text-align:left; background: var(--panel);
+    border: 1px solid var(--panel-line);
+    color: var(--chalk);
+    border-radius: 8px;
+    padding: 11px 34px 11px 12px;
+    font-size: 15px;
+    font-family: inherit;
+    cursor: pointer;
+    position: relative;
+  }
+  .app-select-btn::after{
+    content:''; position:absolute; right:14px; top:50%;
+    width:7px; height:7px; margin-top:-5px;
+    border-right:2px solid var(--muted); border-bottom:2px solid var(--muted);
+    transform: rotate(45deg);
+  }
+  .app-select-wrap.open .app-select-btn{ border-color: var(--ball); }
+  .app-select-menu{
+    display:none; position:absolute; left:0; right:0; top:calc(100% + 4px);
+    background: var(--court-deep); border:1px solid var(--panel-line);
+    border-radius:10px; overflow:hidden; z-index:40;
+    max-height: 260px; overflow-y:auto;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+  }
+  .app-select-wrap.open .app-select-menu{ display:block; }
+  .app-select-option{
+    padding: 12px 14px; font-size: 15px; color: var(--chalk); cursor:pointer;
+    border-bottom: 1px solid rgba(143,173,190,0.12);
+  }
+  .app-select-option:last-child{ border-bottom:none; }
+  .app-select-option.selected{ color: var(--ball); background: rgba(215,242,5,0.10); }
   .toggle-group{ display:flex; gap:10px; }
   .toggle-group button{
     flex:1; padding: 12px; border-radius: 8px;
@@ -371,6 +513,37 @@
   }
   .btn-cancel{ background: var(--panel); color: var(--muted); }
   .btn-save{ background: var(--ball); color: var(--court-deep); }
+
+  /* Dialogos internos - substituem os dialogos nativos do navegador */
+  .dialog-overlay{
+    position: fixed; inset:0; background: rgba(0,0,0,0.6);
+    opacity:0; pointer-events:none; transition: opacity 0.18s;
+    z-index: 30;
+    display:flex; align-items:center; justify-content:center;
+    padding: 24px;
+  }
+  .dialog-overlay.show{ opacity:1; pointer-events:auto; }
+  .dialog-box{
+    background: var(--court-deep);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 22px 20px 18px;
+    width: 100%; max-width: 360px;
+    max-height: 80vh; overflow-y: auto;
+    transform: scale(0.94);
+    transition: transform 0.18s ease;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  }
+  .dialog-overlay.show .dialog-box{ transform: scale(1); }
+  .dialog-box h3{
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 1px;
+    margin: 0 0 10px; color: var(--ball);
+  }
+  .dialog-box p{
+    font-size: 14.5px; line-height: 1.6; color: var(--chalk);
+    margin: 0 0 18px; white-space: pre-line;
+  }
 
   .sets-wrap{ display:flex; flex-direction:column; gap:8px; }
   .set-row{ display:flex; align-items:center; gap:8px; }
@@ -453,11 +626,27 @@
     <div class="record-item losses"><span class="num" id="lossesNum">0</span><span class="lbl" data-i18n="lossesLabel">Derrotas</span></div>
     <div class="record-item pct"><span class="num" id="pctNum">0%</span><span class="lbl" data-i18n="pctLabel">Aproveitamento</span></div>
   </div>
-  <div class="streak-line"><span data-i18n="streakLabel">Sequência</span>: <span class="streak-val" id="streakVal">-</span></div>
+  <div class="info-strip">
+    <div class="info-cell">
+      <span class="cap" data-i18n="streakLabel">Sequência</span>
+      <div class="body"><span class="streak-val" id="streakVal">-</span></div>
+    </div>
+    <div class="info-cell rating-line" id="ratingLine">
+      <span class="cap" data-i18n="ratingLabel">Rating</span>
+      <div class="body">
+        <span class="rating-val" id="ratingVal">-</span>
+        <span class="rating-delta" id="ratingDelta"></span>
+        <span class="rating-level" id="ratingLevel"></span>
+        <span class="rating-level" id="ratingPosition"></span>
+      </div>
+    </div>
+  </div>
   <div class="activity-line">
     <button type="button" class="activity-chip" id="tournamentsShortcut">🏆 <span data-i18n="chipTournament">Torneio</span></button>
     <button type="button" class="activity-chip" id="leaguesShortcut">🏅 <span data-i18n="chipLeague">Liga</span></button>
     <button type="button" class="activity-chip" id="nearbyShortcut">📍 <span data-i18n="modeLabelCourts">Quadras</span></button>
+    <button type="button" class="activity-chip" id="boardShortcut">🔎 <span data-i18n="chipBoard">Procuro Jogo</span></button>
+    <button type="button" class="activity-chip" id="rankingShortcut">📊 <span data-i18n="chipRanking">Ranking</span></button>
   </div>
 </header>
 
@@ -489,8 +678,20 @@
 
 <div class="overlay" id="overlay"></div>
 
+<div class="dialog-overlay" id="appDialog">
+  <div class="dialog-box">
+    <h3 id="dialogTitle"></h3>
+    <p id="dialogMsg"></p>
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="dialogCancelBtn">Cancelar</button>
+      <button class="btn-save" id="dialogOkBtn">OK</button>
+    </div>
+  </div>
+</div>
+
 <div class="sheet" id="matchSheet">
   <h2 id="matchSheetTitle">Nova Partida</h2>
+  <button class="btn-cancel" id="repeatLastBtn" data-i18n="btnRepeatLast" style="width:100%; margin-bottom:14px; display:none;">↻ Repetir última partida</button>
   <div class="field">
     <label data-i18n="labelDate">Data</label>
     <input type="date" id="fDate">
@@ -509,6 +710,12 @@
   <div class="field" id="opponentEmailWrap">
     <label data-i18n="labelOpponentEmail">E-mail do Adversário (opcional)</label>
     <input type="email" id="fOpponentEmail">
+    <div id="extraOpponents"></div>
+    <button type="button" class="add-set-btn" id="addOpponentBtn" style="margin-top:8px; display:none" data-i18n="btnAddOpponent">+ Adicionar jogador</button>
+    <div id="inviteMessageField" style="display:none; margin-top:10px">
+      <label data-i18n="labelInviteMessage" style="display:block; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Mensagem para o adversário (opcional)</label>
+      <input type="text" id="fInviteMessage" data-i18n-ph="phInviteMessage" placeholder="Ex: consigo às 9h, quadra 3. Confirma?" style="width:100%; background:var(--panel); border:1px solid var(--panel-line); color:var(--chalk); border-radius:8px; padding:11px 12px; font-size:15px; font-family:inherit;">
+    </div>
     <button type="button" class="add-set-btn" id="inviteBtn" style="margin-top:8px" data-i18n="btnInvite">Convidar por notificação</button>
     <button type="button" class="add-set-btn" id="sendResultBtn" style="margin-top:8px; display:none" data-i18n="btnSendResult">Enviar Resultado para Confirmação</button>
   </div>
@@ -560,6 +767,14 @@
   <div class="field">
     <label data-i18n="labelLocation">Local (opcional)</label>
     <input type="text" id="fLocation" data-i18n-ph="placeholderLocation" placeholder="Ex: Quadra do clube">
+  </div>
+  <div class="field">
+    <label data-i18n="labelStrings">Corda (opcional)</label>
+    <input type="text" id="fStrings" data-i18n-ph="placeholderStrings" placeholder="Ex: Luxilon Alu Power">
+  </div>
+  <div class="field">
+    <label data-i18n="labelTension">Tensão (opcional)</label>
+    <input type="text" id="fTension" data-i18n-ph="placeholderTension" placeholder="Ex: 24 kg / 53 lbs">
   </div>
   <div class="field">
     <label data-i18n="labelNotes">Observações (opcional)</label>
@@ -626,8 +841,8 @@
     </label>
   </div>
   <div class="sheet-actions">
-    <button class="btn-save" id="saveProfileBtn" style="flex:1" data-i18n="btnSaveProfile">Salvar Perfil</button>
-    <button class="btn-cancel" id="openSettingsBtn" style="flex:0 0 52px">⚙️</button>
+    <button class="btn-save" id="saveProfileBtn" style="flex:1.3" data-i18n="btnSaveProfile">Salvar Perfil</button>
+    <button class="btn-cancel" id="openSettingsBtn" style="flex:1">⚙️ <span data-i18n="btnSettingsShort">Config</span></button>
   </div>
 
   <h3 data-i18n="achievementsTitle">Conquistas</h3>
@@ -636,14 +851,59 @@
   <h3 data-i18n="statsTitle">Estatísticas por Adversário</h3>
   <div class="stats-list" id="statsContainer"></div>
 
-  <h3 data-i18n="aboutTitle">Sobre</h3>
-  <div class="stats-list">
-    <div class="stat-row"><span class="stat-name" data-i18n="aboutCreatorLabel">Criador</span><span class="stat-record">Rodrigo Alves</span></div>
-    <div class="stat-row" id="aboutEmailRow" style="display:none"><span class="stat-name" data-i18n="aboutEmailLabel">Contato</span><span class="stat-record" id="aboutEmailValue"></span></div>
+  <h3 data-i18n="ratingHistoryTitle">Evolução do Rating</h3>
+  <div class="rating-spark" id="ratingSpark"></div>
+  <div class="stats-list" id="ratingSummary"></div>
+  <p class="rating-note" id="ratingNote" data-i18n="ratingExplain"></p>
+
+  <h3 data-i18n="statsBySurfaceTitle">Desempenho por Superfície</h3>
+  <div class="stats-list" id="statsSurfaceContainer"></div>
+
+  <h3 data-i18n="statsByTypeTitle">Desempenho por Tipo</h3>
+  <div class="stats-list" id="statsTypeContainer"></div>
+
+  <h3 data-i18n="recapTitle">Retrospectiva</h3>
+  <p class="rating-note" data-i18n="recapIntro"></p>
+  <div class="field">
+    <label data-i18n="recapLabelMonth">Mês</label>
+    <select id="recapMonth"></select>
+  </div>
+  <button type="button" class="search-btn" id="recapShareBtn" data-i18n="btnShareRecap">Compartilhar Retrospectiva</button>
+
+  <h3 data-i18n="referTitle">Indicar o App</h3>
+  <p class="rating-note" data-i18n="referIntro"></p>
+  <button type="button" class="search-btn" id="referBtn" data-i18n="btnRefer">Indicar para um amigo</button>
+
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="openAboutBtn" data-i18n="btnAboutApp">Sobre o App</button>
   </div>
 
   <div class="sheet-actions">
     <button class="btn-cancel" id="closeMenuBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
+<div class="sheet" id="aboutSheet">
+  <h2 data-i18n="aboutTitle">Sobre</h2>
+  <p style="font-size:14px; line-height:1.6; color:var(--chalk); margin-bottom:22px;" data-i18n="aboutStory">
+    O Deuce Score nasceu da paixão pelo tênis. Criado por um jogador para jogadores que amam o esporte, o app existe para facilitar o dia a dia de quem joga: acompanhar cada partida, organizar torneios e ligas com os amigos, e nunca mais perder um jogo agendado. Um projeto feito com carinho, quadra a quadra.
+  </p>
+  <div class="stats-list">
+    <div class="stat-row"><span class="stat-name" data-i18n="aboutCreatorLabel">Criador</span><span class="stat-record">Rodrigo Alves</span></div>
+    <div class="stat-row"><span class="stat-name" data-i18n="aboutEmailLabel">Contato</span><span class="stat-record">deucescore@gmail.com</span></div>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeAboutBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
+<div class="sheet" id="achievementSheet">
+  <h2 id="achSheetTitle">&mdash;</h2>
+  <div id="achSheetIcon" style="font-size:56px; line-height:1; text-align:center; margin-bottom:14px;"></div>
+  <p id="achSheetStatus" style="font-family:'Bebas Neue', sans-serif; letter-spacing:1.5px; font-size:15px; text-align:center; margin-bottom:8px;"></p>
+  <p id="achSheetDesc" style="font-size:14px; line-height:1.6; color:var(--chalk); text-align:center; margin-bottom:22px;"></p>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeAchievementBtn" data-i18n="btnClose">Fechar</button>
   </div>
 </div>
 
@@ -676,6 +936,14 @@
   </div>
   <input type="file" id="importFile" accept="application/json" style="display:none">
 
+  <h3 data-i18n="syncTitle">Backup na Nuvem</h3>
+  <p class="rating-note" data-i18n="syncIntro"></p>
+  <div class="stats-list" id="syncStatus" style="margin-bottom:10px"></div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="syncPushBtn" data-i18n="btnSyncPush">Salvar na Nuvem</button>
+    <button class="btn-cancel" id="syncPullBtn" data-i18n="btnSyncPull">Restaurar</button>
+  </div>
+
   <h3 data-i18n="legalTitle">Legal</h3>
   <div class="sheet-actions">
     <button class="btn-cancel" id="privacyPolicyBtn" data-i18n="btnPrivacyPolicy">Política de Privacidade</button>
@@ -684,6 +952,10 @@
   <h3 data-i18n="dangerZoneTitle">Zona de Risco</h3>
   <div class="sheet-actions">
     <button class="btn-cancel" id="clearAllDataBtn" data-i18n="btnClearAllData">Limpar Todos os Dados</button>
+  </div>
+  <p class="rating-note" data-i18n="deleteAccountNote"></p>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="deleteAccountBtn" data-i18n="btnDeleteAccount" style="color:var(--loss); border-color:var(--loss)">Excluir Minha Conta</button>
   </div>
 
   <div class="sheet-actions">
@@ -815,6 +1087,103 @@
   </div>
 </div>
 
+<div class="sheet" id="welcomeSheet">
+  <h2 data-i18n="welcomeTitle">Bem-vindo ao Deuce Score</h2>
+  <p class="rating-note" data-i18n="welcomeIntro"></p>
+  <div class="welcome-step">
+    <span class="welcome-num">1</span>
+    <div><strong data-i18n="welcomeStep1Title">Preencha seu perfil</strong><br>
+      <span class="welcome-desc" data-i18n="welcomeStep1Desc"></span></div>
+  </div>
+  <div class="welcome-step">
+    <span class="welcome-num">2</span>
+    <div><strong data-i18n="welcomeStep2Title">Confirme seu e-mail</strong><br>
+      <span class="welcome-desc" data-i18n="welcomeStep2Desc"></span></div>
+  </div>
+  <div class="welcome-step">
+    <span class="welcome-num">3</span>
+    <div><strong data-i18n="welcomeStep3Title">Registre sua primeira partida</strong><br>
+      <span class="welcome-desc" data-i18n="welcomeStep3Desc"></span></div>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="welcomeLaterBtn" data-i18n="btnWelcomeLater">Depois</button>
+    <button class="btn-save" id="welcomeStartBtn" data-i18n="btnWelcomeStart">Começar</button>
+  </div>
+</div>
+
+<div class="sheet" id="referSheet">
+  <h2 data-i18n="referSheetTitle">Indicar para um amigo</h2>
+  <p class="rating-note" data-i18n="referSheetIntro"></p>
+  <div class="refer-options">
+    <button type="button" class="refer-opt" id="referWhats">
+      <span class="refer-ico">💬</span>
+      <span data-i18n="referWhatsApp">WhatsApp</span>
+    </button>
+    <button type="button" class="refer-opt" id="referMail">
+      <span class="refer-ico">✉️</span>
+      <span data-i18n="referEmail">E-mail</span>
+    </button>
+    <button type="button" class="refer-opt" id="referSms">
+      <span class="refer-ico">📱</span>
+      <span data-i18n="referSms">SMS</span>
+    </button>
+    <button type="button" class="refer-opt" id="referCopy">
+      <span class="refer-ico">🔗</span>
+      <span data-i18n="referCopy">Copiar link</span>
+    </button>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeReferBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
+<div class="sheet" id="rankingSheet">
+  <h2 data-i18n="rankingTitle">Ranking Geral</h2>
+  <div class="rank-mine" id="rankingMine"></div>
+  <div id="rankingContainer"></div>
+  <p class="rating-note" data-i18n="rankingNote"></p>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeRankingBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
+<div class="sheet" id="gamesBoardSheet">
+  <h2 data-i18n="boardTitle">Procuro Jogo</h2>
+  <p class="rating-note" data-i18n="boardIntro"></p>
+
+  <h3 data-i18n="boardMineTitle">Meu Anúncio</h3>
+  <div id="boardMineStatus" class="stats-list" style="margin-bottom:12px"></div>
+  <div class="field">
+    <label data-i18n="boardLabelWhen">Quando</label>
+    <div style="display:flex; gap:8px;">
+      <input type="date" id="bDate" style="flex:1">
+      <input type="time" id="bTime" style="flex:1">
+    </div>
+  </div>
+  <div class="field">
+    <label data-i18n="boardLabelWhere">Onde</label>
+    <input type="text" id="bLocation" data-i18n-ph="boardPhWhere" placeholder="Rua, número, bairro, cidade">
+  </div>
+  <div class="field">
+    <label data-i18n="boardLabelNote">Observação (opcional)</label>
+    <input type="text" id="bNote" data-i18n-ph="boardPhNote" placeholder="Ex: jogo tranquilo, 1h30">
+  </div>
+  <button type="button" class="search-btn" id="publishListingBtn" data-i18n="btnPublishListing">Publicar</button>
+  <button type="button" class="btn-cancel" id="removeListingBtn" data-i18n="btnRemoveListing" style="width:100%; margin-top:8px; display:none;">Remover meu anúncio</button>
+
+  <h3 data-i18n="boardOthersTitle" style="margin-top:26px">Jogos Disponíveis</h3>
+  <div class="field">
+    <label id="boardRadiusLabel" data-i18n="labelRadius">Raio de Busca</label>
+    <input type="number" id="boardRadius" value="25" min="1" max="500">
+  </div>
+  <button type="button" class="search-btn" id="searchListingsBtn" data-i18n="btnSearchNearby">Buscar</button>
+  <div class="stats-list" id="boardContainer" style="margin-top:16px"></div>
+
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeBoardBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
 <div class="sheet" id="nearbyPlayersSheet">
   <h2 data-i18n="modeLabelCourts">Quadras</h2>
   <div class="toggle-group" style="margin-bottom:14px; display:none">
@@ -823,7 +1192,7 @@
   </div>
   <button type="button" class="add-set-btn" id="useMyLocationBtn" data-i18n="btnUseMyLocation" style="margin-bottom:14px">📍 Usar Minha Localização Atual</button>
   <div class="field">
-    <label data-i18n="labelRadius">Raio de Busca</label>
+    <label id="nearbyRadiusLabel" data-i18n="labelRadius">Raio de Busca</label>
     <div style="display:flex; gap:8px;">
       <input type="number" id="nearbyRadius" value="25" min="1" max="500" style="flex:1">
       <div class="toggle-group" style="flex:0 0 120px">
@@ -832,7 +1201,17 @@
       </div>
     </div>
   </div>
+  <div class="field">
+    <label data-i18n="courtAccessFilterLabel">Tipo de Acesso</label>
+    <select id="courtAccessFilter">
+      <option value="all" data-i18n="courtFilterAll">Todas</option>
+      <option value="public" data-i18n="courtFilterPublic">Públicas</option>
+      <option value="fee" data-i18n="courtFilterFee">Pagas</option>
+      <option value="private" data-i18n="courtFilterPrivate">Privadas / Condomínio</option>
+    </select>
+  </div>
   <button type="button" class="search-btn" id="searchNearbyBtn" data-i18n="btnSearchNearby">Buscar</button>
+  <p class="rating-note" data-i18n="courtAccessNote"></p>
   <div class="stats-list" id="nearbyContainer" style="margin-top:16px"></div>
   <div class="sheet-actions">
     <button class="btn-cancel" id="closeNearbyBtn" data-i18n="btnClose">Fechar</button>
@@ -919,8 +1298,111 @@ const TRANSLATIONS = {
     achLeagueName: "Ligueiro", achLeagueDesc: "Registre uma partida de liga",
     achPhotoName: "Fotógrafo", achPhotoDesc: "Adicione uma foto a uma partida",
     achTravelerName: "Viajante", achTravelerDesc: "Jogue em 3 locais diferentes",
+    achProfileName: "Perfil Completo", achProfileDesc: "Preencha nome, e-mail, CEP, data de nascimento e foto",
+    achRivalName: "Grande Rival", achRivalDesc: "Jogue 5 partidas contra o mesmo adversário",
+    achEarnedPrefix: "Conquistado", achLockedPrefix: "Como conquistar",
+    dlgNotice: "Aviso", dlgOk: "OK", dlgConfirmTitle: "Confirmar", dlgConfirm: "Confirmar",
+    dlgStorageError: "Erro ao salvar os dados no dispositivo.",
+    dlgExportError: "Erro ao exportar os dados.",
+    labelStrings: "Corda (opcional)", labelTension: "Tensão (opcional)",
+    placeholderStrings: "Ex: Luxilon Alu Power", placeholderTension: "Ex: 24 kg / 53 lbs",
+    btnRepeatLast: "↻ Repetir última partida",
+    repeatNoMatch: "Nenhuma partida registrada ainda para repetir.",
+    statsBySurfaceTitle: "Desempenho por Superfície",
+    statsByTypeTitle: "Desempenho por Tipo",
+    ratingLabel: "Rating", ratingLevelLabel: "Nível",
+    ratingHistoryTitle: "Evolução do Rating",
+    ratingCurrent: "Rating atual", ratingBest: "Melhor rating", ratingPlayed: "Partidas contabilizadas",
+    ratingExplain: "O rating começa em 1500 e sobe ou desce a cada partida registrada, conforme o nível do adversário e a diferença de games. Vencer alguém com rating alto vale mais. É recalculado do zero a partir do seu histórico, então editar ou apagar uma partida ajusta tudo automaticamente.",
+    ratingEmptyState: "Registre uma partida para começar seu rating.",
+    chipBoard: "Procuro Jogo", boardTitle: "Procuro Jogo",
+    boardIntro: "Publique um horário em que você quer jogar e veja quem mais está procurando jogo perto de você. Seu anúncio expira sozinho depois do horário marcado.",
+    boardMineTitle: "Meu Anúncio", boardOthersTitle: "Jogos Disponíveis",
+    boardLabelWhen: "Quando", boardLabelWhere: "Onde", boardLabelNote: "Observação (opcional)",
+    boardPhWhere: "Rua, número, bairro, cidade", boardPhNote: "Ex: jogo tranquilo, 1h30",
+    labelInviteMessage: "Mensagem para o adversário (opcional)",
+    shareYouLabel: "Você",
+    rankingProvisional: "Sem partidas ainda · provisório",
+    btnAddOpponent: "+ Adicionar jogador", btnDismiss: "OK",
+    invitesSentMany: "{sent} convites enviados ({notified} com notificação).",
+    respAcceptedTag: "CONVITE ACEITO", respDeclinedTag: "CONVITE RECUSADO",
+    respAcceptedText: "aceitou seu convite para", respDeclinedText: "recusou seu convite para",
+    welcomeTitle: "Bem-vindo ao Deuce Score",
+    welcomeIntro: "Em três passos você já está jogando. Leva menos de dois minutos.",
+    welcomeStep1Title: "Preencha seu perfil",
+    welcomeStep1Desc: "Nome, e-mail e CEP. O CEP serve para mostrar o tempo e as quadras perto de você.",
+    welcomeStep2Title: "Confirme seu e-mail",
+    welcomeStep2Desc: "Enviamos um código de 6 dígitos. Sem essa confirmação você não recebe convites nem entra no ranking.",
+    welcomeStep3Title: "Registre sua primeira partida",
+    welcomeStep3Desc: "A partir daí o app calcula seu rating, suas estatísticas e suas conquistas.",
+    btnWelcomeStart: "Começar", btnWelcomeLater: "Depois",
+    btnDeleteAccount: "Excluir Minha Conta",
+    deleteAccountNote: "Limpar Todos os Dados apaga só este aparelho. Excluir Minha Conta remove também tudo o que está no servidor: cadastro, rating, backup, anúncios e convites.",
+    deleteAccountConfirm: "Isso apaga sua conta do servidor e todos os dados deste aparelho, incluindo partidas, torneios e ligas. Não tem como desfazer. Continuar?",
+    deleteAccountDone: "Conta excluída.",
+    deleteAccountError: "Não foi possível excluir a conta agora. Tente de novo.",
+    phInviteMessage: "Ex: consigo às 9h, quadra 3. Confirma?",
+    btnPublishListing: "Publicar Anúncio", btnRemoveListing: "Remover meu anúncio",
+    boardNoListing: "Você não tem anúncio publicado.",
+    boardMineActive: "Publicado para",
+    boardPublished: "Anúncio publicado!", boardRemoved: "Anúncio removido.",
+    boardNeedProfile: "Salve seu perfil com e-mail verificado antes de publicar.",
+    boardNeedWhen: "Escolha a data e a hora.",
+    boardEmptyState: "Nenhum jogo disponível por aqui ainda.",
+    boardError: "Não foi possível carregar os anúncios agora.",
+    btnInvitePlayer: "Convidar",
+    chipRanking: "Ranking", rankingTitle: "Ranking Geral",
+    rankingMyPosition: "Sua colocação", rankingUnranked: "Registre uma partida para entrar no ranking.",
+    rankingNeedEmail: "Para entrar no ranking: cadastre seu e-mail no perfil, confirme o código de verificação e registre uma partida.",
+    rankingNeedVerify: "Falta confirmar seu e-mail. Abra o perfil, digite o código de verificação e registre uma partida para entrar no ranking.",
+    rankingOfTotal: "de", rankingPlayers: "jogadores",
+    rankingEmptyState: "Ninguém no ranking ainda. Seja o primeiro!",
+    rankingError: "Não foi possível carregar o ranking agora.",
+    rankingNote: "Ranking geral de todos os jogadores do Deuce Score. O rating de cada um é calculado a partir do próprio histórico, então a comparação fica mais precisa conforme vocês jogam entre si e contra adversários em comum.",
+    rankingMatchesShort: "partidas",
+    referTitle: "Indicar o App", btnRefer: "Indicar para um amigo",
+    referIntro: "Quanto mais gente do seu grupo registrando partidas, mais o ranking e as ligas fazem sentido.",
+    referSheetTitle: "Indicar para um amigo", referSheetIntro: "Escolha por onde enviar. Seu amigo abre o link e escolhe se é Android ou iPhone.",
+    referWhatsApp: "WhatsApp", referEmail: "E-mail", referSms: "SMS", referCopy: "Copiar link",
+    referSubject: "Conhece o Deuce Score?",
+    referMessage: "Estou usando o Deuce Score para anotar meus jogos de tênis: placar, ranking e as ligas do grupo. Dá uma olhada: {link}",
+    referCopied: "Link copiado!",
+    recapTitle: "Retrospectiva", recapLabelMonth: "Mês",
+    recapIntro: "Gere um resumo do mês em imagem para compartilhar.",
+    btnShareRecap: "Compartilhar Retrospectiva",
+    recapNoData: "Nenhuma partida registrada para gerar retrospectiva.",
+    recapMatchesLabel: "PARTIDAS", recapWinsLabel: "VITÓRIAS", recapLossesLabel: "DERROTAS",
+    recapWinRateLabel: "APROVEITAMENTO", recapRatingLabel: "RATING",
+    recapTopOpponentLabel: "MAIS ENFRENTADO", recapBestStreakLabel: "MELHOR SEQUÊNCIA",
+    syncTitle: "Backup na Nuvem",
+    syncIntro: "Guarda seu histórico no servidor, ligado ao seu e-mail verificado. Se você limpar o navegador ou trocar de aparelho, é só restaurar. As fotos das partidas não entram no backup da nuvem para não estourar o tamanho — para elas, use Exportar Dados.",
+    btnSyncPush: "Salvar na Nuvem", btnSyncPull: "Restaurar",
+    syncNeedProfile: "Salve seu perfil com e-mail verificado para usar o backup.",
+    syncNever: "Nenhum backup na nuvem ainda.",
+    syncLastLabel: "Último backup",
+    syncSaved: "Backup salvo na nuvem!",
+    syncNothingToRestore: "Não há backup na nuvem para restaurar.",
+    syncRestored: "Dados restaurados da nuvem!",
+    syncConfirmRestore: "Isso vai substituir as partidas, torneios e ligas deste aparelho pelos dados da nuvem. Continuar?",
+    syncTooLarge: "Seus dados passaram do limite do backup. Use Exportar Dados.",
+    syncError: "Não foi possível falar com o servidor agora.",
+    syncAutoNote: "Salvo automaticamente a cada alteração.",
+    syncSaving: "Salvando…", syncFailed: "⚠ O último backup automático falhou. Toque em Salvar na Nuvem.",
+    courtAccessFilterLabel: "Tipo de Acesso",
+    courtFilterAll: "Todas", courtFilterPublic: "Públicas", courtFilterFee: "Pagas", courtFilterPrivate: "Privadas / Condomínio",
+    courtAccessPublic: "Pública", courtAccessFee: "Paga", courtAccessPrivate: "Privada",
+    courtAccessUnknown: "Não informado",
+    courtAccessNote: "O tipo de acesso vem do OpenStreetMap e nem toda quadra tem essa informação preenchida. Ao filtrar por um tipo, as quadras sem informação não aparecem.",
+    courtsFilteredEmpty: "Nenhuma quadra desse tipo por aqui. Tente \"Todas\".",
+    notifEnabled: "Notificações ativadas!",
+    notifDenied: "Você não permitiu as notificações.",
+    notifBlocked: "As notificações estão bloqueadas para este site. Libere nas configurações do navegador (cadeado ao lado do endereço → Notificações) e tente de novo.",
+    notifEnableError: "Não foi possível ativar as notificações agora.",
+    btnSettingsShort: "Config",
+    btnAboutApp: "Sobre o App",
+    aboutStory: "O Deuce Score nasceu da paixão pelo tênis. Criado por um jogador para jogadores que amam o esporte, o app existe para facilitar o dia a dia de quem joga: acompanhar cada partida, organizar torneios e ligas com os amigos, e nunca mais perder um jogo agendado. Um projeto feito com carinho, quadra a quadra.",
     labelShareLocation: "Permitir que outros jogadores me encontrem por perto",
-    labelRadius: "Raio de Busca (km)", btnSearchNearby: "Buscar",
+    labelRadius: "Raio de Busca", btnSearchNearby: "Buscar",
     nearbyEmptyState: "Nenhum jogador encontrado nesse raio.", nearbyNeedZip: "Adicione um CEP/ZIP no seu perfil pra buscar.",
     btnScheduleWithPlayer: "Agendar", nearbyError: "Não foi possível buscar agora.",
     leaguesEmptyState: "Nenhuma liga criada ainda.", btnNewLeague: "+ Nova Liga",
@@ -1020,8 +1502,111 @@ const TRANSLATIONS = {
     achLeagueName: "Leaguer", achLeagueDesc: "Record a league match",
     achPhotoName: "Photographer", achPhotoDesc: "Add a photo to a match",
     achTravelerName: "Traveler", achTravelerDesc: "Play at 3 different locations",
+    achProfileName: "Complete Profile", achProfileDesc: "Fill in name, email, ZIP, birthdate and photo",
+    achRivalName: "Big Rival", achRivalDesc: "Play 5 matches against the same opponent",
+    achEarnedPrefix: "Earned", achLockedPrefix: "How to earn",
+    dlgNotice: "Notice", dlgOk: "OK", dlgConfirmTitle: "Confirm", dlgConfirm: "Confirm",
+    dlgStorageError: "Could not save data on this device.",
+    dlgExportError: "Could not export the data.",
+    labelStrings: "Strings (optional)", labelTension: "Tension (optional)",
+    placeholderStrings: "e.g. Luxilon Alu Power", placeholderTension: "e.g. 53 lbs / 24 kg",
+    btnRepeatLast: "↻ Repeat last match",
+    repeatNoMatch: "No match recorded yet to repeat.",
+    statsBySurfaceTitle: "Performance by Surface",
+    statsByTypeTitle: "Performance by Type",
+    ratingLabel: "Rating", ratingLevelLabel: "Level",
+    ratingHistoryTitle: "Rating Progression",
+    ratingCurrent: "Current rating", ratingBest: "Best rating", ratingPlayed: "Matches counted",
+    ratingExplain: "Your rating starts at 1500 and moves after every recorded match, based on your opponent's level and the games margin. Beating a higher-rated player is worth more. It is recalculated from scratch off your history, so editing or deleting a match adjusts everything automatically.",
+    ratingEmptyState: "Record a match to start your rating.",
+    chipBoard: "Find a Game", boardTitle: "Find a Game",
+    boardIntro: "Post a time you want to play and see who else is looking for a game near you. Your post expires on its own after the scheduled time.",
+    boardMineTitle: "My Post", boardOthersTitle: "Available Games",
+    boardLabelWhen: "When", boardLabelWhere: "Where", boardLabelNote: "Note (optional)",
+    boardPhWhere: "Street, number, neighbourhood, city", boardPhNote: "e.g. casual hit, 1h30",
+    labelInviteMessage: "Message to your opponent (optional)",
+    shareYouLabel: "You",
+    rankingProvisional: "No matches yet · provisional",
+    btnAddOpponent: "+ Add player", btnDismiss: "OK",
+    invitesSentMany: "{sent} invites sent ({notified} with a notification).",
+    respAcceptedTag: "INVITE ACCEPTED", respDeclinedTag: "INVITE DECLINED",
+    respAcceptedText: "accepted your invite for", respDeclinedText: "declined your invite for",
+    welcomeTitle: "Welcome to Deuce Score",
+    welcomeIntro: "Three steps and you're playing. Takes under two minutes.",
+    welcomeStep1Title: "Fill in your profile",
+    welcomeStep1Desc: "Name, email and ZIP code. The ZIP is what powers the weather and nearby courts.",
+    welcomeStep2Title: "Confirm your email",
+    welcomeStep2Desc: "We send a 6-digit code. Without it you can't receive invites or join the ranking.",
+    welcomeStep3Title: "Record your first match",
+    welcomeStep3Desc: "From there the app builds your rating, your stats and your achievements.",
+    btnWelcomeStart: "Get Started", btnWelcomeLater: "Later",
+    btnDeleteAccount: "Delete My Account",
+    deleteAccountNote: "Clear All Data only wipes this device. Delete My Account also removes everything on the server: your registration, rating, backup, listings and invites.",
+    deleteAccountConfirm: "This deletes your account from the server and all data on this device, including matches, tournaments and leagues. It cannot be undone. Continue?",
+    deleteAccountDone: "Account deleted.",
+    deleteAccountError: "Could not delete the account right now. Please try again.",
+    phInviteMessage: "e.g. I can do 9am, court 3. Works?",
+    btnPublishListing: "Post It", btnRemoveListing: "Remove my post",
+    boardNoListing: "You have no post published.",
+    boardMineActive: "Posted for",
+    boardPublished: "Post published!", boardRemoved: "Post removed.",
+    boardNeedProfile: "Save your profile with a verified email before posting.",
+    boardNeedWhen: "Pick a date and time.",
+    boardEmptyState: "No games available around here yet.",
+    boardError: "Could not load the posts right now.",
+    btnInvitePlayer: "Invite",
+    chipRanking: "Ranking", rankingTitle: "Global Ranking",
+    rankingMyPosition: "Your position", rankingUnranked: "Record a match to enter the ranking.",
+    rankingNeedEmail: "To join the ranking: add your email in the profile, confirm the verification code, and record a match.",
+    rankingNeedVerify: "Your email still needs confirming. Open the profile, enter the verification code, and record a match to join the ranking.",
+    rankingOfTotal: "of", rankingPlayers: "players",
+    rankingEmptyState: "Nobody in the ranking yet. Be the first!",
+    rankingError: "Could not load the ranking right now.",
+    rankingNote: "Global ranking of every Deuce Score player. Each rating is computed from that player's own history, so the comparison gets sharper as you play each other and share opponents.",
+    rankingMatchesShort: "matches",
+    referTitle: "Share the App", btnRefer: "Recommend to a friend",
+    referIntro: "The more people from your group logging matches, the more the ranking and leagues mean.",
+    referSheetTitle: "Recommend to a friend", referSheetIntro: "Pick how to send it. Your friend opens the link and chooses Android or iPhone.",
+    referWhatsApp: "WhatsApp", referEmail: "Email", referSms: "SMS", referCopy: "Copy link",
+    referSubject: "Have you seen Deuce Score?",
+    referMessage: "I am using Deuce Score to log my tennis matches: scores, ranking and our group leagues. Take a look: {link}",
+    referCopied: "Link copied!",
+    recapTitle: "Monthly Recap", recapLabelMonth: "Month",
+    recapIntro: "Generate a shareable image summing up the month.",
+    btnShareRecap: "Share Recap",
+    recapNoData: "No matches recorded to build a recap.",
+    recapMatchesLabel: "MATCHES", recapWinsLabel: "WINS", recapLossesLabel: "LOSSES",
+    recapWinRateLabel: "WIN RATE", recapRatingLabel: "RATING",
+    recapTopOpponentLabel: "MOST PLAYED", recapBestStreakLabel: "BEST STREAK",
+    syncTitle: "Cloud Backup",
+    syncIntro: "Keeps your history on the server, tied to your verified email. If you clear the browser or switch devices, just restore it. Match photos are left out of the cloud backup to keep it small — use Export Data for those.",
+    btnSyncPush: "Save to Cloud", btnSyncPull: "Restore",
+    syncNeedProfile: "Save your profile with a verified email to use backup.",
+    syncNever: "No cloud backup yet.",
+    syncLastLabel: "Last backup",
+    syncSaved: "Backup saved to the cloud!",
+    syncNothingToRestore: "There is no cloud backup to restore.",
+    syncRestored: "Data restored from the cloud!",
+    syncConfirmRestore: "This will replace the matches, tournaments and leagues on this device with the cloud data. Continue?",
+    syncTooLarge: "Your data exceeded the backup limit. Use Export Data instead.",
+    syncError: "Could not reach the server right now.",
+    syncAutoNote: "Saved automatically on every change.",
+    syncSaving: "Saving…", syncFailed: "⚠ The last automatic backup failed. Tap Save to Cloud.",
+    courtAccessFilterLabel: "Access Type",
+    courtFilterAll: "All", courtFilterPublic: "Public", courtFilterFee: "Paid", courtFilterPrivate: "Private / Residential",
+    courtAccessPublic: "Public", courtAccessFee: "Paid", courtAccessPrivate: "Private",
+    courtAccessUnknown: "Not specified",
+    courtAccessNote: "Access type comes from OpenStreetMap and not every court has it filled in. When you filter by a type, courts without that information are hidden.",
+    courtsFilteredEmpty: "No courts of that type around here. Try \"All\".",
+    notifEnabled: "Notifications enabled!",
+    notifDenied: "You did not allow notifications.",
+    notifBlocked: "Notifications are blocked for this site. Allow them in your browser settings (the padlock next to the address → Notifications) and try again.",
+    notifEnableError: "Could not enable notifications right now.",
+    btnSettingsShort: "Settings",
+    btnAboutApp: "About the App",
+    aboutStory: "Deuce Score was born out of a love for tennis. Built by a player for players who love the game, the app makes it easy to track every match, organize tournaments and leagues with friends, and never miss a scheduled game again. A project made with care, court by court.",
     labelShareLocation: "Let other players find me nearby",
-    labelRadius: "Search Radius (km)", btnSearchNearby: "Search",
+    labelRadius: "Search Radius", btnSearchNearby: "Search",
     nearbyEmptyState: "No players found in that radius.", nearbyNeedZip: "Add a ZIP code to your profile to search.",
     btnScheduleWithPlayer: "Schedule", nearbyError: "Couldn't search right now.",
     leaguesEmptyState: "No leagues created yet.", btnNewLeague: "+ New League",
@@ -1121,8 +1706,111 @@ const TRANSLATIONS = {
     achLeagueName: "Liguero", achLeagueDesc: "Registra un partido de liga",
     achPhotoName: "Fotógrafo", achPhotoDesc: "Agrega una foto a un partido",
     achTravelerName: "Viajero", achTravelerDesc: "Juega en 3 lugares diferentes",
+    achProfileName: "Perfil Completo", achProfileDesc: "Completa nombre, correo, código postal, fecha de nacimiento y foto",
+    achRivalName: "Gran Rival", achRivalDesc: "Juega 5 partidos contra el mismo rival",
+    achEarnedPrefix: "Conseguido", achLockedPrefix: "Cómo conseguirlo",
+    dlgNotice: "Aviso", dlgOk: "OK", dlgConfirmTitle: "Confirmar", dlgConfirm: "Confirmar",
+    dlgStorageError: "Error al guardar los datos en el dispositivo.",
+    dlgExportError: "Error al exportar los datos.",
+    labelStrings: "Cuerda (opcional)", labelTension: "Tensión (opcional)",
+    placeholderStrings: "Ej: Luxilon Alu Power", placeholderTension: "Ej: 24 kg / 53 lbs",
+    btnRepeatLast: "↻ Repetir último partido",
+    repeatNoMatch: "Aún no hay partidos registrados para repetir.",
+    statsBySurfaceTitle: "Rendimiento por Superficie",
+    statsByTypeTitle: "Rendimiento por Tipo",
+    ratingLabel: "Rating", ratingLevelLabel: "Nivel",
+    ratingHistoryTitle: "Evolución del Rating",
+    ratingCurrent: "Rating actual", ratingBest: "Mejor rating", ratingPlayed: "Partidos contabilizados",
+    ratingExplain: "El rating empieza en 1500 y sube o baja en cada partido registrado, según el nivel del rival y la diferencia de games. Ganarle a alguien con rating alto vale más. Se recalcula desde cero a partir de tu historial, así que editar o borrar un partido lo ajusta todo automáticamente.",
+    ratingEmptyState: "Registra un partido para empezar tu rating.",
+    chipBoard: "Busco Partido", boardTitle: "Busco Partido",
+    boardIntro: "Publica un horario en el que quieres jugar y mira quién más está buscando partido cerca de ti. Tu anuncio expira solo después de la hora indicada.",
+    boardMineTitle: "Mi Anuncio", boardOthersTitle: "Partidos Disponibles",
+    boardLabelWhen: "Cuándo", boardLabelWhere: "Dónde", boardLabelNote: "Nota (opcional)",
+    boardPhWhere: "Calle, número, barrio, ciudad", boardPhNote: "Ej: partido tranquilo, 1h30",
+    labelInviteMessage: "Mensaje para tu rival (opcional)",
+    shareYouLabel: "Tú",
+    rankingProvisional: "Sin partidos aún · provisional",
+    btnAddOpponent: "+ Añadir jugador", btnDismiss: "OK",
+    invitesSentMany: "{sent} invitaciones enviadas ({notified} con notificación).",
+    respAcceptedTag: "INVITACIÓN ACEPTADA", respDeclinedTag: "INVITACIÓN RECHAZADA",
+    respAcceptedText: "aceptó tu invitación para", respDeclinedText: "rechazó tu invitación para",
+    welcomeTitle: "Bienvenido a Deuce Score",
+    welcomeIntro: "En tres pasos ya estás jugando. Toma menos de dos minutos.",
+    welcomeStep1Title: "Completa tu perfil",
+    welcomeStep1Desc: "Nombre, correo y código postal. El código postal muestra el clima y las canchas cercanas.",
+    welcomeStep2Title: "Confirma tu correo",
+    welcomeStep2Desc: "Enviamos un código de 6 dígitos. Sin él no recibes invitaciones ni entras en el ranking.",
+    welcomeStep3Title: "Registra tu primer partido",
+    welcomeStep3Desc: "A partir de ahí la app calcula tu rating, tus estadísticas y tus logros.",
+    btnWelcomeStart: "Empezar", btnWelcomeLater: "Después",
+    btnDeleteAccount: "Eliminar Mi Cuenta",
+    deleteAccountNote: "Borrar Todos los Datos solo limpia este dispositivo. Eliminar Mi Cuenta borra también todo lo que está en el servidor: registro, rating, copia, anuncios e invitaciones.",
+    deleteAccountConfirm: "Esto elimina tu cuenta del servidor y todos los datos de este dispositivo, incluidos partidos, torneos y ligas. No se puede deshacer. ¿Continuar?",
+    deleteAccountDone: "Cuenta eliminada.",
+    deleteAccountError: "No se pudo eliminar la cuenta ahora. Inténtalo de nuevo.",
+    phInviteMessage: "Ej: puedo a las 9h, cancha 3. ¿Confirmas?",
+    btnPublishListing: "Publicar Anuncio", btnRemoveListing: "Eliminar mi anuncio",
+    boardNoListing: "No tienes ningún anuncio publicado.",
+    boardMineActive: "Publicado para",
+    boardPublished: "¡Anuncio publicado!", boardRemoved: "Anuncio eliminado.",
+    boardNeedProfile: "Guarda tu perfil con el correo verificado antes de publicar.",
+    boardNeedWhen: "Elige la fecha y la hora.",
+    boardEmptyState: "Todavía no hay partidos disponibles por aquí.",
+    boardError: "No se pudieron cargar los anuncios ahora.",
+    btnInvitePlayer: "Invitar",
+    chipRanking: "Ranking", rankingTitle: "Ranking General",
+    rankingMyPosition: "Tu posición", rankingUnranked: "Registra un partido para entrar en el ranking.",
+    rankingNeedEmail: "Para entrar en el ranking: añade tu correo en el perfil, confirma el código de verificación y registra un partido.",
+    rankingNeedVerify: "Falta confirmar tu correo. Abre el perfil, escribe el código de verificación y registra un partido para entrar en el ranking.",
+    rankingOfTotal: "de", rankingPlayers: "jugadores",
+    rankingEmptyState: "Nadie en el ranking todavía. ¡Sé el primero!",
+    rankingError: "No se pudo cargar el ranking ahora.",
+    rankingNote: "Ranking general de todos los jugadores de Deuce Score. El rating de cada uno se calcula a partir de su propio historial, así que la comparación gana precisión a medida que juegan entre sí y contra rivales en común.",
+    rankingMatchesShort: "partidos",
+    referTitle: "Recomendar la App", btnRefer: "Recomendar a un amigo",
+    referIntro: "Cuanta más gente de tu grupo registre partidos, más sentido tienen el ranking y las ligas.",
+    referSheetTitle: "Recomendar a un amigo", referSheetIntro: "Elige por dónde enviarlo. Tu amigo abre el enlace y elige si es Android o iPhone.",
+    referWhatsApp: "WhatsApp", referEmail: "Correo", referSms: "SMS", referCopy: "Copiar enlace",
+    referSubject: "¿Conoces Deuce Score?",
+    referMessage: "Estoy usando Deuce Score para anotar mis partidos de tenis: marcador, ranking y las ligas del grupo. Échale un vistazo: {link}",
+    referCopied: "¡Enlace copiado!",
+    recapTitle: "Retrospectiva", recapLabelMonth: "Mes",
+    recapIntro: "Genera un resumen del mes en imagen para compartir.",
+    btnShareRecap: "Compartir Retrospectiva",
+    recapNoData: "No hay partidos registrados para generar la retrospectiva.",
+    recapMatchesLabel: "PARTIDOS", recapWinsLabel: "VICTORIAS", recapLossesLabel: "DERROTAS",
+    recapWinRateLabel: "RENDIMIENTO", recapRatingLabel: "RATING",
+    recapTopOpponentLabel: "MÁS JUGADO", recapBestStreakLabel: "MEJOR RACHA",
+    syncTitle: "Copia en la Nube",
+    syncIntro: "Guarda tu historial en el servidor, vinculado a tu correo verificado. Si borras el navegador o cambias de dispositivo, solo tienes que restaurar. Las fotos de los partidos no entran en la copia en la nube para no exceder el tamaño — para eso usa Exportar Datos.",
+    btnSyncPush: "Guardar en la Nube", btnSyncPull: "Restaurar",
+    syncNeedProfile: "Guarda tu perfil con el correo verificado para usar la copia.",
+    syncNever: "Aún no hay copia en la nube.",
+    syncLastLabel: "Última copia",
+    syncSaved: "¡Copia guardada en la nube!",
+    syncNothingToRestore: "No hay copia en la nube para restaurar.",
+    syncRestored: "¡Datos restaurados de la nube!",
+    syncConfirmRestore: "Esto reemplazará los partidos, torneos y ligas de este dispositivo con los datos de la nube. ¿Continuar?",
+    syncTooLarge: "Tus datos superaron el límite de la copia. Usa Exportar Datos.",
+    syncError: "No se pudo contactar con el servidor ahora.",
+    syncAutoNote: "Se guarda automáticamente en cada cambio.",
+    syncSaving: "Guardando…", syncFailed: "⚠ La última copia automática falló. Toca Guardar en la Nube.",
+    courtAccessFilterLabel: "Tipo de Acceso",
+    courtFilterAll: "Todas", courtFilterPublic: "Públicas", courtFilterFee: "De pago", courtFilterPrivate: "Privadas / Condominio",
+    courtAccessPublic: "Pública", courtAccessFee: "De pago", courtAccessPrivate: "Privada",
+    courtAccessUnknown: "Sin información",
+    courtAccessNote: "El tipo de acceso viene de OpenStreetMap y no todas las canchas lo tienen indicado. Al filtrar por un tipo, las canchas sin esa información no aparecen.",
+    courtsFilteredEmpty: "No hay canchas de ese tipo por aquí. Prueba \"Todas\".",
+    notifEnabled: "¡Notificaciones activadas!",
+    notifDenied: "No permitiste las notificaciones.",
+    notifBlocked: "Las notificaciones están bloqueadas para este sitio. Actívalas en la configuración del navegador (el candado junto a la dirección → Notificaciones) e inténtalo de nuevo.",
+    notifEnableError: "No se pudieron activar las notificaciones ahora.",
+    btnSettingsShort: "Config",
+    btnAboutApp: "Acerca de la App",
+    aboutStory: "Deuce Score nació del amor por el tenis. Creado por un jugador para jugadores que aman el deporte, la app existe para facilitar el día a día de quien juega: seguir cada partido, organizar torneos y ligas con amigos, y nunca más perder un partido agendado. Un proyecto hecho con cariño, cancha a cancha.",
     labelShareLocation: "Permitir que otros jugadores me encuentren cerca",
-    labelRadius: "Radio de Búsqueda (km)", btnSearchNearby: "Buscar",
+    labelRadius: "Radio de Búsqueda", btnSearchNearby: "Buscar",
     nearbyEmptyState: "No se encontraron jugadores en ese radio.", nearbyNeedZip: "Agrega un código postal a tu perfil para buscar.",
     btnScheduleWithPlayer: "Agendar", nearbyError: "No se pudo buscar ahora.",
     leaguesEmptyState: "Aún no hay ligas creadas.", btnNewLeague: "+ Nueva Liga",
@@ -1179,7 +1867,6 @@ let wantsSendResult = false;
 let pushSubscription = null;
 
 const VAPID_PUBLIC_KEY = 'BCI8BNk4OfxVGIXzb1zGK8NAKyqUBhqrEhLTuA2RobM-d-pV1XSqRDtWNuQhkOsR5-3zovQEjpP1_oMkDplugi4';
-const AUTHOR_EMAIL = ''; // fill in when ready; the contact row stays hidden while empty
 
 const $ = id => document.getElementById(id);
 const t = key => (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) || TRANSLATIONS.pt[key] || key;
@@ -1196,6 +1883,68 @@ function applyLanguage(){
     btn.classList.toggle('active', btn.dataset.lang === currentLang);
   });
 }
+
+/* Wraps a native <select> so it looks like the rest of the app. The select
+   itself stays in the DOM and keeps holding the value, so every existing
+   reader ($('recapMonth').value, populateRecapMonths rewriting innerHTML,
+   change listeners) goes on working untouched. */
+function enhanceSelect(id){
+  const sel = $(id);
+  if(!sel || sel.dataset.enhanced === '1') return;
+  sel.dataset.enhanced = '1';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'app-select-wrap';
+  sel.parentNode.insertBefore(wrap, sel);
+  wrap.appendChild(sel);
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'app-select-btn';
+  wrap.appendChild(btn);
+
+  const menu = document.createElement('div');
+  menu.className = 'app-select-menu';
+  wrap.appendChild(menu);
+
+  function syncLabel(){
+    const opt = sel.options[sel.selectedIndex];
+    btn.textContent = opt ? opt.textContent : '';
+  }
+
+  function buildMenu(){
+    // rebuilt on every open so dynamically filled selects stay correct
+    menu.innerHTML = '';
+    [...sel.options].forEach((opt, i) => {
+      const row = document.createElement('div');
+      row.className = 'app-select-option' + (i === sel.selectedIndex ? ' selected' : '');
+      row.textContent = opt.textContent;
+      row.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sel.selectedIndex = i;
+        syncLabel();
+        wrap.classList.remove('open');
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      menu.appendChild(row);
+    });
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const wasOpen = wrap.classList.contains('open');
+    document.querySelectorAll('.app-select-wrap.open').forEach(w => w.classList.remove('open'));
+    if(!wasOpen){ buildMenu(); wrap.classList.add('open'); }
+  });
+
+  sel.addEventListener('change', syncLabel);
+  sel._syncAppSelect = syncLabel;
+  syncLabel();
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.app-select-wrap.open').forEach(w => w.classList.remove('open'));
+});
 
 function esc(str){
   const div = document.createElement('div');
@@ -1237,25 +1986,58 @@ function urlBase64ToUint8Array(base64String){
   return outputArray;
 }
 
-async function ensurePushSubscription(){
+async function ensurePushSubscription(showFeedback){
   if(!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
   if(pushSubscription) return pushSubscription;
   try{
     const reg = await navigator.serviceWorker.ready;
     let sub = await reg.pushManager.getSubscription();
     if(!sub){
+      // A previously blocked site never gets a prompt again — requestPermission
+      // resolves 'denied' instantly and the tap looks like it did nothing.
+      if(Notification.permission === 'denied'){
+        if(showFeedback) showAlert(t('notifBlocked'));
+        return null;
+      }
       const permission = await Notification.requestPermission();
-      if(permission !== 'granted') return null;
+      if(permission !== 'granted'){
+        if(showFeedback) showAlert(t('notifDenied'));
+        return null;
+      }
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
     }
     pushSubscription = sub;
+    // The server was told subscription:null when notifications were turned off,
+    // so without this the switch back on would never reach it.
+    await savePushSubscription(sub);
+    if(showFeedback) showAlert(t('notifEnabled'));
     return sub;
   }catch(e){
     console.log('Push subscription error:', e);
+    if(showFeedback) showAlert(t('notifEnableError'));
     return null;
+  }
+}
+
+async function savePushSubscription(sub){
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+  if(!profile.email) return;
+  try{
+    await fetch('/api/save-player', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        playerId: getPlayerId(), name: profile.name || '', email: profile.email,
+        zip: profile.zip || '', shareLocation: !!profile.shareLocation,
+        subscription: sub
+      })
+    });
+  }catch(e){
+    console.log('Save subscription error:', e);
   }
 }
 
@@ -1265,17 +2047,17 @@ let sessionCoords = null;
 
 function useMyLocation(){
   if(!('geolocation' in navigator)){
-    alert(t('geoNotSupported'));
+    showAlert(t('geoNotSupported'));
     return;
   }
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       sessionCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      alert(t('geoLocationSet'));
+      showAlert(t('geoLocationSet'));
     },
     (err) => {
       console.log('Geolocation error:', err);
-      alert(t('geoError'));
+      showAlert(t('geoError'));
     },
     { enableHighAccuracy: true, timeout: 10000 }
   );
@@ -1288,7 +2070,7 @@ async function getMyCoords(){
   const profile = profileRaw ? JSON.parse(profileRaw) : {};
   if(!profile.email) return null;
   try{
-    const res = await fetch('/.netlify/functions/get-my-location', {
+    const res = await fetch('/api/get-my-location', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: profile.email })
@@ -1380,9 +2162,31 @@ function haversineKmClient(lat1, lng1, lat2, lng2){
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+/* OpenStreetMap already sends these tags in the response we were throwing
+   away. access/fee is the closest thing OSM has to "public park vs paid club
+   vs condo court" — there is no dedicated condominium tag, so a gated
+   residential court shows up as access=private.                          */
+function courtAccess(tags){
+  const g = tags || {};
+  const fee = (g.fee || '').toLowerCase();
+  const access = (g.access || '').toLowerCase();
+
+  if(fee === 'yes' || access === 'customers') return 'fee';
+  if(access === 'private' || access === 'no' || g.club) return 'private';
+  if(access === 'yes' || access === 'permissive' || fee === 'no') return 'public';
+  return 'unknown';
+}
+
+function courtAccessLabel(kind){
+  if(kind === 'fee') return t('courtAccessFee');
+  if(kind === 'private') return t('courtAccessPrivate');
+  if(kind === 'public') return t('courtAccessPublic');
+  return t('courtAccessUnknown');
+}
+
 async function searchCourts(){
   const coords = await getMyCoords();
-  if(!coords){ alert(t('nearbyNeedZip')); return; }
+  if(!coords){ showAlert(t('nearbyNeedZip')); return; }
   const radiusInput = parseFloat($('nearbyRadius').value) || 25;
   const radiusKm = nearbyUnit === 'mi' ? radiusInput * 1.60934 : radiusInput;
   const radiusM = Math.round(radiusKm * 1000);
@@ -1400,31 +2204,39 @@ async function searchCourts(){
       if(lat == null || lon == null) return null;
       return {
         name: (el.tags && el.tags.name) || t('courtDefaultName'),
+        access: courtAccess(el.tags),
         lat, lon,
         distanceKm: haversineKmClient(coords.lat, coords.lng, lat, lon)
       };
     }).filter(Boolean).sort((a,b) => a.distanceKm - b.distanceKm);
-    renderCourts(courts);
+
+    const wanted = $('courtAccessFilter').value;
+    // Unknowns stay visible under "all" — most OSM courts carry no access tag,
+    // so hiding them by default would empty the list.
+    const shown = wanted === 'all' ? courts : courts.filter(c => c.access === wanted);
+    renderCourts(shown, courts.length > 0 && shown.length === 0);
   }catch(e){
     console.log('Search courts error:', e);
     $('nearbyContainer').innerHTML = `<div class="stats-empty">${t('nearbyError')}</div>`;
   }
 }
 
-function renderCourts(courts){
+function renderCourts(courts, filteredOut){
   const container = $('nearbyContainer');
   if(courts.length === 0){
-    container.innerHTML = `<div class="stats-empty">${t('courtsEmptyState')}</div>`;
+    container.innerHTML = `<div class="stats-empty">${filteredOut ? t('courtsFilteredEmpty') : t('courtsEmptyState')}</div>`;
     return;
   }
   container.innerHTML = courts.map((c, i) => {
     const dist = nearbyUnit === 'mi' ? c.distanceKm * 0.621371 : c.distanceKm;
     const unitLabel = nearbyUnit === 'mi' ? 'mi' : 'km';
+    const tagClass = c.access === 'unknown' ? '' : c.access;
     return `
     <div class="nearby-row">
       <div class="nearby-info">
         <div class="nearby-name">${esc(c.name)}</div>
         <div class="nearby-dist">${dist.toFixed(1)} ${unitLabel}</div>
+        <span class="court-tag ${tagClass}">${esc(courtAccessLabel(c.access))}</span>
       </div>
       <button type="button" data-idx="${i}">${t('btnOpenMap')}</button>
     </div>`;
@@ -1448,7 +2260,7 @@ async function syncScheduledMatch(match){
     // interprets the exact same moment in time.
     const localDateTime = new Date(`${match.date}T${match.time || '09:00'}:00`);
     const dateTime = localDateTime.toISOString();
-    const res = await fetch('/.netlify/functions/schedule-match', {
+    const res = await fetch('/api/schedule-match', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1468,7 +2280,7 @@ async function syncScheduledMatch(match){
 
 async function cancelScheduledMatch(matchId){
   try{
-    await fetch('/.netlify/functions/cancel-match', {
+    await fetch('/api/cancel-match', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ matchId })
@@ -1481,6 +2293,7 @@ async function cancelScheduledMatch(matchId){
 // ---------- Inbox: Invites + Pending Results ----------
 let pendingInvites = [];
 let pendingResults = [];
+let inviteResponses = [];
 
 function toggleWantsInvite(){
   wantsInvite = !wantsInvite;
@@ -1492,41 +2305,85 @@ function toggleWantsSendResult(){
   $('sendResultBtn').classList.toggle('active', wantsSendResult);
 }
 
+let pendingListingId = null;
+
+function addOpponentField(){
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex; gap:8px; margin-top:8px;';
+  wrap.innerHTML = `
+    <input type="email" class="extra-opponent" placeholder="email@exemplo.com"
+      style="flex:1; background:var(--panel); border:1px solid var(--panel-line); color:var(--chalk); border-radius:8px; padding:11px 12px; font-size:15px; font-family:inherit;">
+    <button type="button" class="btn-cancel" style="width:52px; padding:0;">✕</button>`;
+  wrap.querySelector('button').addEventListener('click', () => wrap.remove());
+  $('extraOpponents').appendChild(wrap);
+  wrap.querySelector('input').focus();
+}
+
+// Every recipient gets their own invite record, so each one accepts or
+// declines independently instead of the first answer settling it for all.
+function inviteRecipients(){
+  const list = [];
+  const first = $('fOpponentEmail').value.trim();
+  if(first) list.push(first);
+  $('extraOpponents').querySelectorAll('.extra-opponent').forEach(el => {
+    const v = el.value.trim();
+    if(v && !list.some(x => x.toLowerCase() === v.toLowerCase())) list.push(v);
+  });
+  return list;
+}
+
 async function sendInvite(){
   const date = $('fDate').value;
-  const toEmail = $('fOpponentEmail').value.trim();
-  if(!date || !toEmail){ alert(t('inviteNeedInfo')); return; }
+  const recipients = inviteRecipients();
+  // one of the two is enough: typed addresses, or a handle from the board
+  if(!date || (!recipients.length && !pendingListingId)){ showAlert(t('inviteNeedInfo')); return; }
   try{
     const profileRaw = localStorage.getItem(PROFILE_KEY);
     const profile = profileRaw ? JSON.parse(profileRaw) : {};
     const localDateTime = new Date(`${date}T${$('fTime').value || '09:00'}:00`);
-    const res = await fetch('/.netlify/functions/send-invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fromName: profile.name || t('defaultOpponent'),
-        fromEmail: profile.email || '',
-        toEmail,
-        dateTime: localDateTime.toISOString(),
-        opponent: $('fOpponent').value.trim()
-      })
-    });
-    const data = await res.json();
-    alert(data.notified ? t('inviteSentNotified') : t('inviteSentNoAccount'));
+
+    const targets = recipients.length ? recipients : [null];
+    let notified = 0, sent = 0;
+
+    for(const toEmail of targets){
+      const res = await fetch('/api/send-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromName: profile.name || t('defaultOpponent'),
+          fromEmail: profile.email || '',
+          toEmail: toEmail || '',
+          listingId: toEmail ? null : pendingListingId,
+          dateTime: localDateTime.toISOString(),
+          opponent: $('fOpponent').value.trim(),
+          location: $('fLocation').value.trim(),
+          message: $('fInviteMessage').value.trim()
+        })
+      });
+      const data = await res.json();
+      if(data.ok !== false) sent++;
+      if(data.notified) notified++;
+    }
+
+    if(targets.length > 1){
+      showAlert(t('invitesSentMany').replace('{sent}', sent).replace('{notified}', notified));
+    } else {
+      showAlert(notified ? t('inviteSentNotified') : t('inviteSentNoAccount'));
+    }
   }catch(e){
     console.log('Send invite error:', e);
-    alert(t('inviteError'));
+    showAlert(t('inviteError'));
   }
 }
 
 async function sendResult(){
   const toEmail = $('fOpponentEmail').value.trim();
-  if(!toEmail || !selectedResult){ alert(t('inviteNeedInfo')); return; }
+  if(!toEmail || !selectedResult){ showAlert(t('inviteNeedInfo')); return; }
   try{
     const profileRaw = localStorage.getItem(PROFILE_KEY);
     const profile = profileRaw ? JSON.parse(profileRaw) : {};
     const sets = currentSets.filter(s => s.a !== '' && s.b !== '').map(s => ({a: Number(s.a), b: Number(s.b)}));
-    const res = await fetch('/.netlify/functions/send-result', {
+    const res = await fetch('/api/send-result', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1541,10 +2398,10 @@ async function sendResult(){
       })
     });
     const data = await res.json();
-    alert(data.notified ? t('resultSentNotified') : t('resultSentNoAccount'));
+    showAlert(data.notified ? t('resultSentNotified') : t('resultSentNoAccount'));
   }catch(e){
     console.log('Send result error:', e);
-    alert(t('resultError'));
+    showAlert(t('resultError'));
   }
 }
 
@@ -1554,16 +2411,17 @@ async function refreshInbox(){
   if(!profile.email){
     pendingInvites = [];
     pendingResults = [];
+    inviteResponses = [];
     renderInbox();
     return;
   }
   try{
     const [invRes, resRes] = await Promise.all([
-      fetch('/.netlify/functions/get-invites', {
+      fetch('/api/get-invites', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: profile.email })
       }),
-      fetch('/.netlify/functions/get-pending-results', {
+      fetch('/api/get-pending-results', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: profile.email })
       })
@@ -1571,6 +2429,7 @@ async function refreshInbox(){
     const invData = await invRes.json();
     const resData = await resRes.json();
     pendingInvites = Array.isArray(invData.invites) ? invData.invites : [];
+    inviteResponses = Array.isArray(invData.responses) ? invData.responses : [];
     pendingResults = Array.isArray(resData.results) ? resData.results : [];
   }catch(e){
     console.log('Refresh inbox error:', e);
@@ -1581,13 +2440,30 @@ async function refreshInbox(){
 function renderInbox(){
   const section = $('inboxSection');
   section.style.display = 'block';
-  const total = pendingInvites.length + pendingResults.length;
+  const total = pendingInvites.length + pendingResults.length + inviteResponses.length;
   if(total === 0){
     $('inboxList').innerHTML = `<div class="inbox-card inbox-empty" id="inboxEmptyCard"><div class="inbox-text">${t('inboxEmptyState')}</div></div>`;
     $('inboxEmptyCard').addEventListener('click', () => openMatchSheet(null, true));
     return;
   }
   let html = '';
+
+  // answers to invites I sent
+  inviteResponses.forEach(inv => {
+    const d = new Date(inv.dateTime);
+    const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
+    const accepted = inv.status === 'accepted';
+    const who = inv.toName || inv.opponent || '';
+    html += `
+    <div class="inbox-card">
+      <div class="inbox-tag" style="color:${accepted ? 'var(--win)' : 'var(--loss)'}">${accepted ? t('respAcceptedTag') : t('respDeclinedTag')}</div>
+      <div class="inbox-text"><strong>${esc(who)}</strong> ${accepted ? t('respAcceptedText') : t('respDeclinedText')} ${esc(dateStr)}</div>
+      <div class="invite-actions">
+        <button type="button" class="btn-cancel" data-seen="${esc(inv.id)}">${t('btnDismiss')}</button>
+      </div>
+    </div>`;
+  });
+
   pendingInvites.forEach(inv => {
     const d = new Date(inv.dateTime);
     const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
@@ -1595,6 +2471,8 @@ function renderInbox(){
     <div class="inbox-card">
       <div class="inbox-tag">${t('inviteTag')}</div>
       <div class="inbox-text"><strong>${esc(inv.fromName || '')}</strong> ${t('inviteFromLabel')} ${esc(dateStr)}</div>
+      ${inv.location ? `<div class="inbox-text" style="font-size:13px">📍 ${esc(inv.location)}</div>` : ''}
+      ${inv.message ? `<div class="inbox-text" style="font-size:13px; font-style:italic">"${esc(inv.message)}"</div>` : ''}
       <div class="invite-actions">
         <button data-kind="invite" data-id="${inv.id}" data-action="accepted" class="invite-accept">${t('btnAcceptInvite')}</button>
         <button data-kind="invite" data-id="${inv.id}" data-action="dismissed" class="invite-dismiss">${t('btnDismissInvite')}</button>
@@ -1621,11 +2499,25 @@ function renderInbox(){
   $('inboxList').querySelectorAll('button[data-kind="result"]').forEach(btn => {
     btn.addEventListener('click', () => respondResult(btn.dataset.id, btn.dataset.action));
   });
+  $('inboxList').querySelectorAll('button[data-seen]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.seen;
+      inviteResponses = inviteResponses.filter(r => r.id !== id);
+      renderInbox();
+      try{
+        await fetch('/api/mark-invite-seen', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ inviteId: id })
+        });
+      }catch(e){ console.log('Dismiss response error:', e); }
+    });
+  });
 }
 
 async function respondInvite(inviteId, response){
   try{
-    await fetch('/.netlify/functions/respond-invite', {
+    await fetch('/api/respond-invite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ inviteId, response })
@@ -1647,7 +2539,7 @@ async function respondInvite(inviteId, response){
         matches.push(newMatch);
         saveMatches();
         render();
-        alert(t('inviteAccepted'));
+        showAlert(t('inviteAccepted'));
       }
     }
     refreshInbox();
@@ -1656,9 +2548,34 @@ async function respondInvite(inviteId, response){
   }
 }
 
+// Finds the pending scheduled entry that this confirmed result belongs to.
+// Prefers an exact date match, then falls back to the nearest scheduled game
+// with the same opponent that isn't in the future, since matches often get
+// played a day or two off what was agreed.
+function findScheduledMatch(email, name, date){
+  const key = (email || '').trim().toLowerCase();
+  const nick = (name || '').trim().toLowerCase();
+
+  const samePlayer = matches.filter(m => {
+    if(m.result) return false;
+    const mEmail = (m.opponentEmail || '').trim().toLowerCase();
+    const mName = (m.opponent || '').trim().toLowerCase();
+    return (key && mEmail === key) || (nick && mName === nick);
+  });
+  if(!samePlayer.length) return null;
+
+  const exact = samePlayer.find(m => (m.date || '') === date);
+  if(exact) return exact;
+
+  const past = samePlayer
+    .filter(m => (m.date || '') <= date)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  return past[0] || null;
+}
+
 async function respondResult(resultId, response){
   try{
-    await fetch('/.netlify/functions/respond-result', {
+    await fetch('/api/respond-result', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ resultId, response })
@@ -1668,20 +2585,40 @@ async function respondResult(resultId, response){
       if(r){
         const mirroredResult = r.result === 'V' ? 'D' : 'V';
         const mirroredSets = (r.sets || []).map(s => ({a: s.b, b: s.a}));
-        const newMatch = {
-          id: Date.now().toString(),
-          date: r.date || new Date().toISOString().slice(0,10),
-          time: '',
-          opponent: r.fromName || '',
-          opponentEmail: r.fromEmail || '',
-          format: 'individual', partner: '', opponent2: '',
-          result: mirroredResult, matchType: r.matchType || 'amistoso', surface: r.surface || 'rapida',
-          sets: mirroredSets, location: '', notes: '', photo: null
-        };
-        matches.push(newMatch);
+        const date = r.date || new Date().toISOString().slice(0,10);
+
+        // The match was very likely already sitting in this player's schedule
+        // from when they accepted the invite. Fill THAT entry in instead of
+        // adding a second one, otherwise the game shows up in the history and
+        // stays in "Próximos jogos" at the same time.
+        const scheduled = findScheduledMatch(r.fromEmail, r.fromName, date);
+
+        if(scheduled){
+          scheduled.result = mirroredResult;
+          scheduled.sets = mirroredSets;
+          scheduled.matchType = r.matchType || scheduled.matchType || 'amistoso';
+          scheduled.surface = r.surface || scheduled.surface || 'rapida';
+          scheduled.date = date;
+        } else {
+          matches.push({
+            id: Date.now().toString(),
+            date,
+            time: '',
+            opponent: r.fromName || '',
+            opponentEmail: r.fromEmail || '',
+            format: 'individual', partner: '', opponent2: '',
+            result: mirroredResult, matchType: r.matchType || 'amistoso', surface: r.surface || 'rapida',
+            sets: mirroredSets, location: '', notes: '', photo: null
+          });
+        }
+
         saveMatches();
         render();
-        alert(t('resultAccepted'));
+        renderStats();
+        renderAchievements();
+        // without this the result never reaches the ranking on this side
+        syncRating();
+        showAlert(t('resultAccepted'));
       }
     }
     refreshInbox();
@@ -1700,10 +2637,11 @@ function loadMatches(){
   }
 }
 function saveMatches(){
+  queueSync();
   try{
     localStorage.setItem(MATCHES_KEY, JSON.stringify(matches));
   }catch(e){
-    alert('Storage error.');
+    showAlert(t('dlgStorageError'));
   }
 }
 
@@ -1756,20 +2694,22 @@ function saveProfile(){
     verifiedEmailValue: prev.verifiedEmailValue || ''
   };
   localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
-  alert(t('profileSaved'));
+  showAlert(t('profileSaved'));
   loadProfile();
+  renderAchievements();
 
   if(p.email && !p.emailVerified){
     sendVerificationCode(p.email);
   } else if(p.email){
     syncPlayerProfile(p);
+    setTimeout(syncRating, 1500);
   }
   refreshInbox();
 }
 
 async function sendVerificationCode(email){
   try{
-    const res = await fetch('/.netlify/functions/send-verification', {
+    const res = await fetch('/api/send-verification', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
@@ -1781,11 +2721,11 @@ async function sendVerificationCode(email){
       closeAllSheets();
       openSheet('verifyEmailSheet');
     } else {
-      alert(t('verifyEmailError'));
+      showAlert(t('verifyEmailError'));
     }
   }catch(e){
     console.log('Send verification error:', e);
-    alert(t('verifyEmailError'));
+    showAlert(t('verifyEmailError'));
   }
 }
 
@@ -1795,7 +2735,7 @@ async function confirmVerificationCode(){
   const code = $('verifyCodeInput').value.trim();
   if(!code) return;
   try{
-    const res = await fetch('/.netlify/functions/verify-email', {
+    const res = await fetch('/api/verify-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: profile.email, code })
@@ -1804,17 +2744,29 @@ async function confirmVerificationCode(){
     if(data.ok){
       profile.emailVerified = true;
       profile.verifiedEmailValue = profile.email;
+
+      // Coming back on a new device (or the iOS Home Screen app, which has
+      // storage separate from Safari): fill in whatever this device is missing
+      // from what the server already holds, without overwriting what's typed.
+      if(data.existing){
+        if(!profile.name && data.existing.name) profile.name = data.existing.name;
+        if(!profile.zip && data.existing.zip) profile.zip = data.existing.zip;
+        if(profile.shareLocation === undefined) profile.shareLocation = data.existing.shareLocation;
+      }
+
       localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-      alert(t('verifyEmailSuccess'));
+      showAlert(t('verifyEmailSuccess'));
       closeAllSheets();
       loadProfile();
       syncPlayerProfile(profile);
+      restoreAfterVerify();
+      setTimeout(syncRating, 1500);
     } else {
-      alert(t('verifyEmailWrongCode'));
+      showAlert(t('verifyEmailWrongCode'));
     }
   }catch(e){
     console.log('Verify email error:', e);
-    alert(t('verifyEmailError'));
+    showAlert(t('verifyEmailError'));
   }
 }
 
@@ -1831,7 +2783,7 @@ async function syncPlayerProfile(profile){
   if(!profile.email) return;
   try{
     const sub = await ensurePushSubscription();
-    await fetch('/.netlify/functions/save-player', {
+    await fetch('/api/save-player', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1848,27 +2800,615 @@ async function syncPlayerProfile(profile){
   }
 }
 
+function updateUnitLabels(){
+  const suffix = ` (${nearbyUnit})`;
+  ['nearbyRadiusLabel', 'boardRadiusLabel'].forEach(id => {
+    const el = $(id);
+    if(el) el.textContent = t('labelRadius') + suffix;
+  });
+}
+
 function setNearbyUnit(u){
   nearbyUnit = u;
   localStorage.setItem(UNIT_KEY, u);
+  updateUnitLabels();
   $('unitKm').classList.toggle('active', u === 'km');
   $('unitMi').classList.toggle('active', u === 'mi');
   $('settingsUnitKm').classList.toggle('active', u === 'km');
   $('settingsUnitMi').classList.toggle('active', u === 'mi');
 }
 
+/* ---------------- First-run walkthrough ---------------- */
+const WELCOME_KEY = 'tennis_welcome_v1';
+
+function maybeShowWelcome(){
+  if(localStorage.getItem(WELCOME_KEY)) return;
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+  // Someone who already has data doesn't need the tour.
+  if(profile.email || matches.length) {
+    localStorage.setItem(WELCOME_KEY, '1');
+    return;
+  }
+  setTimeout(() => openSheet('welcomeSheet'), 400);
+}
+
+function dismissWelcome(openProfile){
+  localStorage.setItem(WELCOME_KEY, '1');
+  closeAllSheets();
+  if(openProfile){
+    setTimeout(() => {
+      loadProfile(); renderStats(); renderAchievements();
+      openSheet('menuSheet');
+    }, 260);
+  }
+}
+
+/* ---------------- Account deletion ---------------- */
+async function deleteAccount(){
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+
+  if(!await askConfirm(t('deleteAccountConfirm'))) return;
+
+  if(profile.email){
+    try{
+      const res = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: profile.email })
+      });
+      const data = await res.json();
+      if(!data.ok){ showAlert(t('deleteAccountError')); return; }
+    }catch(e){
+      console.log('Delete account error:', e);
+      showAlert(t('deleteAccountError'));
+      return;
+    }
+  }
+
+  // Only wipe the device after the server confirmed, so a failed call can't
+  // leave the player with nothing locally and everything still online.
+  try{ localStorage.clear(); }catch(e){ console.log('Clear error:', e); }
+  showAlert(t('deleteAccountDone'));
+  setTimeout(() => location.reload(), 1200);
+}
+
+/* ---------------- Cloud backup ----------------
+   Whole-snapshot, last-write-wins. A single user's dataset doesn't justify
+   a merge strategy, and a simple model that is easy to reason about beats
+   a clever one that can silently drop a match.
+
+   Photos are stripped from the payload on purpose: they are base64 blobs
+   and would blow past a sane request size within a few dozen matches.
+   Export Data remains the full backup, photos included.                  */
+let syncTimer = null;
+
+function syncProfile(){
+  const raw = localStorage.getItem(PROFILE_KEY);
+  return raw ? JSON.parse(raw) : {};
+}
+
+function syncEnabled(){
+  const p = syncProfile();
+  return !!(p.email && p.emailVerified);
+}
+
+function buildSyncPayload(){
+  return {
+    version: 1,
+    matches: matches.map(m => {
+      const copy = { ...m };
+      delete copy.photo;
+      return copy;
+    }),
+    tournaments,
+    leagues
+  };
+}
+
+function applySyncPayload(payload){
+  if(!payload || typeof payload !== 'object') return false;
+  if(Array.isArray(payload.matches)){
+    // keep any local photo we already have for a match we also received
+    const localPhotos = {};
+    matches.forEach(m => { if(m.photo) localPhotos[m.id] = m.photo; });
+    matches = payload.matches.map(m => {
+      if(!m.photo && localPhotos[m.id]) return { ...m, photo: localPhotos[m.id] };
+      return m;
+    });
+    saveMatches();
+  }
+  if(Array.isArray(payload.tournaments)){
+    tournaments = payload.tournaments;
+    saveTournaments();
+  }
+  if(Array.isArray(payload.leagues)){
+    leagues = payload.leagues;
+    saveLeagues();
+  }
+  return true;
+}
+
+function renderSyncStatus(savedAt, errorMsg){
+  const el = $('syncStatus');
+  if(!el) return;
+  if(!syncEnabled()){
+    el.innerHTML = `<div class="stats-empty">${t('syncNeedProfile')}</div>`;
+    return;
+  }
+  if(errorMsg){
+    el.innerHTML = `<div class="stats-empty" style="color:var(--loss)">${esc(errorMsg)}</div>`;
+    return;
+  }
+  if(!savedAt){
+    el.innerHTML = `<div class="stats-empty">${t('syncNever')}</div>`;
+    return;
+  }
+  const d = new Date(savedAt);
+  const label = Number.isNaN(d.getTime())
+    ? savedAt
+    : d.toLocaleString(recapLocale(), { dateStyle: 'short', timeStyle: 'short' });
+  el.innerHTML = statLineHTML(t('syncLastLabel'), label);
+}
+
+async function pushSync(showFeedback){
+  if(!syncEnabled()){
+    if(showFeedback) showAlert(t('syncNeedProfile'));
+    return;
+  }
+  const statusEl = $('syncStatus');
+  if(statusEl) statusEl.innerHTML = `<div class="stats-empty">${t('syncSaving')}</div>`;
+  const profile = syncProfile();
+  try{
+    const res = await fetch('/api/sync-push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: profile.email,
+        payload: buildSyncPayload(),
+        updatedAt: new Date().toISOString()
+      })
+    });
+    const data = await res.json();
+    if(data.ok){
+      renderSyncStatus(data.savedAt);
+      if(showFeedback) showAlert(t('syncSaved'));
+    } else if(data.error === 'too_large'){
+      renderSyncStatus(null, t('syncTooLarge'));
+      if(showFeedback) showAlert(t('syncTooLarge'));
+    } else {
+      // never leave the status silently stale — an invisible failure is worse
+      renderSyncStatus(null, t('syncFailed'));
+      if(showFeedback) showAlert(t('syncError'));
+    }
+  }catch(e){
+    console.log('Sync push error:', e);
+    renderSyncStatus(null, t('syncFailed'));
+    if(showFeedback) showAlert(t('syncError'));
+  }
+}
+
+// Any data change schedules one push a few seconds later, so a burst of
+// edits results in a single request.
+function queueSync(){
+  if(!syncEnabled()) return;
+  if(syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => { syncTimer = null; pushSync(false); }, 4000);
+}
+
+async function pullSync(){
+  if(!syncEnabled()){
+    showAlert(t('syncNeedProfile'));
+    return;
+  }
+  const profile = syncProfile();
+  try{
+    const res = await fetch('/api/sync-pull', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    if(!data.found || !data.payload){
+      showAlert(t('syncNothingToRestore'));
+      return;
+    }
+    // never overwrite existing local data without asking
+    const hasLocal = matches.length || tournaments.length || leagues.length;
+    if(hasLocal && !await askConfirm(t('syncConfirmRestore'))) return;
+
+    applySyncPayload(data.payload);
+    render();
+    renderTournamentsList();
+    renderLeaguesList();
+    renderSyncStatus(data.savedAt);
+    syncRating();
+    showAlert(t('syncRestored'));
+  }catch(e){
+    console.log('Sync pull error:', e);
+    showAlert(t('syncError'));
+  }
+}
+
+// The status line used to start every session claiming there was no backup,
+// because nothing ever asked the server. Fetch the real timestamp instead.
+async function refreshSyncStatus(){
+  if(!syncEnabled()){
+    renderSyncStatus(null);
+    return;
+  }
+  const profile = syncProfile();
+  try{
+    const res = await fetch('/api/sync-pull', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    renderSyncStatus(data.savedAt || null);
+  }catch(e){
+    console.log('Sync status error:', e);
+    renderSyncStatus(null);
+  }
+}
+
+// Right after a successful verification, offer back whatever this account
+// already has in the cloud. On an empty device it just restores; if there is
+// local data it asks first, because that data could be newer.
+async function restoreAfterVerify(){
+  const profile = syncProfile();
+  if(!profile.email) return;
+  try{
+    const res = await fetch('/api/sync-pull', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    if(!data.found || !data.payload){
+      renderSyncStatus(data.savedAt || null);
+      return;
+    }
+    const hasLocal = matches.length || tournaments.length || leagues.length;
+    if(hasLocal && !await askConfirm(t('syncConfirmRestore'))) return;
+
+    applySyncPayload(data.payload);
+    render();
+    renderTournamentsList();
+    renderLeaguesList();
+    renderSyncStatus(data.savedAt);
+    syncRating();
+    showAlert(t('syncRestored'));
+  }catch(e){
+    console.log('Restore after verify error:', e);
+  }
+}
+
+// On a device with no data at all, restoring is what the user wants and
+// there is nothing to lose, so do it without prompting.
+async function autoRestoreIfEmpty(){
+  if(!syncEnabled()) return;
+  if(matches.length || tournaments.length || leagues.length) return;
+  const profile = syncProfile();
+  try{
+    const res = await fetch('/api/sync-pull', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    if(data.found && data.payload){
+      applySyncPayload(data.payload);
+      render();
+      renderTournamentsList();
+      renderLeaguesList();
+      renderSyncStatus(data.savedAt);
+      showAlert(t('syncRestored'));
+    } else {
+      renderSyncStatus(data.savedAt);
+    }
+  }catch(e){
+    console.log('Auto restore error:', e);
+  }
+}
+
+/* ---------------- Global ranking ----------------
+   The rating itself is computed on-device, so it has to be pushed up
+   before it can be ranked. lastKnownPosition lets the header show the
+   placing without refetching on every render.                          */
+let lastKnownPosition = null;
+let lastKnownTotal = null;
+
+async function syncRating(){
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+  if(!profile.email || !profile.emailVerified) return;
+  const data = computeRatings();
+  try{
+    await fetch('/api/post-rating', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: profile.email,
+        rating: data.rating,
+        level: levelFromRating(data.rating),
+        played: data.played
+      })
+    });
+  }catch(e){
+    console.log('Sync rating error:', e);
+  }
+}
+
+async function loadRanking(){
+  const mine = $('rankingMine');
+  const container = $('rankingContainer');
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+
+  container.innerHTML = `<div class="stats-empty">…</div>`;
+  try{
+    const res = await fetch('/api/get-ranking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email || '' })
+    });
+    const data = await res.json();
+
+    lastKnownPosition = data.myPosition || null;
+    lastKnownTotal = data.total || null;
+    updateRatingDisplay();
+
+    if(data.myPosition){
+      mine.style.display = 'block';
+      mine.innerHTML =
+        `<span class="rank-sub">${esc(t('rankingMyPosition'))}</span>` +
+        `<span class="big">#${data.myPosition}</span>` +
+        `<span class="rank-sub">${esc(t('rankingOfTotal'))} ${data.total} ${esc(t('rankingPlayers'))}</span>`;
+    } else {
+      mine.style.display = 'block';
+      let reason;
+      if(!profile.email) reason = t('rankingNeedEmail');
+      else if(!profile.emailVerified) reason = t('rankingNeedVerify');
+      else reason = t('rankingUnranked');
+      mine.innerHTML = `<span class="rank-sub">${esc(reason)}</span>`;
+    }
+
+    const rankRow = (r) => `
+      <div class="rank-row ${r.isMe ? 'me' : ''}">
+        <span class="rank-pos">${r.position}</span>
+        <span class="rank-name">${esc(r.name || '?')}<br>
+          <span class="rank-sub">${r.played ? (r.level ? t('ratingLevelLabel') + ' ' + esc(r.level) + ' · ' : '') + r.played + ' ' + esc(t('rankingMatchesShort')) : esc(t('rankingProvisional'))}</span>
+        </span>
+        <span class="rank-rating">${r.rating}</span>
+      </div>`;
+
+    const top = Array.isArray(data.top) ? data.top : [];
+    if(top.length){
+      let html = top.map(rankRow).join('');
+      // outside the top ten: show my own row below, after a break
+      if(data.me) html += `<div class="rank-break">⋯</div>` + rankRow(data.me);
+      container.innerHTML = html;
+    } else {
+      container.innerHTML = `<div class="stats-empty">${t('rankingEmptyState')}</div>`;
+    }
+  }catch(e){
+    console.log('Load ranking error:', e);
+    mine.style.display = 'none';
+    container.innerHTML = `<div class="stats-empty">${t('rankingError')}</div>`;
+  }
+}
+
+/* ---------------- "Looking for a game" board ----------------
+   Unlike the nearby-players search (which only tells you who exists),
+   a listing carries intent and a time, so it works even when only a
+   handful of players are online.                                      */
+
+function boardProfile(){
+  const raw = localStorage.getItem(PROFILE_KEY);
+  return raw ? JSON.parse(raw) : {};
+}
+
+function boardWhenLabel(iso){
+  const d = new Date(iso);
+  if(Number.isNaN(d.getTime())) return iso || '';
+  const date = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  const time = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  return `${date} ${time}`;
+}
+
+async function loadMyListing(){
+  const el = $('boardMineStatus');
+  const removeBtn = $('removeListingBtn');
+  const profile = boardProfile();
+  if(!profile.email){
+    el.innerHTML = `<div class="stats-empty">${t('boardNoListing')}</div>`;
+    removeBtn.style.display = 'none';
+    return;
+  }
+  try{
+    const res = await fetch('/api/get-my-listing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await res.json();
+    if(data.listing){
+      const l = data.listing;
+      const parts = [boardWhenLabel(l.dateTime)];
+      if(l.location) parts.push(l.location);
+      el.innerHTML = statLineHTML(t('boardMineActive'), parts.join(' · '));
+      removeBtn.style.display = 'block';
+      // let the form mirror what is live, so editing is just re-publishing
+      const d = new Date(l.dateTime);
+      if(!Number.isNaN(d.getTime())){
+        $('bDate').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        $('bTime').value = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      }
+      $('bLocation').value = l.location || '';
+      $('bNote').value = l.note || '';
+    } else {
+      el.innerHTML = `<div class="stats-empty">${t('boardNoListing')}</div>`;
+      removeBtn.style.display = 'none';
+    }
+  }catch(e){
+    console.log('Load my listing error:', e);
+    el.innerHTML = `<div class="stats-empty">${t('boardError')}</div>`;
+    removeBtn.style.display = 'none';
+  }
+}
+
+async function publishListing(){
+  const profile = boardProfile();
+  if(!profile.email || !profile.emailVerified){
+    showAlert(t('boardNeedProfile'));
+    return;
+  }
+  const date = $('bDate').value;
+  const time = $('bTime').value;
+  if(!date || !time){
+    showAlert(t('boardNeedWhen'));
+    return;
+  }
+  const rating = computeRatings();
+  try{
+    const res = await fetch('/api/post-listing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: profile.email,
+        dateTime: new Date(`${date}T${time}`).toISOString(),
+        location: $('bLocation').value.trim(),
+        note: $('bNote').value.trim(),
+        rating: rating.played ? rating.rating : null,
+        level: rating.played ? levelFromRating(rating.rating) : '',
+        format: 'individual',
+        surface: 'rapida',
+        matchType: 'amistoso'
+      })
+    });
+    const data = await res.json();
+    if(data.ok){
+      showAlert(t('boardPublished'));
+      loadMyListing();
+      searchListings();
+    } else {
+      showAlert(t('boardError'));
+    }
+  }catch(e){
+    console.log('Publish listing error:', e);
+    showAlert(t('boardError'));
+  }
+}
+
+async function removeListing(){
+  const profile = boardProfile();
+  if(!profile.email) return;
+  try{
+    await fetch('/api/delete-listing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    showAlert(t('boardRemoved'));
+    loadMyListing();
+  }catch(e){
+    console.log('Remove listing error:', e);
+    showAlert(t('boardError'));
+  }
+}
+
+async function searchListings(){
+  const container = $('boardContainer');
+  const profile = boardProfile();
+  if(!profile.email){
+    container.innerHTML = `<div class="stats-empty">${t('boardNeedProfile')}</div>`;
+    return;
+  }
+  const radiusInput = parseFloat($('boardRadius').value) || 25;
+  const radiusKm = nearbyUnit === 'mi' ? radiusInput * 1.60934 : radiusInput;
+  container.innerHTML = `<div class="stats-empty">…</div>`;
+  try{
+    const res = await fetch('/api/get-listings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email, radiusKm })
+    });
+    const data = await res.json();
+    renderListings(Array.isArray(data.listings) ? data.listings : []);
+  }catch(e){
+    console.log('Search listings error:', e);
+    container.innerHTML = `<div class="stats-empty">${t('boardError')}</div>`;
+  }
+}
+
+function renderListings(listings){
+  const container = $('boardContainer');
+  if(!listings.length){
+    container.innerHTML = `<div class="stats-empty">${t('boardEmptyState')}</div>`;
+    return;
+  }
+  const unitLabel = nearbyUnit === 'mi' ? 'mi' : 'km';
+  container.innerHTML = listings.map((l, i) => {
+    const bits = [boardWhenLabel(l.dateTime)];
+    if(l.location) bits.push(l.location);
+    if(l.distanceKm != null){
+      const d = nearbyUnit === 'mi' ? l.distanceKm * 0.621371 : l.distanceKm;
+      bits.push(`${d.toFixed(1)} ${unitLabel}`);
+    }
+    const lvl = l.level ? ` · ${t('ratingLevelLabel')} ${l.level}` : '';
+    return `
+    <div class="nearby-row">
+      <div class="nearby-info">
+        <div class="nearby-name">${esc(l.name || '?')}${lvl}</div>
+        <div class="nearby-dist">${esc(bits.join(' · '))}</div>
+        ${l.note ? `<div class="nearby-dist">${esc(l.note)}</div>` : ''}
+        ${l.location ? `<button type="button" class="link-btn" data-bmap="${i}">${t('btnOpenMap')}</button>` : ''}
+      </div>
+      <button type="button" data-bidx="${i}">${t('btnInvitePlayer')}</button>
+    </div>
+  `;
+  }).join('');
+
+  container.querySelectorAll('button[data-bmap]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const l = listings[parseInt(btn.dataset.bmap, 10)];
+      window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(l.location), '_blank');
+    });
+  });
+
+  container.querySelectorAll('button[data-bidx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const l = listings[parseInt(btn.dataset.bidx, 10)];
+      // hand the whole thing to the existing invite flow, pre-filled
+      closeAllSheets();
+      openMatchSheet(null, true);
+      pendingListingId = l.listingId || null;
+      $('fOpponent').value = l.name || '';
+      $('fOpponentEmail').value = '';
+      $('fLocation').value = l.location || '';
+      const d = new Date(l.dateTime);
+      if(!Number.isNaN(d.getTime())){
+        $('fDate').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        $('fTime').value = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      }
+    });
+  });
+}
+
 async function searchNearby(){
   const profileRaw = localStorage.getItem(PROFILE_KEY);
   const profile = profileRaw ? JSON.parse(profileRaw) : {};
   if(!profile.email || !profile.zip){
-    alert(t('nearbyNeedZip'));
+    showAlert(t('nearbyNeedZip'));
     return;
   }
   const radiusInput = parseFloat($('nearbyRadius').value) || 25;
   const radiusKm = nearbyUnit === 'mi' ? radiusInput * 1.60934 : radiusInput;
   $('nearbyContainer').innerHTML = `<div class="stats-empty">…</div>`;
   try{
-    const res = await fetch('/.netlify/functions/find-nearby-players', {
+    const res = await fetch('/api/find-nearby-players', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: profile.email, radiusKm })
@@ -1949,46 +3489,326 @@ function opponentDisplayPlain(m){
   return base;
 }
 
-function shareMatchImage(matchId){
-  const m = matches.find(x => x.id === matchId);
-  if(!m) return;
+/* ---------------- Refer a friend ----------------
+   Everyone is sent to the SITE, not straight to the app, because the site is
+   where the visitor picks Android or iPhone and gets the right instructions.
+   Change SITE_URL here when the custom domain goes live.              */
+const SITE_URL = 'https://meu-placar-tenis.pages.dev/site';
+
+function isIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function referMessage(){
+  return t('referMessage').replace('{link}', SITE_URL);
+}
+
+function openReferSheet(){
+  closeAllSheets();
+  setTimeout(() => openSheet('referSheet'), 220);
+}
+
+function referVia(channel){
+  const msg = referMessage();
+  const enc = encodeURIComponent(msg);
+  let url;
+
+  if(channel === 'whatsapp'){
+    url = 'https://wa.me/?text=' + enc;
+  } else if(channel === 'email'){
+    url = 'mailto:?subject=' + encodeURIComponent(t('referSubject')) + '&body=' + enc;
+  } else if(channel === 'sms'){
+    // iOS wants sms:&body=, Android wants sms:?body= — using the wrong one
+    // opens Messages with an empty draft.
+    url = isIOS() ? 'sms:&body=' + enc : 'sms:?body=' + enc;
+  }
+
+  if(url) window.open(url, '_blank');
+}
+
+async function referCopyLink(){
+  try{
+    await navigator.clipboard.writeText(referMessage());
+    showAlert(t('referCopied'));
+  }catch(e){
+    // clipboard is blocked outside a secure context or on older browsers
+    console.log('Copy error:', e);
+    showAlert(SITE_URL);
+  }
+}
+
+/* ---------------- Monthly recap card ---------------- */
+
+function recapLocale(){
+  return currentLang === 'pt' ? 'pt-BR' : (currentLang === 'es' ? 'es-ES' : 'en-US');
+}
+
+function monthKeyOf(dateStr){
+  return (dateStr || '').slice(0, 7);   // YYYY-MM
+}
+
+function monthLabel(key){
+  const [y, m] = key.split('-').map(Number);
+  if(!y || !m) return key;
+  const label = new Date(y, m - 1, 1).toLocaleDateString(recapLocale(), { month: 'long', year: 'numeric' });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function populateRecapMonths(){
+  const sel = $('recapMonth');
+  if(!sel) return;
+  const keys = [...new Set(
+    matches
+      .filter(m => m.result === 'V' || m.result === 'D')
+      .map(m => monthKeyOf(m.date))
+      .filter(Boolean)
+  )].sort().reverse();
+
+  const previous = sel.value;
+  sel.innerHTML = keys.map(k => `<option value="${k}">${esc(monthLabel(k))}</option>`).join('');
+  if(keys.includes(previous)) sel.value = previous;
+  if(sel._syncAppSelect) sel._syncAppSelect();
+}
+
+function recapData(monthKey){
+  const played = matches
+    .filter(m => (m.result === 'V' || m.result === 'D') && monthKeyOf(m.date) === monthKey)
+    .sort((a,b) => (a.date || '').localeCompare(b.date || '') || Number(a.id) - Number(b.id));
+
+  if(!played.length) return null;
+
+  const wins = played.filter(m => m.result === 'V').length;
+  const losses = played.length - wins;
+
+  // most frequent opponent that month
+  const counts = {};
+  played.forEach(m => {
+    const raw = (m.opponent || '').trim();
+    if(!raw) return;
+    const k = raw.toLowerCase();
+    if(!counts[k]) counts[k] = { n: 0, label: raw };
+    counts[k].n++;
+  });
+  const topKey = Object.keys(counts).sort((a,b) => counts[b].n - counts[a].n)[0];
+
+  // best winning streak inside the month
+  let best = 0, run = 0;
+  played.forEach(m => {
+    if(m.result === 'V'){ run++; if(run > best) best = run; }
+    else run = 0;
+  });
+
+  // rating at the end of the month, and how much it moved during it
+  const all = computeRatings();
+  const inMonth = all.history.filter(h => monthKeyOf(h.date) === monthKey);
+  const endRating = inMonth.length ? inMonth[inMonth.length - 1].rating : all.rating;
+  const change = inMonth.reduce((sum, h) => sum + h.delta, 0);
+
+  return {
+    monthKey,
+    total: played.length,
+    wins,
+    losses,
+    pct: Math.round((wins / played.length) * 100),
+    topOpponent: topKey ? counts[topKey].label : '',
+    topOpponentCount: topKey ? counts[topKey].n : 0,
+    bestStreak: best,
+    endRating,
+    change
+  };
+}
+
+function shareRecapImage(){
+  const sel = $('recapMonth');
+  const key = sel ? sel.value : '';
+  const d = key ? recapData(key) : null;
+  if(!d){ showAlert(t('recapNoData')); return; }
+
+  const W = 800, H = 1000;
   const canvas = document.createElement('canvas');
-  canvas.width = 800; canvas.height = 800;
+  canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
   ctx.fillStyle = '#0A2B3D';
-  ctx.fillRect(0, 0, 800, 800);
-  ctx.fillStyle = m.result === 'V' ? '#5FCB8D' : '#E06B4E';
-  ctx.fillRect(0, 0, 16, 800);
-
+  ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#D7F205';
+  ctx.fillRect(0, 0, 16, H);
+
   ctx.beginPath(); ctx.arc(72, 88, 13, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#F3F6F2';
-  ctx.font = "bold 42px sans-serif";
+  ctx.font = 'bold 42px sans-serif';
   ctx.fillText('DEUCE SCORE', 100, 100);
 
-  ctx.fillStyle = m.result === 'V' ? '#5FCB8D' : '#E06B4E';
-  ctx.font = "bold 32px sans-serif";
-  ctx.fillText(m.result === 'V' ? t('resultTagWin') : t('resultTagLoss'), 70, 220);
+  ctx.fillStyle = '#D7F205';
+  ctx.font = 'bold 54px sans-serif';
+  ctx.fillText(monthLabel(d.monthKey).toUpperCase(), 70, 200);
 
-  ctx.fillStyle = '#F3F6F2';
-  ctx.font = "bold 50px sans-serif";
-  wrapCanvasText(ctx, opponentDisplayPlain(m), 70, 290, 660, 56);
+  // four headline numbers on a 2x2 grid
+  const cells = [
+    { label: t('recapMatchesLabel'),  value: String(d.total),   color: '#F3F6F2' },
+    { label: t('recapWinRateLabel'),  value: d.pct + '%',        color: '#D7F205' },
+    { label: t('recapWinsLabel'),     value: String(d.wins),     color: '#5FCB8D' },
+    { label: t('recapLossesLabel'),   value: String(d.losses),   color: '#E06B4E' }
+  ];
+  cells.forEach((c, i) => {
+    const x = 70 + (i % 2) * 340;
+    const y = 300 + Math.floor(i / 2) * 150;
+    ctx.fillStyle = '#8FADBE';
+    ctx.font = '22px sans-serif';
+    ctx.fillText(c.label, x, y);
+    ctx.fillStyle = c.color;
+    ctx.font = 'bold 76px sans-serif';
+    ctx.fillText(c.value, x, y + 76);
+  });
 
-  ctx.fillStyle = '#8FADBE';
-  ctx.font = "26px sans-serif";
-  ctx.fillText(`${formatDate(m.date)} · ${typeLabel(m.matchType)} · ${surfaceLabel(m.surface)}`, 70, 400);
+  let y = 640;
+  function line(label, value, valueColor){
+    ctx.fillStyle = '#8FADBE';
+    ctx.font = '22px sans-serif';
+    ctx.fillText(label, 70, y);
+    ctx.fillStyle = valueColor || '#F3F6F2';
+    ctx.font = 'bold 34px sans-serif';
+    ctx.fillText(value, 70, y + 40);
+    y += 100;
+  }
 
-  const scoreStr = scoreDisplay(m);
-  if(scoreStr){
-    ctx.fillStyle = '#F3F6F2';
-    ctx.font = "40px monospace";
-    ctx.fillText(scoreStr, 70, 460);
+  const sign = d.change > 0 ? '+' : '';
+  line(t('recapRatingLabel'), `${d.endRating}  (${sign}${d.change})`,
+       d.change > 0 ? '#5FCB8D' : (d.change < 0 ? '#E06B4E' : '#F3F6F2'));
+
+  if(d.topOpponent){
+    line(t('recapTopOpponentLabel'), `${d.topOpponent} (${d.topOpponentCount})`);
+  }
+  if(d.bestStreak > 0){
+    line(t('recapBestStreakLabel'), `${d.bestStreak}${t('resultTagWin').charAt(0)}`, '#5FCB8D');
   }
 
   ctx.fillStyle = '#8FADBE';
-  ctx.font = "22px sans-serif";
-  ctx.fillText('🎾 Deuce Score', 70, 760);
+  ctx.font = '22px sans-serif';
+  ctx.fillText('🎾 Deuce Score', 70, H - 50);
+
+  canvas.toBlob(async (blob) => {
+    if(!blob) return;
+    const file = new File([blob], 'retrospectiva.png', { type: 'image/png' });
+    if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
+      try{
+        await navigator.share({ files: [file], title: 'Deuce Score' });
+      }catch(e){ /* user cancelled */ }
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'retrospectiva.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  }, 'image/png');
+}
+
+async function shareMatchImage(matchId){
+  const m = matches.find(x => x.id === matchId);
+  if(!m) return;
+
+  // Bebas/Space Mono come from Google Fonts; without this the canvas can fall
+  // back to a system face on the first share of a session.
+  try{ await document.fonts.ready; }catch(e){}
+
+  const W = 800, H = 800;
+  const won = m.result === 'V';
+  const accent = won ? '#5FCB8D' : '#E06B4E';
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#0A2B3D';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, 16, H);
+
+  // header
+  ctx.fillStyle = '#D7F205';
+  ctx.beginPath(); ctx.arc(76, 84, 14, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#F3F6F2';
+  ctx.font = "56px 'Bebas Neue', sans-serif";
+  ctx.fillText('DEUCE SCORE', 104, 100);
+
+  // result pill
+  const label = (won ? t('resultTagWin') : t('resultTagLoss')).toUpperCase();
+  ctx.font = "34px 'Bebas Neue', sans-serif";
+  const pillW = ctx.measureText(label).width + 44;
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(70, 150, pillW, 52, 26);
+  else ctx.rect(70, 150, pillW, 52);
+  ctx.fill();
+  ctx.fillStyle = '#0A2B3D';
+  ctx.fillText(label, 92, 187);
+
+  // --- scoreboard: both names, so nobody has to guess who won ---
+  const raw = localStorage.getItem(PROFILE_KEY);
+  const profile = raw ? JSON.parse(raw) : {};
+  const myName = (profile.name || '').trim() || t('shareYouLabel');
+  const theirName = opponentDisplayPlain(m) || '—';
+  const sets = Array.isArray(m.sets) ? m.sets.filter(x => x.a !== '' || x.b !== '') : [];
+
+  function drawPlayerRow(name, scores, isWinner, y){
+    ctx.fillStyle = isWinner ? '#D7F205' : '#8FADBE';
+    ctx.font = "44px 'Bebas Neue', sans-serif";
+    let text = name;
+    while(ctx.measureText(text).width > 430 && text.length > 3){
+      text = text.slice(0, -2);
+    }
+    if(text !== name) text += '…';
+    ctx.fillText(text, 70, y);
+
+    if(isWinner){
+      ctx.font = "34px sans-serif";
+      ctx.fillText('🏆', 500, y);
+    }
+
+    ctx.font = "bold 42px 'Space Mono', monospace";
+    ctx.fillStyle = isWinner ? '#F3F6F2' : '#8FADBE';
+    scores.forEach((v, i) => {
+      ctx.fillText(String(v), 560 + i * 62, y);
+    });
+  }
+
+  const rowY = 300;
+  drawPlayerRow(myName, sets.map(x => x.a), won, rowY);
+  ctx.strokeStyle = 'rgba(143,173,190,0.25)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(70, rowY + 30); ctx.lineTo(W - 70, rowY + 30); ctx.stroke();
+  drawPlayerRow(theirName, sets.map(x => x.b), !won, rowY + 90);
+
+  // rating movement — the part people actually react to
+  const ratingInfo = computeRatings().history.find(h => h.id === m.id);
+  if(ratingInfo){
+    ctx.fillStyle = '#8FADBE';
+    ctx.font = "24px 'Bebas Neue', sans-serif";
+    ctx.fillText(t('ratingLabel').toUpperCase(), 70, 500);
+    ctx.fillStyle = '#D7F205';
+    ctx.font = "62px 'Bebas Neue', sans-serif";
+    ctx.fillText(String(ratingInfo.rating), 70, 560);
+    const sign = ratingInfo.delta > 0 ? '+' : '';
+    ctx.fillStyle = ratingInfo.delta >= 0 ? '#5FCB8D' : '#E06B4E';
+    ctx.font = "34px 'Bebas Neue', sans-serif";
+    ctx.fillText(`${sign}${ratingInfo.delta}`, 70 + ctx.measureText(String(ratingInfo.rating)).width + 90, 560);
+  }
+
+  // meta
+  ctx.fillStyle = '#8FADBE';
+  ctx.font = "26px Inter, sans-serif";
+  ctx.fillText(`${formatDate(m.date)} · ${typeLabel(m.matchType)} · ${surfaceLabel(m.surface)}`, 70, 650);
+  if(m.location){
+    let loc = m.location;
+    while(ctx.measureText(loc).width > 640 && loc.length > 4) loc = loc.slice(0, -2);
+    if(loc !== m.location) loc += '…';
+    ctx.fillText('📍 ' + loc, 70, 692);
+  }
+
+  ctx.fillStyle = '#8FADBE';
+  ctx.font = "22px Inter, sans-serif";
+  ctx.fillText('🎾 Deuce Score', 70, 762);
 
   canvas.toBlob(async (blob) => {
     if(!blob) return;
@@ -2060,6 +3880,7 @@ function render(){
   $('lossesNum').textContent = losses;
   $('pctNum').textContent = pct + '%';
   updateStreakDisplay();
+  updateRatingDisplay();
 
   renderUpcoming();
 
@@ -2091,6 +3912,8 @@ function render(){
     const metaParts = [];
     if(m.format === 'duplas' && m.partner) metaParts.push(`${t('labelPartner')}: ${m.partner}`);
     if(m.location) metaParts.push(m.location);
+    if(m.strings) metaParts.push(`🎾 ${m.strings}${m.tension ? ' @ ' + m.tension : ''}`);
+    else if(m.tension) metaParts.push(`🎾 ${m.tension}`);
     if(m.notes) metaParts.push(m.notes);
     return `
     <div class="card ${m.result === 'D' ? 'loss' : ''}" data-id="${m.id}">
@@ -2169,8 +3992,8 @@ function renderUpcoming(){
   });
 }
 
-function deleteMatch(id){
-  if(!confirm(t('deleteConfirm'))) return;
+async function deleteMatch(id){
+  if(!await askConfirm(t('deleteConfirm'))) return;
   const m = matches.find(x => x.id === id);
   matches = matches.filter(m => m.id !== id);
   saveMatches();
@@ -2189,13 +4012,47 @@ function closeAllSheets(){
   $('overlay').classList.remove('show');
 }
 
+/* ---------- Dialogos internos (substituem alert/confirm nativos) ----------
+   O dialogo fica fora da classe .sheet e num z-index maior, entao pode
+   aparecer sobre uma sheet aberta e closeAllSheets() nao o fecha por engano. */
+let dialogResolve = null;
+
+function settleDialog(result){
+  $('appDialog').classList.remove('show');
+  if(dialogResolve){
+    const done = dialogResolve;
+    dialogResolve = null;
+    done(result);
+  }
+}
+
+function openDialog(opts){
+  const titleEl = $('dialogTitle');
+  titleEl.textContent = opts.title || '';
+  titleEl.style.display = opts.title ? '' : 'none';
+  $('dialogMsg').textContent = opts.message == null ? '' : String(opts.message);
+  $('dialogCancelBtn').style.display = opts.isConfirm ? '' : 'none';
+  $('dialogCancelBtn').textContent = t('btnCancel');
+  $('dialogOkBtn').textContent = opts.isConfirm ? t('dlgConfirm') : t('dlgOk');
+  $('appDialog').classList.add('show');
+  return new Promise(resolve => { dialogResolve = resolve; });
+}
+
+function showAlert(message, title){
+  return openDialog({ title: title || t('dlgNotice'), message: message });
+}
+
+function askConfirm(message, title){
+  return openDialog({ title: title || t('dlgConfirmTitle'), message: message, isConfirm: true });
+}
+
 function renderSetsUI(){
   $('setsContainer').innerHTML = currentSets.map((s,i) => `
     <div class="set-row">
       <span class="set-num">${t('setLabel')} ${i+1}</span>
-      <input type="number" min="0" max="20" class="set-input" data-field="a" data-index="${i}" value="${s.a}">
+      <input type="text" inputmode="numeric" maxlength="${i === currentSets.length - 1 ? 2 : 1}" data-last="${i === currentSets.length - 1 ? 1 : 0}" class="set-input" data-field="a" data-index="${i}" value="${s.a}">
       <span class="sep">-</span>
-      <input type="number" min="0" max="20" class="set-input" data-field="b" data-index="${i}" value="${s.b}">
+      <input type="text" inputmode="numeric" maxlength="${i === currentSets.length - 1 ? 2 : 1}" data-last="${i === currentSets.length - 1 ? 1 : 0}" class="set-input" data-field="b" data-index="${i}" value="${s.b}">
       ${currentSets.length > 1 ? `<button type="button" class="set-remove" data-index="${i}">✕</button>` : ''}
     </div>
   `).join('');
@@ -2227,6 +4084,32 @@ function updateMatchPhotoUI(){
   }
 }
 
+function lastPlayedMatch(){
+  const played = matches.filter(m => m.result === 'V' || m.result === 'D');
+  if(!played.length) return null;
+  return [...played].sort((a,b) =>
+    (b.date || '').localeCompare(a.date || '') || Number(b.id) - Number(a.id)
+  )[0];
+}
+
+function repeatLastMatch(){
+  const m = lastPlayedMatch();
+  if(!m){ showAlert(t('repeatNoMatch')); return; }
+  // carry over the setup, never the score or the date
+  $('fOpponent').value = m.opponent || '';
+  $('fOpponentEmail').value = m.opponentEmail || '';
+  $('fLocation').value = m.location || '';
+  $('fStrings').value = m.strings || '';
+  $('fTension').value = m.tension || '';
+  setType(m.matchType || 'amistoso');
+  setSurface(m.surface || 'rapida');
+  setFormat(m.format || 'individual');
+  if((m.format || 'individual') === 'duplas'){
+    $('fPartner').value = m.partner || '';
+    $('fOpponent2').value = m.opponent2 || '';
+  }
+}
+
 function openMatchSheet(matchToEdit, isScheduling){
   schedulingMode = !!isScheduling;
   if(matchToEdit){
@@ -2238,6 +4121,8 @@ function openMatchSheet(matchToEdit, isScheduling){
     $('fPartner').value = matchToEdit.partner || '';
     $('fOpponent2').value = matchToEdit.opponent2 || '';
     $('fLocation').value = matchToEdit.location || '';
+    $('fStrings').value = matchToEdit.strings || '';
+    $('fTension').value = matchToEdit.tension || '';
     $('fNotes').value = matchToEdit.notes || '';
     setResult(matchToEdit.result || 'V');
     setType(matchToEdit.matchType || 'amistoso');
@@ -2256,6 +4141,8 @@ function openMatchSheet(matchToEdit, isScheduling){
     $('fPartner').value = '';
     $('fOpponent2').value = '';
     $('fLocation').value = '';
+    $('fStrings').value = '';
+    $('fTension').value = '';
     $('fNotes').value = '';
     setResult(schedulingMode ? null : 'V');
     setType('amistoso');
@@ -2264,7 +4151,19 @@ function openMatchSheet(matchToEdit, isScheduling){
     currentSets = [{a:'', b:''}];
     currentMatchPhoto = null;
   }
+  const repeatBtn = $('repeatLastBtn');
+  if(repeatBtn){
+    // only offer it when starting a brand-new match, never when editing
+    repeatBtn.style.display = (!matchToEdit && lastPlayedMatch()) ? 'block' : 'none';
+  }
   $('inviteBtn').style.display = schedulingMode ? 'block' : 'none';
+  $('inviteMessageField').style.display = schedulingMode ? 'block' : 'none';
+  $('addOpponentBtn').style.display = schedulingMode ? 'block' : 'none';
+  if(!matchToEdit){
+    $('fInviteMessage').value = '';
+    pendingListingId = null;
+    $('extraOpponents').innerHTML = '';
+  }
   $('sendResultBtn').style.display = schedulingMode ? 'none' : 'block';
   wantsInvite = false;
   wantsSendResult = false;
@@ -2306,7 +4205,7 @@ function setSurface(v){
 
 function handleSave(){
   const date = $('fDate').value;
-  if(!date){ alert(t('alertChooseDate')); return; }
+  if(!date){ showAlert(t('alertChooseDate')); return; }
   const sets = currentSets
     .filter(s => s.a !== '' && s.b !== '')
     .map(s => ({a: Number(s.a), b: Number(s.b)}));
@@ -2324,6 +4223,8 @@ function handleSave(){
     surface: selectedSurface,
     sets: schedulingMode ? [] : sets,
     location: $('fLocation').value.trim(),
+    strings: $('fStrings').value.trim(),
+    tension: $('fTension').value.trim(),
     notes: $('fNotes').value.trim(),
     photo: currentMatchPhoto
   };
@@ -2340,6 +4241,7 @@ function handleSave(){
   }
   saveMatches();
   render();
+  syncRating();
   closeAllSheets();
 
   if(savedMatch){
@@ -2367,6 +4269,8 @@ function setLanguage(lang){
   renderAchievements();
   renderTournamentsList();
   renderLeaguesList();
+  renderInbox();
+  updateUnitLabels();
   render();
 }
 
@@ -2385,7 +4289,8 @@ function computeAchievements(){
   const hasDoubles = completed.some(m => m.format === 'duplas');
   const hasPhoto = completed.some(m => m.photo);
   const hasTournamentMatch = completed.some(m => m.matchType === 'campeonato');
-  const hasLeagueMatch = leagues.some(lg => lg.matchLog && lg.matchLog.length > 0);
+  const hasLeagueMatch = leagues.some(lg => lg.matchLog && lg.matchLog.length > 0)
+    || completed.some(m => m.matchType === 'liga');
   const uniqueLocations = new Set(completed.filter(m => m.location).map(m => m.location.trim().toLowerCase()));
 
   const sortedAsc = [...completed].sort((a,b) => (a.date || '').localeCompare(b.date || ''));
@@ -2394,6 +4299,18 @@ function computeAchievements(){
     if(m.result === 'V'){ cur++; maxWinStreak = Math.max(maxWinStreak, cur); }
     else cur = 0;
   });
+
+  const profileRaw = localStorage.getItem(PROFILE_KEY);
+  const profile = profileRaw ? JSON.parse(profileRaw) : {};
+  const profileComplete = !!(profile.name && profile.email && profile.zip && profile.birthdate && profile.photo);
+
+  const opponentCounts = {};
+  completed.forEach(m => {
+    const name = (m.opponent || '').trim().toLowerCase();
+    if(!name) return;
+    opponentCounts[name] = (opponentCounts[name] || 0) + 1;
+  });
+  const hasBigRival = Object.values(opponentCounts).some(c => c >= 5);
 
   return [
     { icon: '🎾', name: t('achFirstWinName'), desc: t('achFirstWinDesc'), earned: wins >= 1 },
@@ -2405,40 +4322,232 @@ function computeAchievements(){
     { icon: '🏆', name: t('achTournamentName'), desc: t('achTournamentDesc'), earned: hasTournamentMatch },
     { icon: '📊', name: t('achLeagueName'), desc: t('achLeagueDesc'), earned: hasLeagueMatch },
     { icon: '📸', name: t('achPhotoName'), desc: t('achPhotoDesc'), earned: hasPhoto },
-    { icon: '🗺️', name: t('achTravelerName'), desc: t('achTravelerDesc'), earned: uniqueLocations.size >= 3 }
+    { icon: '🗺️', name: t('achTravelerName'), desc: t('achTravelerDesc'), earned: uniqueLocations.size >= 3 },
+    { icon: '📝', name: t('achProfileName'), desc: t('achProfileDesc'), earned: profileComplete },
+    { icon: '⚔️', name: t('achRivalName'), desc: t('achRivalDesc'), earned: hasBigRival }
   ];
 }
 
 function renderAchievements(){
   const achievements = computeAchievements();
-  $('achievementsContainer').innerHTML = achievements.map(a => `
-    <div class="achievement-badge ${a.earned ? 'earned' : 'locked'}" title="${esc(a.desc)}">
+  $('achievementsContainer').innerHTML = achievements.map((a, i) => `
+    <div class="achievement-badge ${a.earned ? 'earned' : 'locked'}" data-idx="${i}" title="${esc(a.desc)}">
       <div class="achievement-icon">${a.icon}</div>
       <div class="achievement-name">${esc(a.name)}</div>
     </div>
   `).join('');
+  $('achievementsContainer').querySelectorAll('.achievement-badge').forEach(el => {
+    el.addEventListener('click', () => {
+      const a = achievements[parseInt(el.dataset.idx, 10)];
+      openAchievementSheet(a);
+    });
+  });
+}
+
+function openAchievementSheet(a){
+  const earned = !!a.earned;
+  $('achSheetTitle').textContent = a.name;
+  $('achSheetIcon').textContent = a.icon;
+  $('achSheetIcon').style.opacity = earned ? '1' : '0.35';
+  const status = $('achSheetStatus');
+  status.textContent = earned ? t('achEarnedPrefix') : t('achLockedPrefix');
+  status.style.color = earned ? 'var(--ball)' : 'var(--muted)';
+  $('achSheetDesc').textContent = a.desc;
+  openSheet('achievementSheet');
+}
+
+/* ---------------- Rating (Elo) ----------------
+   Recomputed from scratch on every call, straight from the match list.
+   Nothing is persisted, so editing or deleting a match self-corrects.
+   Opponents get their own local rating too, which is what makes the
+   player's own number mean something relative to their circle.        */
+const RATING_BASE = 1500;
+
+function ratingK(played){
+  if(played < 10) return 40;
+  if(played < 30) return 32;
+  return 24;
+}
+
+function marginMultiplier(sets){
+  if(!sets || !sets.length) return 1;
+  let mine = 0, theirs = 0;
+  sets.forEach(st => {
+    const a = Number(st.a), b = Number(st.b);
+    if(Number.isFinite(a) && Number.isFinite(b)){ mine += a; theirs += b; }
+  });
+  const total = mine + theirs;
+  if(!total) return 1;
+  // 0.75 for a razor-thin result, up to 1.25 for a blowout
+  return 0.75 + 0.5 * (Math.abs(mine - theirs) / total);
+}
+
+function computeRatings(){
+  const completed = matches
+    .filter(m => m.result === 'V' || m.result === 'D')
+    .sort((a,b) => (a.date || '').localeCompare(b.date || '') || Number(a.id) - Number(b.id));
+
+  let mine = RATING_BASE;
+  let best = RATING_BASE;
+  const opponents = {};
+  const history = [];
+
+  completed.forEach(m => {
+    const raw = (m.opponent || '').trim();
+    const key = raw.toLowerCase() || '__unknown__';
+    if(!opponents[key]) opponents[key] = { rating: RATING_BASE, label: raw || '?', played: 0 };
+    const opp = opponents[key];
+
+    const expected = 1 / (1 + Math.pow(10, (opp.rating - mine) / 400));
+    const actual = m.result === 'V' ? 1 : 0;
+    const k = ratingK(history.length);
+    const change = k * marginMultiplier(m.sets) * (actual - expected);
+
+    mine += change;
+    opp.rating -= change;   // zero-sum, keeps the pool honest
+    opp.played++;
+
+    if(mine > best) best = mine;
+    history.push({
+      id: m.id,
+      date: m.date,
+      opponent: raw,
+      result: m.result,
+      delta: Math.round(change),
+      rating: Math.round(mine)
+    });
+  });
+
+  return {
+    rating: Math.round(mine),
+    best: Math.round(best),
+    played: completed.length,
+    opponents,
+    history
+  };
+}
+
+function levelFromRating(r){
+  // Deuce level 1-10, purely internal - deliberately not equated to UTR or NTRP
+  const lvl = 1 + (r - 1200) / 75;
+  return Math.min(10, Math.max(1, lvl)).toFixed(1);
+}
+
+function updateRatingDisplay(){
+  const line = $('ratingLine');
+  if(!line) return;
+  const data = computeRatings();
+  if(!data.played){
+    line.style.display = 'none';
+    return;
+  }
+  line.style.display = 'block';
+  $('ratingVal').textContent = data.rating;
+  $('ratingLevel').textContent = `${t('ratingLevelLabel')} ${levelFromRating(data.rating)}`;
+
+  const posEl = $('ratingPosition');
+  if(posEl){
+    posEl.textContent = lastKnownPosition ? `· #${lastKnownPosition}` : '';
+  }
+
+  const last = data.history[data.history.length - 1];
+  const deltaEl = $('ratingDelta');
+  if(last && last.delta !== 0){
+    deltaEl.textContent = (last.delta > 0 ? '+' : '') + last.delta;
+    deltaEl.className = 'rating-delta ' + (last.delta > 0 ? 'up' : 'down');
+  } else {
+    deltaEl.textContent = '';
+    deltaEl.className = 'rating-delta';
+  }
+}
+
+function renderRatingSection(){
+  const spark = $('ratingSpark');
+  const summary = $('ratingSummary');
+  if(!spark || !summary) return;
+
+  const data = computeRatings();
+  if(!data.played){
+    spark.innerHTML = '';
+    summary.innerHTML = `<div class="stats-empty">${t('ratingEmptyState')}</div>`;
+    return;
+  }
+
+  // last 20 matches, bar height proportional to the size of the swing
+  const recent = data.history.slice(-20);
+  const maxAbs = Math.max(...recent.map(h => Math.abs(h.delta)), 1);
+  spark.innerHTML = recent.map(h => {
+    const pct = Math.round((Math.abs(h.delta) / maxAbs) * 100);
+    const cls = h.delta >= 0 ? 'up' : 'down';
+    const label = `${h.opponent || '?'} · ${h.delta > 0 ? '+' : ''}${h.delta} → ${h.rating}`;
+    return `<div class="bar ${cls}" style="height:${Math.max(pct, 4)}%" title="${esc(label)}"></div>`;
+  }).join('');
+
+  summary.innerHTML =
+    statLineHTML(t('ratingCurrent'), data.rating) +
+    statLineHTML(t('ratingBest'), data.best) +
+    statLineHTML(t('ratingPlayed'), data.played);
+}
+
+function statLineHTML(label, value){
+  return `<div class="stat-row"><span class="stat-name">${esc(label)}</span>` +
+    `<span class="stat-record">${esc(String(value))}</span></div>`;
+}
+
+function statRowHTML(label, w, l){
+  const wLetter = t('resultTagWin').charAt(0);
+  const lLetter = t('resultTagLoss').charAt(0);
+  const total = w + l;
+  const pct = total ? Math.round((w / total) * 100) : 0;
+  return `<div class="stat-row"><span class="stat-name">${esc(label)}</span>` +
+    `<span class="stat-record"><span class="sw">${w}${wLetter}</span> - <span class="sl">${l}${lLetter}</span>` +
+    `<span style="color:var(--muted); font-size:12px; margin-left:8px;">${pct}%</span></span></div>`;
 }
 
 function renderStats(){
+  const completed = matches.filter(m => m.result === 'V' || m.result === 'D');
+  const wLetter = t('resultTagWin').charAt(0);
+  const lLetter = t('resultTagLoss').charAt(0);
+
+  // --- by opponent (grouped case-insensitively, first spelling wins for display) ---
   const groups = {};
-  matches.forEach(m => {
-    const name = (m.opponent || '').trim();
-    if(!name) return;
-    if(!groups[name]) groups[name] = {w:0, l:0};
-    if(m.result === 'V') groups[name].w++; else groups[name].l++;
+  completed.forEach(m => {
+    const raw = (m.opponent || '').trim();
+    if(!raw) return;
+    const key = raw.toLowerCase();
+    if(!groups[key]) groups[key] = {w:0, l:0, label: raw};
+    if(m.result === 'V') groups[key].w++; else groups[key].l++;
   });
-  const names = Object.keys(groups).sort((a,b) => (groups[b].w + groups[b].l) - (groups[a].w + groups[a].l));
+  const keys = Object.keys(groups).sort((a,b) => (groups[b].w + groups[b].l) - (groups[a].w + groups[a].l));
   const container = $('statsContainer');
-  if(names.length === 0){
-    container.innerHTML = `<div class="stats-empty">${t('statsEmptyState')}</div>`;
-    return;
+  const oppRatings = computeRatings().opponents;
+  container.innerHTML = keys.length
+    ? keys.map(k => {
+        const r = oppRatings[k] ? Math.round(oppRatings[k].rating) : null;
+        const label = r === null ? groups[k].label : `${groups[k].label} (${r})`;
+        return statRowHTML(label, groups[k].w, groups[k].l);
+      }).join('')
+    : `<div class="stats-empty">${t('statsEmptyState')}</div>`;
+
+  // --- by surface and by match type ---
+  function breakdown(el, keyFn, labelFn){
+    const g = {};
+    completed.forEach(m => {
+      const k = keyFn(m);
+      if(!k) return;
+      if(!g[k]) g[k] = {w:0, l:0};
+      if(m.result === 'V') g[k].w++; else g[k].l++;
+    });
+    const ks = Object.keys(g).sort((a,b) => (g[b].w + g[b].l) - (g[a].w + g[a].l));
+    el.innerHTML = ks.length
+      ? ks.map(k => statRowHTML(labelFn(k), g[k].w, g[k].l)).join('')
+      : `<div class="stats-empty">${t('statsEmptyState')}</div>`;
   }
-  container.innerHTML = names.map(name => {
-    const g = groups[name];
-    const wLetter = t('resultTagWin').charAt(0);
-    const lLetter = t('resultTagLoss').charAt(0);
-    return `<div class="stat-row"><span class="stat-name">${esc(name)}</span><span class="stat-record"><span class="sw">${g.w}${wLetter}</span> - <span class="sl">${g.l}${lLetter}</span></span></div>`;
-  }).join('');
+  breakdown($('statsSurfaceContainer'), m => m.surface || 'rapida', surfaceLabel);
+  breakdown($('statsTypeContainer'), m => m.matchType || 'amistoso', typeLabel);
+
+  renderRatingSection();
+  populateRecapMonths();
 }
 
 async function updateNotifStatus(){
@@ -2481,7 +4590,7 @@ async function toggleNotifications(){
       const profileRaw = localStorage.getItem(PROFILE_KEY);
       const profile = profileRaw ? JSON.parse(profileRaw) : {};
       if(profile.email){
-        await fetch('/.netlify/functions/save-player', {
+        await fetch('/api/save-player', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -2494,13 +4603,13 @@ async function toggleNotifications(){
       console.log('Unsubscribe error:', e);
     }
   } else {
-    await ensurePushSubscription();
+    await ensurePushSubscription(true);
   }
   updateNotifStatus();
 }
 
-function clearAllData(){
-  if(!confirm(t('clearAllConfirm'))) return;
+async function clearAllData(){
+  if(!await askConfirm(t('clearAllConfirm'))) return;
   localStorage.removeItem(MATCHES_KEY);
   localStorage.removeItem(TOURNAMENTS_KEY);
   localStorage.removeItem(LEAGUES_KEY);
@@ -2526,17 +4635,17 @@ function exportData(){
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }catch(e){
-    alert('Export error.');
+    showAlert(t('dlgExportError'));
   }
 }
 
 function importData(file){
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     try{
       const data = JSON.parse(e.target.result);
-      if(!confirm(t('importConfirm'))) return;
+      if(!await askConfirm(t('importConfirm'))) return;
       matches = Array.isArray(data.matches) ? data.matches : [];
       tournaments = Array.isArray(data.tournaments) ? data.tournaments : [];
       saveMatches();
@@ -2548,9 +4657,9 @@ function importData(file){
       render();
       renderStats();
       renderTournamentsList();
-      alert(t('importSuccess'));
+      showAlert(t('importSuccess'));
     }catch(err){
-      alert(t('importError'));
+      showAlert(t('importError'));
     }
   };
   reader.readAsText(file);
@@ -2566,10 +4675,11 @@ function loadTournaments(){
   }
 }
 function saveTournaments(){
+  queueSync();
   try{
     localStorage.setItem(TOURNAMENTS_KEY, JSON.stringify(tournaments));
   }catch(e){
-    alert('Storage error.');
+    showAlert(t('dlgStorageError'));
   }
 }
 
@@ -2598,7 +4708,7 @@ function createTournament(){
   const name = $('tName').value.trim() || t('tournamentSheetTitle');
   const date = $('tDate').value || new Date().toISOString().slice(0,10);
   const names = $('tParticipants').value.split('\n').map(s => s.trim()).filter(Boolean);
-  if(names.length !== 16){ alert(t('alertNeed16')); return; }
+  if(names.length !== 16){ showAlert(t('alertNeed16')); return; }
   const tour = {
     id: Date.now().toString(),
     name, date,
@@ -2720,10 +4830,11 @@ function loadLeagues(){
   }
 }
 function saveLeagues(){
+  queueSync();
   try{
     localStorage.setItem(LEAGUES_KEY, JSON.stringify(leagues));
   }catch(e){
-    alert('Storage error.');
+    showAlert(t('dlgStorageError'));
   }
 }
 
@@ -2776,8 +4887,8 @@ function renderNewLeaguePlayers(){
 function addLeaguePlayer(){
   const name = $('lgPlayerName').value.trim();
   const email = $('lgPlayerEmail').value.trim();
-  if(!name){ alert(t('alertPlayerNeedName')); return; }
-  if(newLeaguePlayers.length >= 100){ alert(t('alertLeagueMax100')); return; }
+  if(!name){ showAlert(t('alertPlayerNeedName')); return; }
+  if(newLeaguePlayers.length >= 100){ showAlert(t('alertLeagueMax100')); return; }
   newLeaguePlayers.push({name, email});
   $('lgPlayerName').value = '';
   $('lgPlayerEmail').value = '';
@@ -2786,8 +4897,8 @@ function addLeaguePlayer(){
 
 function createLeague(){
   const name = $('lgName').value.trim();
-  if(!name){ alert(t('alertLeagueNeedName')); return; }
-  if(newLeaguePlayers.length < 2){ alert(t('alertLeagueNeedPlayers')); return; }
+  if(!name){ showAlert(t('alertLeagueNeedName')); return; }
+  if(newLeaguePlayers.length < 2){ showAlert(t('alertLeagueNeedPlayers')); return; }
   const league = {
     id: Date.now().toString(),
     name,
@@ -2837,6 +4948,8 @@ function openLeagueMatchSheet(){
   $('lmP1').innerHTML = options;
   $('lmP2').innerHTML = options;
   $('lmP2').selectedIndex = 1;
+  if($('lmP1')._syncAppSelect) $('lmP1')._syncAppSelect();
+  if($('lmP2')._syncAppSelect) $('lmP2')._syncAppSelect();
   updateLeagueWinnerButtons();
   closeAllSheets();
   openSheet('leagueMatchSheet');
@@ -2855,7 +4968,7 @@ function recordLeagueMatch(winnerSlot){
   const lg = leagues.find(x => x.id === currentLeagueId);
   if(!lg) return;
   const p1Id = $('lmP1').value, p2Id = $('lmP2').value;
-  if(p1Id === p2Id){ alert(t('leagueSamePlayer')); return; }
+  if(p1Id === p2Id){ showAlert(t('leagueSamePlayer')); return; }
   const ranked = getLeagueRanking(lg);
   const rankOf = (id) => ranked.findIndex(p => p.id === id) + 1;
   const winnerId = winnerSlot === 1 ? p1Id : p2Id;
@@ -2899,10 +5012,38 @@ $('btnHard').addEventListener('click', () => setSurface('rapida'));
 $('btnGrass').addEventListener('click', () => setSurface('grama'));
 
 $('setsContainer').addEventListener('input', (e) => {
-  if(e.target.matches('.set-input')){
-    const idx = parseInt(e.target.dataset.index, 10);
-    const field = e.target.dataset.field;
-    currentSets[idx][field] = e.target.value;
+  if(!e.target.matches('.set-input')) return;
+
+  const isLast = e.target.dataset.last === '1';
+  const digits = e.target.value.replace(/[^0-9]/g, '');
+  // one digit everywhere except the final set, which may hold a super tie-break
+  const clean = isLast ? digits.slice(0, 2) : digits.slice(-1);
+  if(e.target.value !== clean) e.target.value = clean;
+
+  const idx = parseInt(e.target.dataset.index, 10);
+  const field = e.target.dataset.field;
+  currentSets[idx][field] = e.target.value;
+
+  // In a two-digit box only a leading "1" is ambiguous (1 vs 10-15), so that
+  // one waits for a possible second digit; everything else advances at once.
+  const advance = isLast
+    ? (clean.length === 2 || (clean.length === 1 && clean !== '1'))
+    : clean.length === 1;
+
+  if(advance){
+    const inputs = [...$('setsContainer').querySelectorAll('.set-input')];
+    const next = inputs[inputs.indexOf(e.target) + 1];
+    if(next){ next.focus(); next.select(); }
+  }
+});
+
+// backspace on an empty box steps back instead of dead-ending
+$('setsContainer').addEventListener('keydown', (e) => {
+  if(!e.target.matches('.set-input')) return;
+  if(e.key === 'Backspace' && e.target.value === ''){
+    const inputs = [...$('setsContainer').querySelectorAll('.set-input')];
+    const prev = inputs[inputs.indexOf(e.target) - 1];
+    if(prev){ e.preventDefault(); prev.focus(); prev.select(); }
   }
 });
 $('setsContainer').addEventListener('click', (e) => {
@@ -2949,8 +5090,19 @@ $('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); ren
 $('inviteBtn').addEventListener('click', toggleWantsInvite);
 $('sendResultBtn').addEventListener('click', toggleWantsSendResult);
 $('closeMenuBtn').addEventListener('click', closeAllSheets);
+$('openAboutBtn').addEventListener('click', () => {
+  closeAllSheets();
+  openSheet('aboutSheet');
+});
+$('closeAboutBtn').addEventListener('click', closeAllSheets);
+$('closeAchievementBtn').addEventListener('click', closeAllSheets);
+$('repeatLastBtn').addEventListener('click', repeatLastMatch);
+$('dialogOkBtn').addEventListener('click', () => settleDialog(true));
+$('dialogCancelBtn').addEventListener('click', () => settleDialog(false));
+$('appDialog').addEventListener('click', (e) => { if(e.target === $('appDialog')) settleDialog(false); });
 $('openSettingsBtn').addEventListener('click', () => {
   updateNotifStatus();
+  refreshSyncStatus();
   closeAllSheets();
   openSheet('settingsSheet');
 });
@@ -2973,6 +5125,12 @@ $('saveProfileBtn').addEventListener('click', saveProfile);
 $('langPt').addEventListener('click', () => setLanguage('pt'));
 $('langEn').addEventListener('click', () => setLanguage('en'));
 $('langEs').addEventListener('click', () => setLanguage('es'));
+$('addOpponentBtn').addEventListener('click', addOpponentField);
+$('welcomeStartBtn').addEventListener('click', () => dismissWelcome(true));
+$('welcomeLaterBtn').addEventListener('click', () => dismissWelcome(false));
+$('deleteAccountBtn').addEventListener('click', deleteAccount);
+$('syncPushBtn').addEventListener('click', () => pushSync(true));
+$('syncPullBtn').addEventListener('click', pullSync);
 $('exportBtn').addEventListener('click', exportData);
 $('importBtn').addEventListener('click', () => $('importFile').click());
 $('importFile').addEventListener('change', (e) => { importData(e.target.files[0]); e.target.value = ''; });
@@ -2991,8 +5149,8 @@ $('newTournamentBtn').addEventListener('click', () => {
 });
 $('cancelTournamentBtn').addEventListener('click', backToTournamentsList);
 $('generateBracketBtn').addEventListener('click', createTournament);
-$('deleteTournamentBtn').addEventListener('click', () => {
-  if(!confirm(t('deleteTournamentConfirm'))) return;
+$('deleteTournamentBtn').addEventListener('click', async () => {
+  if(!await askConfirm(t('deleteTournamentConfirm'))) return;
   tournaments = tournaments.filter(x => x.id !== currentTournamentId);
   saveTournaments();
   backToTournamentsList();
@@ -3015,6 +5173,28 @@ $('nearbyShortcut').addEventListener('click', () => {
   setNearbyMode('courts');
   openSheet('nearbyPlayersSheet');
 });
+$('rankingShortcut').addEventListener('click', () => {
+  openSheet('rankingSheet');
+  syncRating().then(loadRanking);
+});
+$('closeRankingBtn').addEventListener('click', closeAllSheets);
+$('recapShareBtn').addEventListener('click', shareRecapImage);
+$('referBtn').addEventListener('click', openReferSheet);
+$('closeReferBtn').addEventListener('click', closeAllSheets);
+$('referWhats').addEventListener('click', () => referVia('whatsapp'));
+$('referMail').addEventListener('click', () => referVia('email'));
+$('referSms').addEventListener('click', () => referVia('sms'));
+$('referCopy').addEventListener('click', referCopyLink);
+$('boardShortcut').addEventListener('click', () => {
+  openSheet('gamesBoardSheet');
+  if(!$('bDate').value) $('bDate').value = new Date().toISOString().slice(0,10);
+  loadMyListing();
+  searchListings();
+});
+$('publishListingBtn').addEventListener('click', publishListing);
+$('removeListingBtn').addEventListener('click', removeListing);
+$('searchListingsBtn').addEventListener('click', searchListings);
+$('closeBoardBtn').addEventListener('click', closeAllSheets);
 $('modePlayers').addEventListener('click', () => setNearbyMode('players'));
 $('modeCourts').addEventListener('click', () => setNearbyMode('courts'));
 $('useMyLocationBtn').addEventListener('click', useMyLocation);
@@ -3025,6 +5205,9 @@ $('searchNearbyBtn').addEventListener('click', () => {
 $('unitKm').addEventListener('click', () => setNearbyUnit('km'));
 $('unitMi').addEventListener('click', () => setNearbyUnit('mi'));
 $('closeNearbyBtn').addEventListener('click', closeAllSheets);
+$('courtAccessFilter').addEventListener('change', () => {
+  if($('nearbyContainer').innerHTML.trim() !== '') searchCourts();
+});
 $('newLeagueBtn').addEventListener('click', () => {
   newLeaguePlayers = [];
   $('lgName').value = '';
@@ -3041,8 +5224,8 @@ $('cancelLeagueCreateBtn').addEventListener('click', () => {
 $('addLeaguePlayerBtn').addEventListener('click', addLeaguePlayer);
 $('createLeagueBtn').addEventListener('click', createLeague);
 $('registerLeagueMatchBtn').addEventListener('click', openLeagueMatchSheet);
-$('deleteLeagueBtn').addEventListener('click', () => {
-  if(!confirm(t('deleteLeagueConfirm'))) return;
+$('deleteLeagueBtn').addEventListener('click', async () => {
+  if(!await askConfirm(t('deleteLeagueConfirm'))) return;
   leagues = leagues.filter(x => x.id !== currentLeagueId);
   saveLeagues();
   closeAllSheets();
@@ -3071,11 +5254,11 @@ refreshInbox();
 applyLanguage();
 updateMatchSheetTexts();
 render();
-if(AUTHOR_EMAIL){
-  $('aboutEmailValue').textContent = AUTHOR_EMAIL;
-  $('aboutEmailRow').style.display = 'flex';
-}
 setNearbyUnit(nearbyUnit);
+['recapMonth', 'courtAccessFilter', 'lmP1', 'lmP2'].forEach(enhanceSelect);
+refreshSyncStatus();
+autoRestoreIfEmpty();
+maybeShowWelcome();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
