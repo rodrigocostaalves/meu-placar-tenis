@@ -32,7 +32,21 @@ export async function onRequestPost(context) {
     }
 
     await env.DEUCE_KV.delete(`email-verifications:${key}`);
-    return new Response(JSON.stringify({ ok: true }), {
+
+    // Safe to return the stored profile here: you only reach this line by
+    // having received the code at that address. It lets a returning player
+    // (new phone, cleared browser, iOS Home Screen vs Safari storage) pick up
+    // where they left off instead of starting over.
+    const player = await env.DEUCE_KV.get(`players:${key}`, 'json');
+    const existing = player ? {
+      name: player.name || '',
+      zip: player.zip || '',
+      country: player.country || '',
+      countryCode: player.countryCode || '',
+      shareLocation: !!player.shareLocation
+    } : null;
+
+    return new Response(JSON.stringify({ ok: true, existing }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

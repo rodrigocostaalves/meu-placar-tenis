@@ -38,6 +38,7 @@ export async function onRequestPost(context) {
           me = {
             position: myPosition,
             name: r.name || '',
+            countryCode: r.countryCode || '',
             rating: r.rating,
             level: r.level || '',
             played: r.played || 0,
@@ -51,6 +52,7 @@ export async function onRequestPost(context) {
     const top = all.slice(0, TOP_LIMIT).map((r, i) => ({
       position: i + 1,
       name: r.name || '',
+      countryCode: r.countryCode || '',
       rating: r.rating,
       level: r.level || '',
       played: r.played || 0,

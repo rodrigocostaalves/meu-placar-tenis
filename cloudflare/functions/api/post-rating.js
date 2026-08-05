@@ -64,6 +64,7 @@ export async function onRequestPost(context) {
     await env.DEUCE_KV.put(`ratings:${key}`, JSON.stringify({
       email: key,
       name,
+      countryCode: player.countryCode || '',
       rating: clamped,
       level: lvl,
       played: playedCount,

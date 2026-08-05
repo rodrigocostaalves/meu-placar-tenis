@@ -28,7 +28,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   try {
     const body = await request.json();
-    const { playerId, name, email, zip, shareLocation, subscription } = body;
+    const { playerId, name, email, zip, shareLocation, subscription, country, countryCode } = body;
     if (!email) {
       return new Response(JSON.stringify({ error: 'Missing email' }), { status: 400 });
     }
@@ -40,6 +40,8 @@ export async function onRequestPost(context) {
     await env.DEUCE_KV.put(`players:${key}`, JSON.stringify({
       playerId: playerId || '',
       name: name || '',
+      country: country || '',
+      countryCode: (countryCode || '').toUpperCase().slice(0, 2),
       email: key,
       zip: zip || '',
       lat: coords ? coords.lat : null,
