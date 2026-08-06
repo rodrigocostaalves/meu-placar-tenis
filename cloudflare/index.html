@@ -146,6 +146,10 @@
     min-width:34px;
   }
   .rank-row.me .rank-pos{ color: var(--ball); }
+  .rank-flag{
+    width:26px; flex-shrink:0; font-size:19px; line-height:1;
+    text-align:center;
+  }
   .rank-name{ flex:1; font-size:14px; }
   .rank-rating{
     font-family:'Bebas Neue', sans-serif; font-size:18px; color:var(--ball);
@@ -3319,7 +3323,8 @@ async function loadRanking(){
     const rankRow = (r) => `
       <div class="rank-row ${r.isMe ? 'me' : ''}">
         <span class="rank-pos">${r.position}</span>
-        <span class="rank-name">${r.countryCode ? `<span class="name-flag">${flagEmoji(r.countryCode)}</span>` : ''}${esc(r.name || '?')}<br>
+        <span class="rank-flag">${r.countryCode ? flagEmoji(r.countryCode) : ''}</span>
+        <span class="rank-name">${esc(r.name || '?')}<br>
           <span class="rank-sub">${r.played ? (r.level ? t('ratingLevelLabel') + ' ' + esc(r.level) + ' · ' : '') + r.played + ' ' + esc(t('rankingMatchesShort')) : esc(t('rankingProvisional'))}</span>
         </span>
         <span class="rank-rating">${r.rating}</span>
