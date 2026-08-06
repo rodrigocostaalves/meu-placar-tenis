@@ -43,16 +43,20 @@ export async function onRequestPost(context) {
     const name = player.name || '';
     const playedCount = matches;
     const lvl = level || '';
+    const cc = player.countryCode || '';
 
     // The client re-sends the rating every time the ranking screen opens, which
     // is usually identical to what is already stored. Skip the write in that
     // case so repeated views don't eat into the daily KV write allowance.
+    // countryCode MUST be part of this comparison: without it, setting a country
+    // never reached the ranking, because nothing else had changed.
     const existing = await env.DEUCE_KV.get(`ratings:${key}`, 'json');
     const unchanged = existing
       && existing.rating === clamped
       && existing.played === playedCount
       && existing.level === lvl
-      && existing.name === name;
+      && existing.name === name
+      && (existing.countryCode || '') === cc;
 
     if (unchanged) {
       return new Response(JSON.stringify({ ok: true, ranked: true, skipped: true }), {
@@ -64,7 +68,7 @@ export async function onRequestPost(context) {
     await env.DEUCE_KV.put(`ratings:${key}`, JSON.stringify({
       email: key,
       name,
-      countryCode: player.countryCode || '',
+      countryCode: cc,
       rating: clamped,
       level: lvl,
       played: playedCount,
