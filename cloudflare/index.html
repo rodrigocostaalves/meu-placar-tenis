@@ -2834,8 +2834,7 @@ function saveProfile(){
   if(p.email && !p.emailVerified){
     sendVerificationCode(p.email);
   } else if(p.email){
-    syncPlayerProfile(p);
-    setTimeout(syncRating, 1500);
+    syncPlayerProfile(p).then(syncRating);
   }
   refreshInbox();
 }
@@ -2895,9 +2894,8 @@ async function confirmVerificationCode(){
       showAlert(t('verifyEmailSuccess'));
       closeAllSheets();
       loadProfile();
-      syncPlayerProfile(profile);
+      syncPlayerProfile(profile).then(syncRating);
       restoreAfterVerify();
-      setTimeout(syncRating, 1500);
     } else {
       showAlert(t('verifyEmailWrongCode'));
     }
