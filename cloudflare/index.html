@@ -167,6 +167,22 @@
     line-height:1; min-width:20px;
   }
   .welcome-desc{ font-size:13px; color:var(--muted); }
+  .friend-actions{ display:flex; gap:8px; margin-top:10px; }
+  .friend-actions .btn-cancel{ flex:1; font-size:13px; padding:11px 8px; }
+  .friend-row{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 4px; border-bottom:1px solid rgba(143,173,190,0.12);
+  }
+  .friend-row:last-child{ border-bottom:none; }
+  .friend-info{ flex:1; min-width:0; }
+  .friend-info .nm{ font-size:14px; }
+  .friend-info .em{ font-size:11.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .friend-btn{
+    background:var(--panel); border:1px solid var(--panel-line); color:var(--chalk);
+    border-radius:9px; width:38px; height:38px; font-size:17px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .friend-btn:disabled{ opacity:.35; }
   .country-pick{ position:relative; }
   .country-pick input{ padding-right:46px !important; }
   .country-flag{
@@ -741,6 +757,10 @@
   <div class="field" id="opponentEmailWrap">
     <label data-i18n="labelOpponentEmail">E-mail do Adversário (opcional)</label>
     <input type="email" id="fOpponentEmail">
+    <div class="friend-actions">
+      <button type="button" class="btn-cancel" id="pickFriendBtn" data-i18n="btnPickFriend">👥 Escolher amigo</button>
+      <button type="button" class="btn-cancel" id="saveFriendBtn" data-i18n="btnSaveFriend">＋ Salvar como amigo</button>
+    </div>
     <div id="extraOpponents"></div>
     <button type="button" class="add-set-btn" id="addOpponentBtn" style="margin-top:8px; display:none" data-i18n="btnAddOpponent">+ Adicionar jogador</button>
     <div id="inviteMessageField" style="display:none; margin-top:10px">
@@ -798,14 +818,6 @@
   <div class="field">
     <label data-i18n="labelLocation">Local (opcional)</label>
     <input type="text" id="fLocation" data-i18n-ph="placeholderLocation" placeholder="Ex: Quadra do clube">
-  </div>
-  <div class="field">
-    <label data-i18n="labelStrings">Corda (opcional)</label>
-    <input type="text" id="fStrings" data-i18n-ph="placeholderStrings" placeholder="Ex: Luxilon Alu Power">
-  </div>
-  <div class="field">
-    <label data-i18n="labelTension">Tensão (opcional)</label>
-    <input type="text" id="fTension" data-i18n-ph="placeholderTension" placeholder="Ex: 24 kg / 53 lbs">
   </div>
   <div class="field">
     <label data-i18n="labelNotes">Observações (opcional)</label>
@@ -905,6 +917,11 @@
     <select id="recapMonth"></select>
   </div>
   <button type="button" class="search-btn" id="recapShareBtn" data-i18n="btnShareRecap">Compartilhar Retrospectiva</button>
+
+  <h3 data-i18n="friendsTitle">Meus Amigos</h3>
+  <p class="rating-note" data-i18n="friendsIntro"></p>
+  <div class="stats-list" id="friendsList"></div>
+  <button type="button" class="search-btn" id="addFriendBtn" data-i18n="btnAddFriend">＋ Adicionar amigo</button>
 
   <h3 data-i18n="referTitle">Indicar o App</h3>
   <p class="rating-note" data-i18n="referIntro"></p>
@@ -1144,6 +1161,40 @@
   <div class="sheet-actions">
     <button class="btn-cancel" id="welcomeLaterBtn" data-i18n="btnWelcomeLater">Depois</button>
     <button class="btn-save" id="welcomeStartBtn" data-i18n="btnWelcomeStart">Começar</button>
+  </div>
+</div>
+
+<div class="sheet" id="friendPickSheet">
+  <h2 data-i18n="friendPickTitle">Escolher amigo</h2>
+  <p class="rating-note" data-i18n="friendPickIntro"></p>
+  <div class="stats-list" id="friendPickList"></div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeFriendPickBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
+<div class="sheet" id="friendEditSheet">
+  <h2 data-i18n="friendEditTitle">Amigo</h2>
+  <div class="field">
+    <label data-i18n="labelName">Nome</label>
+    <input type="text" id="fnName">
+  </div>
+  <div class="field">
+    <label data-i18n="labelEmail">E-mail</label>
+    <input type="email" id="fnEmail">
+  </div>
+  <div class="field">
+    <label data-i18n="friendPhone">Telefone (opcional)</label>
+    <input type="tel" id="fnPhone" data-i18n-ph="friendPhonePh" placeholder="+1 407 555 0199">
+    <p class="rating-note" data-i18n="friendPhoneHint" style="margin-top:8px"></p>
+  </div>
+  <input type="hidden" id="fnId">
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="friendDeleteBtn" data-i18n="btnDelete" style="color:var(--loss)">Excluir</button>
+    <button class="btn-save" id="friendSaveBtn" data-i18n="btnSave">Salvar</button>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeFriendEditBtn" data-i18n="btnClose">Fechar</button>
   </div>
 </div>
 
@@ -1397,6 +1448,18 @@ const TRANSLATIONS = {
     rankingNote: "Ranking geral de todos os jogadores do Deuce Score. O rating de cada um é calculado a partir do próprio histórico, então a comparação fica mais precisa conforme vocês jogam entre si e contra adversários em comum.",
     rankingMatchesShort: "partidas",
     countryPlaceholder: "Digite as primeiras letras", countryNoMatch: "Nenhum país encontrado",
+    friendsTitle: "Meus Amigos", btnAddFriend: "＋ Adicionar amigo",
+    friendsIntro: "Salve os adversários que você joga sempre. Na hora de convidar, é só escolher da lista.",
+    friendsEmpty: "Nenhum amigo salvo ainda.",
+    btnPickFriend: "👥 Escolher amigo", btnSaveFriend: "＋ Salvar como amigo",
+    friendPickTitle: "Escolher amigo", friendPickIntro: "Toque em um amigo para preencher o nome e o e-mail.",
+    friendEditTitle: "Amigo", friendPhone: "Telefone (opcional)", friendPhonePh: "+1 407 555 0199",
+    friendPhoneHint: "Com DDI e DDD. É o que permite mandar mensagem por WhatsApp ou SMS.",
+    friendNeedInfo: "Preencha ao menos o nome ou o e-mail.",
+    friendNeedPhone: "Esse amigo não tem telefone salvo. Toque no lápis para adicionar.",
+    friendSaved: "Amigo salvo!", friendDeleteConfirm: "Remover este amigo da sua lista?",
+    friendMsgTemplate: "Oi {name}! Vamos marcar um jogo?",
+    btnDelete: "Excluir", btnSave: "Salvar",
     referTitle: "Indicar o App", btnRefer: "Indicar para um amigo",
     referIntro: "Quanto mais gente do seu grupo registrando partidas, mais o ranking e as ligas fazem sentido.",
     referSheetTitle: "Indicar para um amigo", referSheetIntro: "Escolha por onde enviar. Seu amigo abre o link e escolhe se é Android ou iPhone.",
@@ -1602,6 +1665,18 @@ const TRANSLATIONS = {
     rankingNote: "Global ranking of every Deuce Score player. Each rating is computed from that player's own history, so the comparison gets sharper as you play each other and share opponents.",
     rankingMatchesShort: "matches",
     countryPlaceholder: "Type the first letters", countryNoMatch: "No country found",
+    friendsTitle: "My Friends", btnAddFriend: "＋ Add friend",
+    friendsIntro: "Save the opponents you play regularly. When inviting, just pick from the list.",
+    friendsEmpty: "No friends saved yet.",
+    btnPickFriend: "👥 Pick a friend", btnSaveFriend: "＋ Save as friend",
+    friendPickTitle: "Pick a friend", friendPickIntro: "Tap a friend to fill in the name and email.",
+    friendEditTitle: "Friend", friendPhone: "Phone (optional)", friendPhonePh: "+1 407 555 0199",
+    friendPhoneHint: "With country and area code. This is what enables WhatsApp or SMS.",
+    friendNeedInfo: "Fill in at least a name or an email.",
+    friendNeedPhone: "This friend has no phone saved. Tap the pencil to add one.",
+    friendSaved: "Friend saved!", friendDeleteConfirm: "Remove this friend from your list?",
+    friendMsgTemplate: "Hi {name}! Fancy a match?",
+    btnDelete: "Delete", btnSave: "Save",
     referTitle: "Share the App", btnRefer: "Recommend to a friend",
     referIntro: "The more people from your group logging matches, the more the ranking and leagues mean.",
     referSheetTitle: "Recommend to a friend", referSheetIntro: "Pick how to send it. Your friend opens the link and chooses Android or iPhone.",
@@ -1807,6 +1882,18 @@ const TRANSLATIONS = {
     rankingNote: "Ranking general de todos los jugadores de Deuce Score. El rating de cada uno se calcula a partir de su propio historial, así que la comparación gana precisión a medida que juegan entre sí y contra rivales en común.",
     rankingMatchesShort: "partidos",
     countryPlaceholder: "Escribe las primeras letras", countryNoMatch: "No se encontró el país",
+    friendsTitle: "Mis Amigos", btnAddFriend: "＋ Añadir amigo",
+    friendsIntro: "Guarda a los rivales con los que juegas siempre. Al invitar, solo eliges de la lista.",
+    friendsEmpty: "Todavía no hay amigos guardados.",
+    btnPickFriend: "👥 Elegir amigo", btnSaveFriend: "＋ Guardar como amigo",
+    friendPickTitle: "Elegir amigo", friendPickIntro: "Toca un amigo para rellenar el nombre y el correo.",
+    friendEditTitle: "Amigo", friendPhone: "Teléfono (opcional)", friendPhonePh: "+1 407 555 0199",
+    friendPhoneHint: "Con código de país y área. Es lo que permite enviar WhatsApp o SMS.",
+    friendNeedInfo: "Rellena al menos el nombre o el correo.",
+    friendNeedPhone: "Este amigo no tiene teléfono guardado. Toca el lápiz para añadirlo.",
+    friendSaved: "¡Amigo guardado!", friendDeleteConfirm: "¿Quitar este amigo de tu lista?",
+    friendMsgTemplate: "¡Hola {name}! ¿Jugamos un partido?",
+    btnDelete: "Eliminar", btnSave: "Guardar",
     referTitle: "Recomendar la App", btnRefer: "Recomendar a un amigo",
     referIntro: "Cuanta más gente de tu grupo registre partidos, más sentido tienen el ranking y las ligas.",
     referSheetTitle: "Recomendar a un amigo", referSheetIntro: "Elige por dónde enviarlo. Tu amigo abre el enlace y elige si es Android o iPhone.",
@@ -2945,6 +3032,7 @@ function syncEnabled(){
 function buildSyncPayload(){
   return {
     version: 1,
+    friends,
     matches: matches.map(m => {
       const copy = { ...m };
       delete copy.photo;
@@ -2974,6 +3062,11 @@ function applySyncPayload(payload){
   if(Array.isArray(payload.leagues)){
     leagues = payload.leagues;
     saveLeagues();
+  }
+  if(Array.isArray(payload.friends)){
+    friends = payload.friends;
+    try{ localStorage.setItem(FRIENDS_KEY, JSON.stringify(friends)); }catch(e){}
+    renderFriends();
   }
   return true;
 }
@@ -3537,6 +3630,161 @@ function opponentDisplayPlain(m){
   return base;
 }
 
+/* ---------------- Friends ----------------
+   A local address book. Kept on the device (and in the cloud backup) rather
+   than on the server: it's the player's own contact list, and putting other
+   people's phone numbers in shared storage isn't something this app needs.  */
+const FRIENDS_KEY = 'tennis_friends_v1';
+let friends = [];
+
+function loadFriends(){
+  try{
+    const raw = localStorage.getItem(FRIENDS_KEY);
+    friends = raw ? JSON.parse(raw) : [];
+  }catch(e){ friends = []; }
+  if(!Array.isArray(friends)) friends = [];
+}
+
+function saveFriends(){
+  try{ localStorage.setItem(FRIENDS_KEY, JSON.stringify(friends)); }
+  catch(e){ console.log('Friends save error:', e); }
+  queueSync();
+  renderFriends();
+}
+
+function findFriend(email, name){
+  const em = (email || '').trim().toLowerCase();
+  const nm = (name || '').trim().toLowerCase();
+  return friends.find(f =>
+    (em && (f.email || '').trim().toLowerCase() === em) ||
+    (!em && nm && (f.name || '').trim().toLowerCase() === nm)
+  );
+}
+
+// digits only — wa.me rejects spaces, dashes and parentheses
+function phoneDigits(v){ return (v || '').replace(/\D/g, ''); }
+
+function saveOpponentAsFriend(){
+  const name = $('fOpponent').value.trim();
+  const email = $('fOpponentEmail').value.trim();
+  if(!name && !email){ showAlert(t('friendNeedInfo')); return; }
+
+  const existing = findFriend(email, name);
+  if(existing){
+    // already known: open it so they can complete the phone instead of duplicating
+    openFriendEdit(existing.id);
+    return;
+  }
+  openFriendEdit(null, name, email);
+}
+
+function openFriendEdit(id, presetName, presetEmail){
+  const f = id ? friends.find(x => x.id === id) : null;
+  $('fnId').value = f ? f.id : '';
+  $('fnName').value = f ? (f.name || '') : (presetName || '');
+  $('fnEmail').value = f ? (f.email || '') : (presetEmail || '');
+  $('fnPhone').value = f ? (f.phone || '') : '';
+  $('friendDeleteBtn').style.display = f ? 'block' : 'none';
+  closeAllSheets();
+  setTimeout(() => openSheet('friendEditSheet'), 220);
+}
+
+function commitFriend(){
+  const name = $('fnName').value.trim();
+  const email = $('fnEmail').value.trim();
+  const phone = $('fnPhone').value.trim();
+  if(!name && !email){ showAlert(t('friendNeedInfo')); return; }
+
+  const id = $('fnId').value;
+  if(id){
+    const f = friends.find(x => x.id === id);
+    if(f){ f.name = name; f.email = email; f.phone = phone; }
+  } else {
+    friends.push({ id: 'fr_' + Date.now().toString(36), name, email, phone });
+  }
+  friends.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  saveFriends();
+  closeAllSheets();
+  showAlert(t('friendSaved'));
+}
+
+async function deleteFriend(){
+  const id = $('fnId').value;
+  if(!id) return;
+  if(!await askConfirm(t('friendDeleteConfirm'))) return;
+  friends = friends.filter(x => x.id !== id);
+  saveFriends();
+  closeAllSheets();
+}
+
+function friendMessage(f){
+  return t('friendMsgTemplate').replace('{name}', f.name || '');
+}
+
+function messageFriend(f, channel){
+  const digits = phoneDigits(f.phone);
+  if(!digits){ showAlert(t('friendNeedPhone')); return; }
+  const enc = encodeURIComponent(friendMessage(f));
+  const url = channel === 'whatsapp'
+    ? `https://wa.me/${digits}?text=${enc}`
+    : (isIOS() ? `sms:${digits}&body=${enc}` : `sms:${digits}?body=${enc}`);
+  window.open(url, '_blank');
+}
+
+function renderFriends(){
+  const el = $('friendsList');
+  if(!el) return;
+  if(!friends.length){
+    el.innerHTML = `<div class="stats-empty">${t('friendsEmpty')}</div>`;
+    return;
+  }
+  el.innerHTML = friends.map((f, i) => `
+    <div class="friend-row">
+      <div class="friend-info">
+        <div class="nm">${esc(f.name || '?')}</div>
+        <div class="em">${esc(f.email || '')}</div>
+      </div>
+      <button type="button" class="friend-btn" data-fw="${i}" ${f.phone ? '' : 'disabled'} title="WhatsApp">💬</button>
+      <button type="button" class="friend-btn" data-fs="${i}" ${f.phone ? '' : 'disabled'} title="SMS">📱</button>
+      <button type="button" class="friend-btn" data-fe="${i}" title="Editar">✏️</button>
+    </div>`).join('');
+
+  el.querySelectorAll('[data-fw]').forEach(b =>
+    b.addEventListener('click', () => messageFriend(friends[+b.dataset.fw], 'whatsapp')));
+  el.querySelectorAll('[data-fs]').forEach(b =>
+    b.addEventListener('click', () => messageFriend(friends[+b.dataset.fs], 'sms')));
+  el.querySelectorAll('[data-fe]').forEach(b =>
+    b.addEventListener('click', () => openFriendEdit(friends[+b.dataset.fe].id)));
+}
+
+function openFriendPicker(){
+  const el = $('friendPickList');
+  if(!friends.length){
+    el.innerHTML = `<div class="stats-empty">${t('friendsEmpty')}</div>`;
+  } else {
+    el.innerHTML = friends.map((f, i) => `
+      <div class="friend-row" data-fp="${i}" style="cursor:pointer">
+        <div class="friend-info">
+          <div class="nm">${esc(f.name || '?')}</div>
+          <div class="em">${esc(f.email || '')}</div>
+        </div>
+        <span style="color:var(--ball); font-size:18px">›</span>
+      </div>`).join('');
+
+    el.querySelectorAll('[data-fp]').forEach(row =>
+      row.addEventListener('click', () => {
+        const f = friends[+row.dataset.fp];
+        $('fOpponent').value = f.name || '';
+        $('fOpponentEmail').value = f.email || '';
+        pendingListingId = null;   // a typed address takes over from a board handle
+        closeAllSheets();
+        setTimeout(() => openSheet('matchSheet'), 220);
+      }));
+  }
+  closeAllSheets();
+  setTimeout(() => openSheet('friendPickSheet'), 220);
+}
+
 /* ---------------- Country picker ----------------
    Only the ISO codes are stored here. The country NAME comes from the browser
    via Intl.DisplayNames, so the list is automatically in the user's language
@@ -4077,8 +4325,6 @@ function render(){
     const metaParts = [];
     if(m.format === 'duplas' && m.partner) metaParts.push(`${t('labelPartner')}: ${m.partner}`);
     if(m.location) metaParts.push(m.location);
-    if(m.strings) metaParts.push(`🎾 ${m.strings}${m.tension ? ' @ ' + m.tension : ''}`);
-    else if(m.tension) metaParts.push(`🎾 ${m.tension}`);
     if(m.notes) metaParts.push(m.notes);
     return `
     <div class="card ${m.result === 'D' ? 'loss' : ''}" data-id="${m.id}">
@@ -4264,8 +4510,6 @@ function repeatLastMatch(){
   $('fOpponent').value = m.opponent || '';
   $('fOpponentEmail').value = m.opponentEmail || '';
   $('fLocation').value = m.location || '';
-  $('fStrings').value = m.strings || '';
-  $('fTension').value = m.tension || '';
   setType(m.matchType || 'amistoso');
   setSurface(m.surface || 'rapida');
   setFormat(m.format || 'individual');
@@ -4286,8 +4530,6 @@ function openMatchSheet(matchToEdit, isScheduling){
     $('fPartner').value = matchToEdit.partner || '';
     $('fOpponent2').value = matchToEdit.opponent2 || '';
     $('fLocation').value = matchToEdit.location || '';
-    $('fStrings').value = matchToEdit.strings || '';
-    $('fTension').value = matchToEdit.tension || '';
     $('fNotes').value = matchToEdit.notes || '';
     setResult(matchToEdit.result || 'V');
     setType(matchToEdit.matchType || 'amistoso');
@@ -4306,8 +4548,6 @@ function openMatchSheet(matchToEdit, isScheduling){
     $('fPartner').value = '';
     $('fOpponent2').value = '';
     $('fLocation').value = '';
-    $('fStrings').value = '';
-    $('fTension').value = '';
     $('fNotes').value = '';
     setResult(schedulingMode ? null : 'V');
     setType('amistoso');
@@ -4388,8 +4628,6 @@ function handleSave(){
     surface: selectedSurface,
     sets: schedulingMode ? [] : sets,
     location: $('fLocation').value.trim(),
-    strings: $('fStrings').value.trim(),
-    tension: $('fTension').value.trim(),
     notes: $('fNotes').value.trim(),
     photo: currentMatchPhoto
   };
@@ -5255,7 +5493,7 @@ $('filterFriendly').addEventListener('click', () => setTypeFilter('amistoso'));
 $('filterLeague').addEventListener('click', () => setTypeFilter('liga'));
 $('filterChampionship').addEventListener('click', () => setTypeFilter('campeonato'));
 
-$('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); renderAchievements(); openSheet('menuSheet'); });
+$('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); renderAchievements(); renderFriends(); openSheet('menuSheet'); });
 $('inviteBtn').addEventListener('click', toggleWantsInvite);
 $('sendResultBtn').addEventListener('click', toggleWantsSendResult);
 $('closeMenuBtn').addEventListener('click', closeAllSheets);
@@ -5348,6 +5586,13 @@ $('rankingShortcut').addEventListener('click', () => {
 });
 $('closeRankingBtn').addEventListener('click', closeAllSheets);
 $('recapShareBtn').addEventListener('click', shareRecapImage);
+$('pickFriendBtn').addEventListener('click', openFriendPicker);
+$('saveFriendBtn').addEventListener('click', saveOpponentAsFriend);
+$('closeFriendPickBtn').addEventListener('click', closeAllSheets);
+$('closeFriendEditBtn').addEventListener('click', closeAllSheets);
+$('friendSaveBtn').addEventListener('click', commitFriend);
+$('friendDeleteBtn').addEventListener('click', deleteFriend);
+$('addFriendBtn').addEventListener('click', () => openFriendEdit(null));
 $('referBtn').addEventListener('click', openReferSheet);
 $('closeReferBtn').addEventListener('click', closeAllSheets);
 $('referWhats').addEventListener('click', () => referVia('whatsapp'));
@@ -5426,6 +5671,8 @@ render();
 setNearbyUnit(nearbyUnit);
 ['recapMonth', 'courtAccessFilter', 'lmP1', 'lmP2'].forEach(enhanceSelect);
 initCountryPicker();
+loadFriends();
+renderFriends();
 refreshSyncStatus();
 autoRestoreIfEmpty();
 maybeShowWelcome();
