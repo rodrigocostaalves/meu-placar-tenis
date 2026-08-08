@@ -1416,7 +1416,7 @@ const TRANSLATIONS = {
     boardPhWhere: "Rua, número, bairro, cidade", boardPhNote: "Ex: jogo tranquilo, 1h30",
     labelInviteMessage: "Mensagem para o adversário (opcional)",
     shareYouLabel: "Você",
-    rankingProvisional: "Sem partidas ainda · provisório",
+    rankingProvisional: "Sem partidas confirmadas · provisório",
     btnAddOpponent: "+ Adicionar jogador", btnDismiss: "OK",
     invitesSentMany: "{sent} convites enviados ({notified} com notificação).",
     respAcceptedTag: "CONVITE ACEITO", respDeclinedTag: "CONVITE RECUSADO",
@@ -1452,8 +1452,8 @@ const TRANSLATIONS = {
     rankingOfTotal: "de", rankingPlayers: "jogadores",
     rankingEmptyState: "Ninguém no ranking ainda. Seja o primeiro!",
     rankingError: "Não foi possível carregar o ranking agora.",
-    rankingNote: "Ranking geral de todos os jogadores do Deuce Score. O rating de cada um é calculado a partir do próprio histórico, então a comparação fica mais precisa conforme vocês jogam entre si e contra adversários em comum.",
-    rankingMatchesShort: "partidas",
+    rankingNote: "Este ranking usa apenas partidas confirmadas pelos dois jogadores, calculadas no servidor numa escala única. Por isso ele pode ficar diferente do rating no topo do app, que considera todas as partidas que você registrou.",
+    rankingMatchesShort: "confirmadas",
     countryPlaceholder: "Digite as primeiras letras", countryNoMatch: "Nenhum país encontrado",
     logTag: "REGISTRAR RESULTADO", btnLogResult: "Registrar placar",
     logAsk: "Como foi o jogo contra {name}?",
@@ -1637,7 +1637,7 @@ const TRANSLATIONS = {
     boardPhWhere: "Street, number, neighbourhood, city", boardPhNote: "e.g. casual hit, 1h30",
     labelInviteMessage: "Message to your opponent (optional)",
     shareYouLabel: "You",
-    rankingProvisional: "No matches yet · provisional",
+    rankingProvisional: "No confirmed matches · provisional",
     btnAddOpponent: "+ Add player", btnDismiss: "OK",
     invitesSentMany: "{sent} invites sent ({notified} with a notification).",
     respAcceptedTag: "INVITE ACCEPTED", respDeclinedTag: "INVITE DECLINED",
@@ -1673,8 +1673,8 @@ const TRANSLATIONS = {
     rankingOfTotal: "of", rankingPlayers: "players",
     rankingEmptyState: "Nobody in the ranking yet. Be the first!",
     rankingError: "Could not load the ranking right now.",
-    rankingNote: "Global ranking of every Deuce Score player. Each rating is computed from that player's own history, so the comparison gets sharper as you play each other and share opponents.",
-    rankingMatchesShort: "matches",
+    rankingNote: "This ranking uses only matches confirmed by both players, computed on the server on a single shared scale. That is why it can differ from the rating at the top of the app, which counts every match you have logged.",
+    rankingMatchesShort: "confirmed",
     countryPlaceholder: "Type the first letters", countryNoMatch: "No country found",
     logTag: "LOG THE RESULT", btnLogResult: "Enter the score",
     logAsk: "How did the match against {name} go?",
@@ -1858,7 +1858,7 @@ const TRANSLATIONS = {
     boardPhWhere: "Calle, número, barrio, ciudad", boardPhNote: "Ej: partido tranquilo, 1h30",
     labelInviteMessage: "Mensaje para tu rival (opcional)",
     shareYouLabel: "Tú",
-    rankingProvisional: "Sin partidos aún · provisional",
+    rankingProvisional: "Sin partidos confirmados · provisional",
     btnAddOpponent: "+ Añadir jugador", btnDismiss: "OK",
     invitesSentMany: "{sent} invitaciones enviadas ({notified} con notificación).",
     respAcceptedTag: "INVITACIÓN ACEPTADA", respDeclinedTag: "INVITACIÓN RECHAZADA",
@@ -1894,8 +1894,8 @@ const TRANSLATIONS = {
     rankingOfTotal: "de", rankingPlayers: "jugadores",
     rankingEmptyState: "Nadie en el ranking todavía. ¡Sé el primero!",
     rankingError: "No se pudo cargar el ranking ahora.",
-    rankingNote: "Ranking general de todos los jugadores de Deuce Score. El rating de cada uno se calcula a partir de su propio historial, así que la comparación gana precisión a medida que juegan entre sí y contra rivales en común.",
-    rankingMatchesShort: "partidos",
+    rankingNote: "Este ranking usa solo partidos confirmados por ambos jugadores, calculados en el servidor en una escala única. Por eso puede diferir del rating de la parte superior de la app, que cuenta todos los partidos que has registrado.",
+    rankingMatchesShort: "confirmados",
     countryPlaceholder: "Escribe las primeras letras", countryNoMatch: "No se encontró el país",
     logTag: "REGISTRAR RESULTADO", btnLogResult: "Anotar marcador",
     logAsk: "¿Cómo fue el partido contra {name}?",
@@ -3341,21 +3341,17 @@ async function autoRestoreIfEmpty(){
 let lastKnownPosition = null;
 let lastKnownTotal = null;
 
+// Registers us in the ranking. The shared rating itself is computed on the
+// server from confirmed matches, so nothing about our local number is sent.
 async function syncRating(){
   const raw = localStorage.getItem(PROFILE_KEY);
   const profile = raw ? JSON.parse(raw) : {};
   if(!profile.email || !profile.emailVerified) return;
-  const data = computeRatings();
   try{
     await fetch('/api/post-rating', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: profile.email,
-        rating: data.rating,
-        level: levelFromRating(data.rating),
-        played: data.played
-      })
+      body: JSON.stringify({ email: profile.email })
     });
   }catch(e){
     console.log('Sync rating error:', e);
