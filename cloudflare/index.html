@@ -908,6 +908,9 @@
   <div class="stats-list" id="ratingSummary"></div>
   <p class="rating-note" id="ratingNote" data-i18n="ratingExplain"></p>
 
+  <div class="stats-list" id="confirmedLine" style="margin-bottom:14px"></div>
+  <p class="rating-note" data-i18n="confirmedHint"></p>
+
   <h3 data-i18n="statsBySurfaceTitle">Desempenho por Superfície</h3>
   <div class="stats-list" id="statsSurfaceContainer"></div>
 
@@ -1452,6 +1455,10 @@ const TRANSLATIONS = {
     rankingNote: "Ranking geral de todos os jogadores do Deuce Score. O rating de cada um é calculado a partir do próprio histórico, então a comparação fica mais precisa conforme vocês jogam entre si e contra adversários em comum.",
     rankingMatchesShort: "partidas",
     countryPlaceholder: "Digite as primeiras letras", countryNoMatch: "Nenhum país encontrado",
+    logTag: "REGISTRAR RESULTADO", btnLogResult: "Registrar placar",
+    logAsk: "Como foi o jogo contra {name}?",
+    confirmedTag: "Confirmada", confirmedLabel: "Partidas confirmadas",
+    confirmedHint: "Uma partida fica confirmada quando o adversário valida o placar que você enviou. Quanto mais confirmadas, mais confiável é o seu histórico.",
     friendsTitle: "Meus Amigos", btnAddFriend: "＋ Adicionar amigo",
     friendsIntro: "Salve os adversários que você joga sempre. Na hora de convidar, é só escolher da lista.",
     friendsEmpty: "Nenhum amigo salvo ainda.",
@@ -1669,6 +1676,10 @@ const TRANSLATIONS = {
     rankingNote: "Global ranking of every Deuce Score player. Each rating is computed from that player's own history, so the comparison gets sharper as you play each other and share opponents.",
     rankingMatchesShort: "matches",
     countryPlaceholder: "Type the first letters", countryNoMatch: "No country found",
+    logTag: "LOG THE RESULT", btnLogResult: "Enter the score",
+    logAsk: "How did the match against {name} go?",
+    confirmedTag: "Confirmed", confirmedLabel: "Confirmed matches",
+    confirmedHint: "A match becomes confirmed when your opponent validates the score you sent. The more confirmed, the more trustworthy your history.",
     friendsTitle: "My Friends", btnAddFriend: "＋ Add friend",
     friendsIntro: "Save the opponents you play regularly. When inviting, just pick from the list.",
     friendsEmpty: "No friends saved yet.",
@@ -1886,6 +1897,10 @@ const TRANSLATIONS = {
     rankingNote: "Ranking general de todos los jugadores de Deuce Score. El rating de cada uno se calcula a partir de su propio historial, así que la comparación gana precisión a medida que juegan entre sí y contra rivales en común.",
     rankingMatchesShort: "partidos",
     countryPlaceholder: "Escribe las primeras letras", countryNoMatch: "No se encontró el país",
+    logTag: "REGISTRAR RESULTADO", btnLogResult: "Anotar marcador",
+    logAsk: "¿Cómo fue el partido contra {name}?",
+    confirmedTag: "Confirmado", confirmedLabel: "Partidos confirmados",
+    confirmedHint: "Un partido queda confirmado cuando tu rival valida el marcador que enviaste. Cuantos más confirmados, más fiable es tu historial.",
     friendsTitle: "Mis Amigos", btnAddFriend: "＋ Añadir amigo",
     friendsIntro: "Guarda a los rivales con los que juegas siempre. Al invitar, solo eliges de la lista.",
     friendsEmpty: "Todavía no hay amigos guardados.",
@@ -2563,22 +2578,78 @@ async function refreshInbox(){
     pendingInvites = Array.isArray(invData.invites) ? invData.invites : [];
     inviteResponses = Array.isArray(invData.responses) ? invData.responses : [];
     pendingResults = Array.isArray(resData.results) ? resData.results : [];
+    processResultResponses(Array.isArray(resData.responses) ? resData.responses : []);
   }catch(e){
     console.log('Refresh inbox error:', e);
   }
   renderInbox();
 }
 
+// A scheduled match is "unlogged" from two hours after its start time until
+// two weeks later, after which nagging stops being useful.
+function unloggedMatches(){
+  const now = Date.now();
+  return matches.filter(m => {
+    if(m.result) return false;
+    const d = new Date(`${m.date}T${m.time || '12:00'}`);
+    if(isNaN(d.getTime())) return false;
+    const age = now - d.getTime();
+    return age > 2 * 3600 * 1000 && age < 14 * 24 * 3600 * 1000;
+  }).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+}
+
+// When the opponent confirms, mark OUR copy of that match as confirmed and
+// tell the server we've handled it, so it isn't reprocessed on every refresh.
+function processResultResponses(responses){
+  if(!responses.length) return;
+  let touched = false;
+
+  responses.forEach(r => {
+    if(r.status === 'accepted'){
+      const nm = (r.toName || '').trim().toLowerCase();
+      const hit = matches.find(m =>
+        m.result && !m.confirmed &&
+        (m.date || '') === (r.date || '') &&
+        (nm ? (m.opponent || '').trim().toLowerCase() === nm : true)
+      );
+      if(hit){ hit.confirmed = true; touched = true; }
+    }
+    fetch('/api/mark-result-seen', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resultId: r.id })
+    }).catch(e => console.log('Mark result seen error:', e));
+  });
+
+  if(touched){ saveMatches(); render(); renderStats(); }
+}
+
 function renderInbox(){
   const section = $('inboxSection');
   section.style.display = 'block';
-  const total = pendingInvites.length + pendingResults.length + inviteResponses.length;
+  const total = pendingInvites.length + pendingResults.length
+    + inviteResponses.length + unloggedMatches().length;
   if(total === 0){
     $('inboxList').innerHTML = `<div class="inbox-card inbox-empty" id="inboxEmptyCard"><div class="inbox-text">${t('inboxEmptyState')}</div></div>`;
     $('inboxEmptyCard').addEventListener('click', () => openMatchSheet(null, true));
     return;
   }
   let html = '';
+
+  // matches whose time has passed with no score entered — the point where
+  // people drop off, since nothing was ever asking them to finish
+  unloggedMatches().forEach(m => {
+    const d = new Date(`${m.date}T${m.time || '12:00'}`);
+    const when = isNaN(d.getTime()) ? '' : d.toLocaleDateString();
+    html += `
+    <div class="inbox-card">
+      <div class="inbox-tag" style="color:var(--ball)">${t('logTag')}</div>
+      <div class="inbox-text">${t('logAsk').replace('{name}', esc(m.opponent || t('defaultOpponent')))} ${esc(when)}</div>
+      <div class="invite-actions">
+        <button type="button" class="btn-save" data-log="${esc(m.id)}">${t('btnLogResult')}</button>
+      </div>
+    </div>`;
+  });
 
   // answers to invites I sent
   inviteResponses.forEach(inv => {
@@ -2630,6 +2701,12 @@ function renderInbox(){
   });
   $('inboxList').querySelectorAll('button[data-kind="result"]').forEach(btn => {
     btn.addEventListener('click', () => respondResult(btn.dataset.id, btn.dataset.action));
+  });
+  $('inboxList').querySelectorAll('button[data-log]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const m = matches.find(x => String(x.id) === btn.dataset.log);
+      if(m) openMatchSheet(m, false);
+    });
   });
   $('inboxList').querySelectorAll('button[data-seen]').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -2726,6 +2803,7 @@ async function respondResult(resultId, response){
         const scheduled = findScheduledMatch(r.fromEmail, r.fromName, date);
 
         if(scheduled){
+          scheduled.confirmed = true;
           scheduled.result = mirroredResult;
           scheduled.sets = mirroredSets;
           scheduled.matchType = r.matchType || scheduled.matchType || 'amistoso';
@@ -2740,7 +2818,7 @@ async function respondResult(resultId, response){
             opponentEmail: r.fromEmail || '',
             format: 'individual', partner: '', opponent2: '',
             result: mirroredResult, matchType: r.matchType || 'amistoso', surface: r.surface || 'rapida',
-            sets: mirroredSets, location: '', notes: '', photo: null
+            sets: mirroredSets, location: '', notes: '', photo: null, confirmed: true
           });
         }
 
@@ -4327,6 +4405,7 @@ function render(){
     const scoreStr = scoreDisplay(m);
     const metaParts = [];
     if(m.format === 'duplas' && m.partner) metaParts.push(`${t('labelPartner')}: ${m.partner}`);
+    if(m.confirmed) metaParts.push(`✅ ${t('confirmedTag')}`);
     if(m.location) metaParts.push(m.location);
     if(m.notes) metaParts.push(m.notes);
     return `
@@ -4953,6 +5032,14 @@ function renderStats(){
       ? ks.map(k => statRowHTML(labelFn(k), g[k].w, g[k].l)).join('')
       : `<div class="stats-empty">${t('statsEmptyState')}</div>`;
   }
+  const confirmed = completed.filter(m => m.confirmed).length;
+  const confEl = $('confirmedLine');
+  if(confEl){
+    confEl.innerHTML = completed.length
+      ? statLineHTML(t('confirmedLabel'), `${confirmed} / ${completed.length}`)
+      : '';
+  }
+
   breakdown($('statsSurfaceContainer'), m => m.surface || 'rapida', surfaceLabel);
   breakdown($('statsTypeContainer'), m => m.matchType || 'amistoso', typeLabel);
 
