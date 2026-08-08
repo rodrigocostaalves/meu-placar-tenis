@@ -1,4 +1,5 @@
 import { buildPushPayload } from '@block65/webcrypto-web-push';
+import { recomputeRatings } from './recompute-ratings.js';
 
 async function trySend(subscription, vapid, payloadData) {
   try {
@@ -26,7 +27,7 @@ async function checkReminders(env) {
   }
 
   const now = Date.now();
-  const stats = { checked: 0, sent24h: 0, sent1h: 0, deleted: 0 };
+  const stats = { checked: 0, sent24h: 0, sent1h: 0, sentResult: 0, deleted: 0 };
 
   let cursor;
   do {
@@ -49,8 +50,9 @@ async function checkReminders(env) {
       const msUntil = matchTime - now;
       const hoursUntil = msUntil / (1000 * 60 * 60);
 
-      // Match is more than an hour in the past: reminder is dead weight.
-      if (msUntil < -60 * 60 * 1000) {
+      // The entry used to be dropped an hour after the match. It now survives
+      // long enough to send the "log the result" nudge, then goes.
+      if (hoursUntil < -30) {
         await env.DEUCE_KV.delete(k.name);
         stats.deleted++;
         continue;
@@ -79,6 +81,20 @@ async function checkReminders(env) {
         });
         if (result === 'gone') subscriptionGone = true;
         else if (result) { data.sent1h = true; updated = true; stats.sent1h++; }
+      }
+
+      // A few hours after the match, ask for the score. This is the step where
+      // people drop off: they play, leave, and the match is never recorded.
+      // The window is wide so a cron miss doesn't lose the nudge entirely.
+      if (!subscriptionGone && !data.sentResult && hoursUntil <= -2.5 && hoursUntil > -26) {
+        const result = await trySend(data.subscription, vapid, {
+          title: 'Como foi o jogo? 🎾',
+          body: data.opponent
+            ? `Registre o placar da partida contra ${data.opponent}.`
+            : 'Registre o placar da sua partida.'
+        });
+        if (result === 'gone') subscriptionGone = true;
+        else if (result) { data.sentResult = true; updated = true; stats.sentResult++; }
       }
 
       if (subscriptionGone) {
@@ -112,7 +128,17 @@ export async function onRequest(context) {
 
   try {
     const stats = await checkReminders(env);
-    return new Response(JSON.stringify({ ok: true, ...stats }), {
+
+    // Same cron, one less moving part: rebuilding the shared ranking here
+    // avoids adding a second trigger to the Worker.
+    let ranking = null;
+    try {
+      ranking = await recomputeRatings(env);
+    } catch (err) {
+      console.error('recomputeRatings failed:', err);
+    }
+
+    return new Response(JSON.stringify({ ok: true, ...stats, ranking }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

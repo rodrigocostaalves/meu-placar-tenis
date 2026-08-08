@@ -16,6 +16,25 @@ export async function onRequestPost(context) {
       data.senderSeen = false;
       await env.DEUCE_KV.put(`pending-results:${resultId}`, JSON.stringify(data));
 
+      // A confirmed result is the only thing the shared ranking trusts, so it
+      // gets its own canonical record. Sets are stored from the sender's side,
+      // which is who 'a' refers to.
+      if (response === 'accepted') {
+        await env.DEUCE_KV.put(`cmatch:${resultId}`, JSON.stringify({
+          id: resultId,
+          a: (data.fromEmail || '').trim().toLowerCase(),
+          b: (data.toEmail || '').trim().toLowerCase(),
+          aName: data.fromName || '',
+          bName: data.toName || '',
+          date: data.date || '',
+          sets: Array.isArray(data.sets) ? data.sets : [],
+          winner: data.result === 'V' ? 'a' : 'b',
+          matchType: data.matchType || 'amistoso',
+          surface: data.surface || 'rapida',
+          confirmedAt: new Date().toISOString()
+        }));
+      }
+
       // Confirmation used to go nowhere: the sender had no way to know their
       // result had been accepted, so nothing could ever be marked confirmed.
       if (response === 'accepted' && data.fromEmail && env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
