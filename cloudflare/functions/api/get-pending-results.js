@@ -8,13 +8,22 @@ export async function onRequestPost(context) {
     const key = email.trim().toLowerCase();
     const list = await env.DEUCE_KV.list({ prefix: 'pending-results:' });
     const results = [];
+    const responses = [];
     for (const k of list.keys) {
       const data = await env.DEUCE_KV.get(k.name, 'json');
-      if (data && data.toEmail === key && data.status === 'pending') {
+      if (!data) continue;
+      // waiting for MY confirmation
+      if (data.toEmail === key && data.status === 'pending') {
         results.push(data);
       }
+      // results I sent that have been answered and I haven't processed yet
+      if ((data.fromEmail || '').trim().toLowerCase() === key
+          && data.status && data.status !== 'pending'
+          && !data.senderSeen) {
+        responses.push(data);
+      }
     }
-    return new Response(JSON.stringify({ results }), {
+    return new Response(JSON.stringify({ results, responses }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

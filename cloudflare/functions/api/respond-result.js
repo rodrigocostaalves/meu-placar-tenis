@@ -12,6 +12,32 @@ export async function onRequestPost(context) {
       data.status = response;
       await env.DEUCE_KV.put(`pending-results:${resultId}`, JSON.stringify(data));
 
+      data.respondedAt = new Date().toISOString();
+      data.senderSeen = false;
+      await env.DEUCE_KV.put(`pending-results:${resultId}`, JSON.stringify(data));
+
+      // Confirmation used to go nowhere: the sender had no way to know their
+      // result had been accepted, so nothing could ever be marked confirmed.
+      if (response === 'accepted' && data.fromEmail && env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
+        const senderKey = data.fromEmail.trim().toLowerCase();
+        const sender = await env.DEUCE_KV.get(`players:${senderKey}`, 'json');
+        if (sender && sender.subscription) {
+          try {
+            const vapid = { subject: env.VAPID_SUBJECT, publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY };
+            const pushMessage = {
+              data: JSON.stringify({
+                title: '✅ Resultado confirmado',
+                body: `${data.toName || 'Seu adversário'} confirmou o placar da partida.`
+              })
+            };
+            const payload = await buildPushPayload(pushMessage, sender.subscription, vapid);
+            await fetch(sender.subscription.endpoint, payload);
+          } catch (err) {
+            console.error('Confirmation push error:', err);
+          }
+        }
+      }
+
       if (response === 'dismissed' && data.fromEmail && env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
         const senderKey = data.fromEmail.trim().toLowerCase();
         const sender = await env.DEUCE_KV.get(`players:${senderKey}`, 'json');
