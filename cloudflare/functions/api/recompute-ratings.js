@@ -35,17 +35,49 @@ function levelFromRating(r) {
 }
 
 export async function recomputeRatings(env) {
-  // 1. collect every confirmed match
-  const games = [];
+  // 1. collect every confirmed match.
+  //
+  // Two sources on purpose. cmatch:* is the canonical record written from now
+  // on, but every result confirmed BEFORE that record existed only lives in
+  // pending-results:* with status 'accepted'. Reading both means the history
+  // already in KV counts immediately, with no separate backfill step, and the
+  // pass stays self-healing if a cmatch write is ever missed.
+  const byId = new Map();
   let cursor;
+
   do {
     const page = await env.DEUCE_KV.list({ prefix: 'cmatch:', cursor });
     cursor = page.list_complete ? undefined : page.cursor;
     for (const k of page.keys) {
       const g = await env.DEUCE_KV.get(k.name, 'json');
-      if (g && g.a && g.b) games.push(g);
+      if (g && g.a && g.b) byId.set(g.id || k.name, g);
     }
   } while (cursor);
+
+  let c0;
+  do {
+    const page = await env.DEUCE_KV.list({ prefix: 'pending-results:', cursor: c0 });
+    c0 = page.list_complete ? undefined : page.cursor;
+    for (const k of page.keys) {
+      const r = await env.DEUCE_KV.get(k.name, 'json');
+      if (!r || r.status !== 'accepted') continue;
+      const id = r.id || k.name.slice('pending-results:'.length);
+      if (byId.has(id)) continue;               // cmatch wins
+      const a = (r.fromEmail || '').trim().toLowerCase();
+      const b = (r.toEmail || '').trim().toLowerCase();
+      if (!a || !b) continue;
+      byId.set(id, {
+        id,
+        a, b,
+        date: r.date || '',
+        sets: Array.isArray(r.sets) ? r.sets : [],
+        winner: r.result === 'V' ? 'a' : 'b',
+        confirmedAt: r.respondedAt || r.createdAt || ''
+      });
+    }
+  } while (c0);
+
+  const games = [...byId.values()];
 
   games.sort((x, y) =>
     String(x.date || '').localeCompare(String(y.date || '')) ||
