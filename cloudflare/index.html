@@ -160,6 +160,16 @@
     background:#123A52; border:1px solid #1E4C68; border-radius:10px;
     padding:14px; margin-bottom:14px; text-align:center;
   }
+  .wz-slide{ display:none; }
+  .wz-slide.on{ display:block; }
+  .wz-ico{ font-size:44px; line-height:1; margin-bottom:10px; }
+  .wz-body{ color:var(--muted); font-size:15px; line-height:1.6; margin:0 0 18px; }
+  .wz-dots{ display:flex; gap:6px; justify-content:center; margin-bottom:18px; }
+  .wz-dots i{
+    width:7px; height:7px; border-radius:50%; background:var(--panel-line);
+    transition:background .2s ease, width .2s ease;
+  }
+  .wz-dots i.on{ background:var(--ball); width:20px; border-radius:4px; }
   .welcome-step{
     display:flex; gap:12px; align-items:flex-start;
     background: var(--panel); border:1px solid var(--panel-line);
@@ -1148,26 +1158,65 @@
 </div>
 
 <div class="sheet" id="welcomeSheet">
-  <h2 data-i18n="welcomeTitle">Bem-vindo ao Deuce Score</h2>
-  <p class="rating-note" data-i18n="welcomeIntro"></p>
-  <div class="welcome-step">
-    <span class="welcome-num">1</span>
-    <div><strong data-i18n="welcomeStep1Title">Preencha seu perfil</strong><br>
-      <span class="welcome-desc" data-i18n="welcomeStep1Desc"></span></div>
+  <div class="wz-dots" id="wzDots"></div>
+
+  <div class="wz-slide on" data-wz="0">
+    <div class="wz-ico">🎾</div>
+    <h2 data-i18n="wz0t">Bem-vindo ao Deuce Score</h2>
+    <p class="wz-body" data-i18n="wz0b"></p>
   </div>
-  <div class="welcome-step">
-    <span class="welcome-num">2</span>
-    <div><strong data-i18n="welcomeStep2Title">Confirme seu e-mail</strong><br>
-      <span class="welcome-desc" data-i18n="welcomeStep2Desc"></span></div>
+
+  <div class="wz-slide" data-wz="1">
+    <div class="wz-ico">📝</div>
+    <h2 data-i18n="wz1t">Registre suas partidas</h2>
+    <p class="wz-body" data-i18n="wz1b"></p>
   </div>
-  <div class="welcome-step">
-    <span class="welcome-num">3</span>
-    <div><strong data-i18n="welcomeStep3Title">Registre sua primeira partida</strong><br>
-      <span class="welcome-desc" data-i18n="welcomeStep3Desc"></span></div>
+
+  <div class="wz-slide" data-wz="2">
+    <div class="wz-ico">📅</div>
+    <h2 data-i18n="wz2t">Agende e convide</h2>
+    <p class="wz-body" data-i18n="wz2b"></p>
+  </div>
+
+  <div class="wz-slide" data-wz="3">
+    <div class="wz-ico">📥</div>
+    <h2 data-i18n="wz3t">Caixa de entrada</h2>
+    <p class="wz-body" data-i18n="wz3b"></p>
+  </div>
+
+  <div class="wz-slide" data-wz="4">
+    <div class="wz-ico">🏆</div>
+    <h2 data-i18n="wz4t">Ligas e torneios</h2>
+    <p class="wz-body" data-i18n="wz4b"></p>
+  </div>
+
+  <div class="wz-slide" data-wz="5">
+    <div class="wz-ico">📊</div>
+    <h2 data-i18n="wz5t">Seu rating e o ranking</h2>
+    <p class="wz-body" data-i18n="wz5b"></p>
+    <div class="welcome-step">
+      <span class="welcome-num">1</span>
+      <div><strong data-i18n="welcomeStep1Title">Preencha seu perfil</strong><br>
+        <span class="welcome-desc" data-i18n="welcomeStep1Desc"></span></div>
+    </div>
+    <div class="welcome-step">
+      <span class="welcome-num">2</span>
+      <div><strong data-i18n="welcomeStep2Title">Confirme seu e-mail</strong><br>
+        <span class="welcome-desc" data-i18n="welcomeStep2Desc"></span></div>
+    </div>
+    <div class="welcome-step">
+      <span class="welcome-num">3</span>
+      <div><strong data-i18n="welcomeStep3Title">Registre sua primeira partida</strong><br>
+        <span class="welcome-desc" data-i18n="welcomeStep3Desc"></span></div>
+    </div>
+  </div>
+
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="wzBackBtn" data-i18n="btnWzBack">Voltar</button>
+    <button class="btn-save" id="wzNextBtn" data-i18n="btnWzNext">Avançar</button>
   </div>
   <div class="sheet-actions">
-    <button class="btn-cancel" id="welcomeLaterBtn" data-i18n="btnWelcomeLater">Depois</button>
-    <button class="btn-save" id="welcomeStartBtn" data-i18n="btnWelcomeStart">Começar</button>
+    <button class="btn-cancel" id="welcomeLaterBtn" data-i18n="btnWzSkip">Pular</button>
   </div>
 </div>
 
@@ -1421,6 +1470,19 @@ const TRANSLATIONS = {
     invitesSentMany: "{sent} convites enviados ({notified} com notificação).",
     respAcceptedTag: "CONVITE ACEITO", respDeclinedTag: "CONVITE RECUSADO",
     respAcceptedText: "aceitou seu convite para", respDeclinedText: "recusou seu convite para",
+    btnWzNext: "Avançar", btnWzBack: "Voltar", btnWzSkip: "Pular",
+    wz0t: "Bem-vindo ao Deuce Score",
+    wz0b: "O app que guarda o placar dos seus jogos de tênis. Registre partidas, monte a liga do seu grupo e acompanhe sua evolução. Leva um minuto para ver como funciona.",
+    wz1t: "Registre suas partidas",
+    wz1b: "Em NOVA PARTIDA você anota o placar set a set, simples ou duplas, com superfície, local e foto. Depois é só compartilhar a imagem do resultado no grupo.",
+    wz2t: "Agende e convide",
+    wz2b: "Em AGENDAR você marca o jogo e convida o adversário pelo app. Ele aceita, e os dois recebem lembrete 24h e 1h antes. Salve os adversários de sempre em Amigos e nem precisa digitar o e-mail.",
+    wz3t: "Caixa de entrada",
+    wz3b: "É onde chegam os convites, as respostas e os pedidos para confirmar um placar. Depois do jogo, ela também lembra você de registrar o resultado.",
+    wz4t: "Ligas e torneios",
+    wz4b: "Monte a liga do seu grupo e registre cada rodada: a classificação se atualiza sozinha. Para torneio, o chaveamento sai pronto.",
+    wz5t: "Seu rating e o ranking",
+    wz5b: "Cada partida move seu rating, e quem valida o placar entra no ranking geral. Para começar, faltam três passos:",
     welcomeTitle: "Bem-vindo ao Deuce Score",
     welcomeIntro: "Em três passos você já está jogando. Leva menos de dois minutos.",
     welcomeStep1Title: "Preencha seu perfil",
@@ -1642,6 +1704,19 @@ const TRANSLATIONS = {
     invitesSentMany: "{sent} invites sent ({notified} with a notification).",
     respAcceptedTag: "INVITE ACCEPTED", respDeclinedTag: "INVITE DECLINED",
     respAcceptedText: "accepted your invite for", respDeclinedText: "declined your invite for",
+    btnWzNext: "Next", btnWzBack: "Back", btnWzSkip: "Skip",
+    wz0t: "Welcome to Deuce Score",
+    wz0b: "The app that keeps the score of your tennis matches. Log games, run your group's league and follow your progress. One minute to see how it works.",
+    wz1t: "Log your matches",
+    wz1b: "In NEW MATCH you record the score set by set, singles or doubles, with surface, location and a photo. Then share the result image with the group.",
+    wz2t: "Schedule and invite",
+    wz2b: "In SCHEDULE you set the game and invite your opponent from the app. They accept, and both get reminders 24h and 1h before. Save your regular opponents under Friends and you never type an email again.",
+    wz3t: "Inbox",
+    wz3b: "Where invites, replies and score confirmations land. After a match, it also reminds you to record the result.",
+    wz4t: "Leagues and tournaments",
+    wz4b: "Build your group's league and log each round: the standings update themselves. For tournaments, the bracket is generated for you.",
+    wz5t: "Your rating and the ranking",
+    wz5b: "Every match moves your rating, and confirmed scores feed the global ranking. Three steps to get going:",
     welcomeTitle: "Welcome to Deuce Score",
     welcomeIntro: "Three steps and you're playing. Takes under two minutes.",
     welcomeStep1Title: "Fill in your profile",
@@ -1863,6 +1938,19 @@ const TRANSLATIONS = {
     invitesSentMany: "{sent} invitaciones enviadas ({notified} con notificación).",
     respAcceptedTag: "INVITACIÓN ACEPTADA", respDeclinedTag: "INVITACIÓN RECHAZADA",
     respAcceptedText: "aceptó tu invitación para", respDeclinedText: "rechazó tu invitación para",
+    btnWzNext: "Siguiente", btnWzBack: "Atrás", btnWzSkip: "Saltar",
+    wz0t: "Bienvenido a Deuce Score",
+    wz0b: "La app que guarda el marcador de tus partidos de tenis. Registra partidos, arma la liga de tu grupo y sigue tu evolución. Un minuto para ver cómo funciona.",
+    wz1t: "Registra tus partidos",
+    wz1b: "En NUEVO PARTIDO anotas el marcador set a set, individual o dobles, con superficie, lugar y foto. Después compartes la imagen del resultado en el grupo.",
+    wz2t: "Agenda e invita",
+    wz2b: "En AGENDAR fijas el partido e invitas a tu rival desde la app. Él acepta y ambos reciben recordatorio 24h y 1h antes. Guarda a los rivales de siempre en Amigos y no tendrás que escribir el correo.",
+    wz3t: "Bandeja de entrada",
+    wz3b: "Ahí llegan las invitaciones, las respuestas y las confirmaciones de marcador. Después del partido también te recuerda registrar el resultado.",
+    wz4t: "Ligas y torneos",
+    wz4b: "Arma la liga de tu grupo y registra cada fecha: la clasificación se actualiza sola. Para torneos, el cuadro sale listo.",
+    wz5t: "Tu rating y el ranking",
+    wz5b: "Cada partido mueve tu rating, y los marcadores confirmados alimentan el ranking general. Faltan tres pasos:",
     welcomeTitle: "Bienvenido a Deuce Score",
     welcomeIntro: "En tres pasos ya estás jugando. Toma menos de dos minutos.",
     welcomeStep1Title: "Completa tu perfil",
@@ -3045,7 +3133,36 @@ function maybeShowWelcome(){
     localStorage.setItem(WELCOME_KEY, '1');
     return;
   }
+  wzStep = 0;
+  wzRender();
   setTimeout(() => openSheet('welcomeSheet'), 400);
+}
+
+let wzStep = 0;
+
+function wzRender(){
+  const slides = document.querySelectorAll('.wz-slide');
+  const last = wzStep === slides.length - 1;
+  slides.forEach(el => el.classList.toggle('on', +el.dataset.wz === wzStep));
+
+  const dots = $('wzDots');
+  dots.innerHTML = [...slides].map((_, i) =>
+    `<i class="${i === wzStep ? 'on' : ''}"></i>`).join('');
+
+  // the first slide has nothing to go back to, so the button just hides
+  $('wzBackBtn').style.visibility = wzStep === 0 ? 'hidden' : 'visible';
+  $('wzNextBtn').textContent = last ? t('btnWelcomeStart') : t('btnWzNext');
+  $('welcomeSheet').scrollTop = 0;
+}
+
+function wzGo(delta){
+  const total = document.querySelectorAll('.wz-slide').length;
+  if(wzStep === total - 1 && delta > 0){
+    dismissWelcome(true);   // finished the tour: drop them at the profile
+    return;
+  }
+  wzStep = Math.min(total - 1, Math.max(0, wzStep + delta));
+  wzRender();
 }
 
 function dismissWelcome(openProfile){
@@ -4752,6 +4869,9 @@ function setLanguage(lang){
   renderLeaguesList();
   renderInbox();
   updateUnitLabels();
+  // applyLanguage rewrites every [data-i18n], which would reset the wizard's
+  // "Começar" back to "Avançar" mid-tour
+  if($('welcomeSheet') && $('welcomeSheet').classList.contains('show')) wzRender();
   // country names come from the browser, so they follow the language too
   buildCountryList();
   const cc = $('pCountryCode') ? $('pCountryCode').value : '';
@@ -5619,7 +5739,8 @@ $('langPt').addEventListener('click', () => setLanguage('pt'));
 $('langEn').addEventListener('click', () => setLanguage('en'));
 $('langEs').addEventListener('click', () => setLanguage('es'));
 $('addOpponentBtn').addEventListener('click', addOpponentField);
-$('welcomeStartBtn').addEventListener('click', () => dismissWelcome(true));
+$('wzNextBtn').addEventListener('click', () => wzGo(1));
+$('wzBackBtn').addEventListener('click', () => wzGo(-1));
 $('welcomeLaterBtn').addEventListener('click', () => dismissWelcome(false));
 $('deleteAccountBtn').addEventListener('click', deleteAccount);
 $('syncPushBtn').addEventListener('click', () => pushSync(true));
