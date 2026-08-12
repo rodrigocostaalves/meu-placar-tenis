@@ -181,6 +181,15 @@
     line-height:1; min-width:20px;
   }
   .welcome-desc{ font-size:13px; color:var(--muted); }
+  .extra-opp-row{ margin-top:8px; }
+  .extra-opp-line{ display:flex; gap:8px; }
+  .extra-opp-line input{
+    flex:1; background:var(--panel); border:1px solid var(--panel-line);
+    color:var(--chalk); border-radius:8px; padding:11px 12px;
+    font-size:15px; font-family:inherit;
+  }
+  .extra-opp-line .btn-cancel{ width:52px; padding:0; flex-shrink:0; }
+  .extra-opp-name{ font-size:12px; color:var(--ball); padding:4px 2px 0; }
   .friend-actions{ display:flex; gap:8px; margin-top:10px; }
   .friend-actions .btn-cancel{ flex:1; font-size:13px; padding:11px 8px; }
   .friend-row{
@@ -1529,6 +1538,7 @@ const TRANSLATIONS = {
     friendEditTitle: "Amigo", friendPhone: "Telefone (opcional)", friendPhonePh: "+1 407 555 0199",
     friendPhoneHint: "Com DDI e DDD. É o que permite mandar mensagem por WhatsApp ou SMS.",
     friendNeedInfo: "Preencha ao menos o nome ou o e-mail.",
+    friendNoEmail: "Esse amigo não tem e-mail salvo. Toque no lápis em Meus Amigos para adicionar.",
     friendNeedPhone: "Esse amigo não tem telefone salvo. Toque no lápis para adicionar.",
     friendSaved: "Amigo salvo!", friendDeleteConfirm: "Remover este amigo da sua lista?",
     friendMsgTemplate: "Oi {name}! Vamos marcar um jogo?",
@@ -1763,6 +1773,7 @@ const TRANSLATIONS = {
     friendEditTitle: "Friend", friendPhone: "Phone (optional)", friendPhonePh: "+1 407 555 0199",
     friendPhoneHint: "With country and area code. This is what enables WhatsApp or SMS.",
     friendNeedInfo: "Fill in at least a name or an email.",
+    friendNoEmail: "This friend has no email saved. Tap the pencil in My Friends to add one.",
     friendNeedPhone: "This friend has no phone saved. Tap the pencil to add one.",
     friendSaved: "Friend saved!", friendDeleteConfirm: "Remove this friend from your list?",
     friendMsgTemplate: "Hi {name}! Fancy a match?",
@@ -1997,6 +2008,7 @@ const TRANSLATIONS = {
     friendEditTitle: "Amigo", friendPhone: "Teléfono (opcional)", friendPhonePh: "+1 407 555 0199",
     friendPhoneHint: "Con código de país y área. Es lo que permite enviar WhatsApp o SMS.",
     friendNeedInfo: "Rellena al menos el nombre o el correo.",
+    friendNoEmail: "Este amigo no tiene correo guardado. Toca el lápiz en Mis Amigos para añadirlo.",
     friendNeedPhone: "Este amigo no tiene teléfono guardado. Toca el lápiz para añadirlo.",
     friendSaved: "¡Amigo guardado!", friendDeleteConfirm: "¿Quitar este amigo de tu lista?",
     friendMsgTemplate: "¡Hola {name}! ¿Jugamos un partido?",
@@ -2544,12 +2556,23 @@ let pendingListingId = null;
 
 function addOpponentField(){
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'display:flex; gap:8px; margin-top:8px;';
+  wrap.className = 'extra-opp-row';
   wrap.innerHTML = `
-    <input type="email" class="extra-opponent" placeholder="email@exemplo.com"
-      style="flex:1; background:var(--panel); border:1px solid var(--panel-line); color:var(--chalk); border-radius:8px; padding:11px 12px; font-size:15px; font-family:inherit;">
-    <button type="button" class="btn-cancel" style="width:52px; padding:0;">✕</button>`;
-  wrap.querySelector('button').addEventListener('click', () => wrap.remove());
+    <div class="extra-opp-line">
+      <input type="email" class="extra-opponent" placeholder="email@exemplo.com">
+      <button type="button" class="btn-cancel extra-pick" title="${esc(t('btnPickFriend'))}">👥</button>
+      <button type="button" class="btn-cancel extra-del">✕</button>
+    </div>
+    <div class="extra-opp-name"></div>`;
+
+  wrap.querySelector('.extra-del').addEventListener('click', () => wrap.remove());
+  wrap.querySelector('.extra-pick').addEventListener('click',
+    () => openFriendPicker(wrap.querySelector('.extra-opponent')));
+  // typing by hand clears a name that came from the picker
+  wrap.querySelector('.extra-opponent').addEventListener('input', () => {
+    wrap.querySelector('.extra-opp-name').textContent = '';
+  });
+
   $('extraOpponents').appendChild(wrap);
   wrap.querySelector('input').focus();
 }
@@ -3951,7 +3974,8 @@ function renderFriends(){
     b.addEventListener('click', () => openFriendEdit(friends[+b.dataset.fe].id)));
 }
 
-function openFriendPicker(){
+// target: nothing = the main opponent fields; an input element = that extra row
+function openFriendPicker(target){
   const el = $('friendPickList');
   if(!friends.length){
     el.innerHTML = `<div class="stats-empty">${t('friendsEmpty')}</div>`;
@@ -3968,9 +3992,17 @@ function openFriendPicker(){
     el.querySelectorAll('[data-fp]').forEach(row =>
       row.addEventListener('click', () => {
         const f = friends[+row.dataset.fp];
-        $('fOpponent').value = f.name || '';
-        $('fOpponentEmail').value = f.email || '';
-        pendingListingId = null;   // a typed address takes over from a board handle
+        if(target){
+          if(!f.email){ showAlert(t('friendNoEmail')); return; }
+          target.value = f.email;
+          // extras only travel by email, so show the name alongside for clarity
+          const label = target.closest('.extra-opp-row');
+          if(label) label.querySelector('.extra-opp-name').textContent = f.name || '';
+        } else {
+          $('fOpponent').value = f.name || '';
+          $('fOpponentEmail').value = f.email || '';
+          pendingListingId = null;   // a typed address takes over from a board handle
+        }
         closeAllSheets();
         setTimeout(() => openSheet('matchSheet'), 220);
       }));
@@ -5793,7 +5825,8 @@ $('rankingShortcut').addEventListener('click', () => {
 });
 $('closeRankingBtn').addEventListener('click', closeAllSheets);
 $('recapShareBtn').addEventListener('click', shareRecapImage);
-$('pickFriendBtn').addEventListener('click', openFriendPicker);
+// wrapped, otherwise the click Event would arrive as the target argument
+$('pickFriendBtn').addEventListener('click', () => openFriendPicker());
 $('saveFriendBtn').addEventListener('click', saveOpponentAsFriend);
 $('closeFriendPickBtn').addEventListener('click', closeAllSheets);
 $('closeFriendEditBtn').addEventListener('click', closeAllSheets);
