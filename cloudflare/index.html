@@ -2467,21 +2467,42 @@ function fetchWithTimeout(url, options, ms){
 
 async function overpassQuery(query){
   let lastStatus = 0;
+  const trail = [];
+
   for(const url of OVERPASS_ENDPOINTS){
-    try{
-      const res = await fetchWithTimeout(url, { method: 'POST', body: query }, 30000);
-      if(res.ok) return await res.json();
-      lastStatus = res.status;
-      // 429 = rate limited, 504 = server out of capacity. Both mean "try the
-      // next mirror"; anything else is unlikely to be fixed by retrying.
-      if(res.status !== 429 && res.status !== 504) break;
-    }catch(e){
-      console.log('Overpass attempt failed:', url, e && e.name);
-      lastStatus = 0;   // network error or timeout — the next mirror may work
+    // POST first; GET as a fallback because some networks and proxies mangle
+    // a POST body to this endpoint and answer with an error page.
+    for(const mode of ['POST', 'GET']){
+      try{
+        const res = mode === 'POST'
+          ? await fetchWithTimeout(url, { method: 'POST', body: query }, 30000)
+          : await fetchWithTimeout(url + '?data=' + encodeURIComponent(query), {}, 30000);
+
+        if(res.ok){
+          const text = await res.text();
+          try{
+            return JSON.parse(text);
+          }catch(parseErr){
+            // Overpass sometimes answers 200 with an HTML error page
+            trail.push(`${mode}:html`);
+            continue;
+          }
+        }
+        lastStatus = res.status;
+        trail.push(`${mode}:${res.status}`);
+        // 429 = rate limited, 504 = out of capacity. Anything else won't be
+        // fixed by another attempt, so stop with this server.
+        if(res.status !== 429 && res.status !== 504) break;
+      }catch(e){
+        const why = (e && e.name === 'AbortError') ? 'timeout' : 'net';
+        trail.push(`${mode}:${why}`);
+      }
     }
   }
+
   const err = new Error('overpass_failed');
   err.status = lastStatus;
+  err.trail = trail.join(' ');
   throw err;
 }
 
@@ -2538,8 +2559,10 @@ async function searchCourts(){
       return;
     }
     const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
-    const msg = offline ? t('courtsOffline')
-      : (e && (e.status === 429 || e.status === 504) ? t('courtsBusy') : t('nearbyError'));
+    const busy = e && (e.status === 429 || e.status === 504);
+    const msg = offline ? t('courtsOffline') : (busy ? t('courtsBusy') : t('nearbyError'));
+    // the attempt trail stays in the console, not on screen
+    if(e && e.trail) console.log('Overpass trail:', e.trail);
     $('nearbyContainer').innerHTML = `<div class="stats-empty">${esc(msg)}</div>`;
   }
 }
