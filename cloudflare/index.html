@@ -1577,6 +1577,9 @@ const TRANSLATIONS = {
     courtAccessUnknown: "Não informado",
     courtAccessNote: "O tipo de acesso vem do OpenStreetMap e nem toda quadra tem essa informação preenchida. Ao filtrar por um tipo, as quadras sem informação não aparecem.",
     courtsFilteredEmpty: "Nenhuma quadra desse tipo por aqui. Tente \"Todas\".",
+    courtsSearching: "Buscando quadras…",
+    courtsBusy: "O servidor de mapas está ocupado agora. Tente de novo em alguns instantes.",
+    courtsOffline: "Sem conexão. Verifique a internet e tente de novo.",
     notifEnabled: "Notificações ativadas!",
     notifDenied: "Você não permitiu as notificações.",
     notifBlocked: "As notificações estão bloqueadas para este site. Libere nas configurações do navegador (cadeado ao lado do endereço → Notificações) e tente de novo.",
@@ -1812,6 +1815,9 @@ const TRANSLATIONS = {
     courtAccessUnknown: "Not specified",
     courtAccessNote: "Access type comes from OpenStreetMap and not every court has it filled in. When you filter by a type, courts without that information are hidden.",
     courtsFilteredEmpty: "No courts of that type around here. Try \"All\".",
+    courtsSearching: "Searching for courts…",
+    courtsBusy: "The map server is busy right now. Try again in a moment.",
+    courtsOffline: "No connection. Check your internet and try again.",
     notifEnabled: "Notifications enabled!",
     notifDenied: "You did not allow notifications.",
     notifBlocked: "Notifications are blocked for this site. Allow them in your browser settings (the padlock next to the address → Notifications) and try again.",
@@ -2047,6 +2053,9 @@ const TRANSLATIONS = {
     courtAccessUnknown: "Sin información",
     courtAccessNote: "El tipo de acceso viene de OpenStreetMap y no todas las canchas lo tienen indicado. Al filtrar por un tipo, las canchas sin esa información no aparecen.",
     courtsFilteredEmpty: "No hay canchas de ese tipo por aquí. Prueba \"Todas\".",
+    courtsSearching: "Buscando canchas…",
+    courtsBusy: "El servidor de mapas está ocupado ahora. Inténtalo de nuevo en unos instantes.",
+    courtsOffline: "Sin conexión. Revisa tu internet e inténtalo de nuevo.",
     notifEnabled: "¡Notificaciones activadas!",
     notifDenied: "No permitiste las notificaciones.",
     notifBlocked: "Las notificaciones están bloqueadas para este sitio. Actívalas en la configuración del navegador (el candado junto a la dirección → Notificaciones) e inténtalo de nuevo.",
@@ -2431,40 +2440,107 @@ function courtAccessLabel(kind){
   return t('courtAccessUnknown');
 }
 
+/* The Overpass API is a free public service shared with the whole world. It
+   answers 429 when its rate limit is hit and 504 when a query costs more than
+   the slot allows, at random from our point of view. One attempt against one
+   server is why the search failed intermittently, so: mirrors, a deadline,
+   and a short-lived cache. */
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter'
+];
+const COURT_CACHE_MS = 10 * 60 * 1000;
+let courtCache = null;   // { key, at, courts }
+
+function courtCacheKey(coords, radiusM){
+  // ~100m of precision is plenty: nudging the pin shouldn't force a new query
+  return `${coords.lat.toFixed(3)},${coords.lng.toFixed(3)},${radiusM}`;
+}
+
+function fetchWithTimeout(url, options, ms){
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), ms);
+  return fetch(url, { ...options, signal: ctl.signal })
+    .finally(() => clearTimeout(timer));
+}
+
+async function overpassQuery(query){
+  let lastStatus = 0;
+  for(const url of OVERPASS_ENDPOINTS){
+    try{
+      const res = await fetchWithTimeout(url, { method: 'POST', body: query }, 30000);
+      if(res.ok) return await res.json();
+      lastStatus = res.status;
+      // 429 = rate limited, 504 = server out of capacity. Both mean "try the
+      // next mirror"; anything else is unlikely to be fixed by retrying.
+      if(res.status !== 429 && res.status !== 504) break;
+    }catch(e){
+      console.log('Overpass attempt failed:', url, e && e.name);
+      lastStatus = 0;   // network error or timeout — the next mirror may work
+    }
+  }
+  const err = new Error('overpass_failed');
+  err.status = lastStatus;
+  throw err;
+}
+
+function courtsFromElements(elements, coords){
+  return (elements || []).map(el => {
+    const lat = el.lat != null ? el.lat : (el.center && el.center.lat);
+    const lon = el.lon != null ? el.lon : (el.center && el.center.lon);
+    if(lat == null || lon == null) return null;
+    return {
+      name: (el.tags && el.tags.name) || t('courtDefaultName'),
+      access: courtAccess(el.tags),
+      lat, lon,
+      distanceKm: haversineKmClient(coords.lat, coords.lng, lat, lon)
+    };
+  }).filter(Boolean).sort((a,b) => a.distanceKm - b.distanceKm);
+}
+
+function applyCourtFilter(courts){
+  const wanted = $('courtAccessFilter').value;
+  // Unknowns stay visible under "all" — most OSM courts carry no access tag,
+  // so hiding them by default would empty the list.
+  const shown = wanted === 'all' ? courts : courts.filter(c => c.access === wanted);
+  renderCourts(shown, courts.length > 0 && shown.length === 0);
+}
+
 async function searchCourts(){
   const coords = await getMyCoords();
   if(!coords){ showAlert(t('nearbyNeedZip')); return; }
   const radiusInput = parseFloat($('nearbyRadius').value) || 25;
   const radiusKm = nearbyUnit === 'mi' ? radiusInput * 1.60934 : radiusInput;
   const radiusM = Math.round(radiusKm * 1000);
-  $('nearbyContainer').innerHTML = `<div class="stats-empty">…</div>`;
-  try{
-    const query = `[out:json][timeout:25];(node["sport"="tennis"]["leisure"="pitch"](around:${radiusM},${coords.lat},${coords.lng});way["sport"="tennis"]["leisure"="pitch"](around:${radiusM},${coords.lat},${coords.lng});node["leisure"="tennis_court"](around:${radiusM},${coords.lat},${coords.lng});way["leisure"="tennis_court"](around:${radiusM},${coords.lat},${coords.lng}););out center;`;
-    const res = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      body: query
-    });
-    const data = await res.json();
-    const courts = (data.elements || []).map(el => {
-      const lat = el.lat != null ? el.lat : (el.center && el.center.lat);
-      const lon = el.lon != null ? el.lon : (el.center && el.center.lon);
-      if(lat == null || lon == null) return null;
-      return {
-        name: (el.tags && el.tags.name) || t('courtDefaultName'),
-        access: courtAccess(el.tags),
-        lat, lon,
-        distanceKm: haversineKmClient(coords.lat, coords.lng, lat, lon)
-      };
-    }).filter(Boolean).sort((a,b) => a.distanceKm - b.distanceKm);
 
-    const wanted = $('courtAccessFilter').value;
-    // Unknowns stay visible under "all" — most OSM courts carry no access tag,
-    // so hiding them by default would empty the list.
-    const shown = wanted === 'all' ? courts : courts.filter(c => c.access === wanted);
-    renderCourts(shown, courts.length > 0 && shown.length === 0);
+  // Changing only the access filter shouldn't cost another round trip.
+  const key = courtCacheKey(coords, radiusM);
+  if(courtCache && courtCache.key === key && Date.now() - courtCache.at < COURT_CACHE_MS){
+    applyCourtFilter(courtCache.courts);
+    return;
+  }
+
+  $('nearbyContainer').innerHTML = `<div class="stats-empty">${t('courtsSearching')}</div>`;
+  const query = `[out:json][timeout:25];(node["sport"="tennis"]["leisure"="pitch"](around:${radiusM},${coords.lat},${coords.lng});way["sport"="tennis"]["leisure"="pitch"](around:${radiusM},${coords.lat},${coords.lng});node["leisure"="tennis_court"](around:${radiusM},${coords.lat},${coords.lng});way["leisure"="tennis_court"](around:${radiusM},${coords.lat},${coords.lng}););out center;`;
+
+  try{
+    const data = await overpassQuery(query);
+    const courts = courtsFromElements(data.elements, coords);
+    courtCache = { key, at: Date.now(), courts };
+    applyCourtFilter(courts);
   }catch(e){
     console.log('Search courts error:', e);
-    $('nearbyContainer').innerHTML = `<div class="stats-empty">${t('nearbyError')}</div>`;
+
+    // A stale list beats an error message: the courts themselves rarely move.
+    if(courtCache && courtCache.key === key){
+      applyCourtFilter(courtCache.courts);
+      return;
+    }
+    const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+    const msg = offline ? t('courtsOffline')
+      : (e && (e.status === 429 || e.status === 504) ? t('courtsBusy') : t('nearbyError'));
+    $('nearbyContainer').innerHTML = `<div class="stats-empty">${esc(msg)}</div>`;
   }
 }
 
@@ -5861,6 +5937,12 @@ $('unitMi').addEventListener('click', () => setNearbyUnit('mi'));
 $('closeNearbyBtn').addEventListener('click', closeAllSheets);
 $('courtAccessFilter').addEventListener('change', () => {
   if($('nearbyContainer').innerHTML.trim() !== '') searchCourts();
+});
+window.addEventListener('online', () => {
+  // came back from a dead connection with an error on screen: try again
+  const box = $('nearbyContainer');
+  if(box && box.textContent.trim() && $('nearbyPlayersSheet').classList.contains('show')
+     && nearbySearchMode === 'courts') searchCourts();
 });
 $('newLeagueBtn').addEventListener('click', () => {
   newLeaguePlayers = [];
