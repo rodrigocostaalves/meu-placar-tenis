@@ -52,11 +52,12 @@
     display:flex; align-items:center; gap:10px;
   }
   header.scoreboard h1 .ball{
-    width:22px; height:22px; border-radius:50%;
-    box-shadow: var(--glow-ball), 0 0 34px rgba(219,247,28,0.22);
-    display:inline-block; flex-shrink:0;
+    width:30px; height:30px; display:inline-block; flex-shrink:0;
+    object-fit:contain;
+    /* the mark carries its own shape, so the glow goes on the art itself
+       rather than on a circular box behind it */
+    filter: drop-shadow(0 0 10px rgba(219,247,28,0.35));
   }
-  header.scoreboard h1 .ball svg{ width:100%; height:100%; display:block; }
   .menu-btn{
     background: var(--panel);
     border: 1px solid var(--panel-line);
@@ -282,8 +283,7 @@
     background: var(--ball); opacity:.55;
   }
   .activity-chip .ico{
-    font-size:19px; line-height:1; flex-shrink:0;
-    filter: drop-shadow(0 0 8px rgba(219,247,28,0.25));
+    width:30px; height:30px; flex-shrink:0; object-fit:contain; display:block;
   }
   .activity-chip .lbl{
     flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
@@ -397,7 +397,13 @@
   }
   .achievement-badge.earned{ opacity:1; border-color: var(--ball); background: rgba(215,242,5,0.10); }
   .achievement-badge.earned .achievement-name{ color: var(--ball); font-weight:600; }
-  .achievement-icon{ font-size:24px; margin-bottom:4px; }
+  .achievement-icon{
+    width:46px; height:46px; object-fit:contain;
+    display:block; margin:0 auto 6px;
+  }
+  /* one file per achievement: the locked state is the same art, desaturated */
+  .achievement-badge.locked .achievement-icon{ filter: grayscale(1) brightness(.62); }
+  .achievement-badge.earned .achievement-icon{ filter: drop-shadow(0 0 9px rgba(219,247,28,0.35)); }
   .achievement-name{ font-size:10px; color:var(--chalk); line-height:1.2; }
 
   .fab{
@@ -712,7 +718,7 @@
 
 <header class="scoreboard">
   <div class="header-top">
-    <h1><span class="ball"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="58" fill="#DBF71C"/><path d="M17 38c24 14 24 44 0 58" fill="none" stroke="#0B1E2B" stroke-width="9" stroke-linecap="round"/><path d="M103 38c-24 14-24 44 0 58" fill="none" stroke="#0B1E2B" stroke-width="9" stroke-linecap="round"/></svg></span><span data-i18n="appTitle">Deuce Score</span></h1>
+    <h1><img class="ball" src="icons/logo-d.png" alt="" aria-hidden="true"><span data-i18n="appTitle">Deuce Score</span></h1>
     <button class="menu-btn" id="menuBtn"><span></span></button>
   </div>
   <div class="record">
@@ -736,14 +742,14 @@
     </div>
   </div>
   <div class="activity-line">
-    <button type="button" class="activity-chip" id="tournamentsShortcut"><span class="ico">🏆</span><span class="lbl" data-i18n="chipTournament">Torneio</span></button>
-    <button type="button" class="activity-chip" id="leaguesShortcut"><span class="ico">🏅</span><span class="lbl" data-i18n="chipLeague">Liga</span></button>
-    <button type="button" class="activity-chip" id="nearbyShortcut"><span class="ico">📍</span><span class="lbl" data-i18n="modeLabelCourts">Quadras</span></button>
+    <button type="button" class="activity-chip" id="tournamentsShortcut"><img class="ico" src="icons/ui-tournaments.png" alt=""><span class="lbl" data-i18n="chipTournament">Torneio</span></button>
+    <button type="button" class="activity-chip" id="leaguesShortcut"><img class="ico" src="icons/ui-leagues.png" alt=""><span class="lbl" data-i18n="chipLeague">Liga</span></button>
+    <button type="button" class="activity-chip" id="nearbyShortcut"><img class="ico" src="icons/ui-courts.png" alt=""><span class="lbl" data-i18n="modeLabelCourts">Quadras</span></button>
     <!-- "Procuro Jogo" está oculto até haver jogadores suficientes: um mural
          vazio frustra mais do que ajuda. A sheet e as functions continuam no
          lugar — basta remover o style="display:none" para trazer de volta. -->
     <button type="button" class="activity-chip" id="boardShortcut" style="display:none">🔎 <span data-i18n="chipBoard">Procuro Jogo</span></button>
-    <button type="button" class="activity-chip" id="rankingShortcut"><span class="ico">📊</span><span class="lbl" data-i18n="chipRanking">Ranking</span></button>
+    <button type="button" class="activity-chip" id="rankingShortcut"><img class="ico" src="icons/ui-stats.png" alt=""><span class="lbl" data-i18n="chipRanking">Ranking</span></button>
   </div>
 </header>
 
@@ -5076,18 +5082,18 @@ function computeAchievements(){
   const hasBigRival = Object.values(opponentCounts).some(c => c >= 5);
 
   return [
-    { icon: '🎾', name: t('achFirstWinName'), desc: t('achFirstWinDesc'), earned: wins >= 1 },
-    { icon: '🏅', name: t('achWins10Name'), desc: t('achWins10Desc'), earned: wins >= 10 },
-    { icon: '🥇', name: t('achWins25Name'), desc: t('achWins25Desc'), earned: wins >= 25 },
-    { icon: '🔥', name: t('achStreak5Name'), desc: t('achStreak5Desc'), earned: maxWinStreak >= 5 },
-    { icon: '💯', name: t('achMatches100Name'), desc: t('achMatches100Desc'), earned: completed.length >= 100 },
-    { icon: '🤝', name: t('achDoublesName'), desc: t('achDoublesDesc'), earned: hasDoubles },
-    { icon: '🏆', name: t('achTournamentName'), desc: t('achTournamentDesc'), earned: hasTournamentMatch },
-    { icon: '📊', name: t('achLeagueName'), desc: t('achLeagueDesc'), earned: hasLeagueMatch },
-    { icon: '📸', name: t('achPhotoName'), desc: t('achPhotoDesc'), earned: hasPhoto },
-    { icon: '🗺️', name: t('achTravelerName'), desc: t('achTravelerDesc'), earned: uniqueLocations.size >= 3 },
-    { icon: '📝', name: t('achProfileName'), desc: t('achProfileDesc'), earned: profileComplete },
-    { icon: '⚔️', name: t('achRivalName'), desc: t('achRivalDesc'), earned: hasBigRival }
+    { icon: 'icons/ach-first-win.png', name: t('achFirstWinName'), desc: t('achFirstWinDesc'), earned: wins >= 1 },
+    { icon: 'icons/ach-wins-10.png', name: t('achWins10Name'), desc: t('achWins10Desc'), earned: wins >= 10 },
+    { icon: 'icons/ach-wins-25.png', name: t('achWins25Name'), desc: t('achWins25Desc'), earned: wins >= 25 },
+    { icon: 'icons/ach-streak.png', name: t('achStreak5Name'), desc: t('achStreak5Desc'), earned: maxWinStreak >= 5 },
+    { icon: 'icons/ach-veteran.png', name: t('achMatches100Name'), desc: t('achMatches100Desc'), earned: completed.length >= 100 },
+    { icon: 'icons/ach-doubles.png', name: t('achDoublesName'), desc: t('achDoublesDesc'), earned: hasDoubles },
+    { icon: 'icons/ach-tournament.png', name: t('achTournamentName'), desc: t('achTournamentDesc'), earned: hasTournamentMatch },
+    { icon: 'icons/ach-league.png', name: t('achLeagueName'), desc: t('achLeagueDesc'), earned: hasLeagueMatch },
+    { icon: 'icons/ach-photo.png', name: t('achPhotoName'), desc: t('achPhotoDesc'), earned: hasPhoto },
+    { icon: 'icons/ach-traveler.png', name: t('achTravelerName'), desc: t('achTravelerDesc'), earned: uniqueLocations.size >= 3 },
+    { icon: 'icons/ach-profile.png', name: t('achProfileName'), desc: t('achProfileDesc'), earned: profileComplete },
+    { icon: 'icons/ach-rival.png', name: t('achRivalName'), desc: t('achRivalDesc'), earned: hasBigRival }
   ];
 }
 
@@ -5095,7 +5101,7 @@ function renderAchievements(){
   const achievements = computeAchievements();
   $('achievementsContainer').innerHTML = achievements.map((a, i) => `
     <div class="achievement-badge ${a.earned ? 'earned' : 'locked'}" data-idx="${i}" title="${esc(a.desc)}">
-      <div class="achievement-icon">${a.icon}</div>
+      <img class="achievement-icon" src="${a.icon}" alt="" loading="lazy">
       <div class="achievement-name">${esc(a.name)}</div>
     </div>
   `).join('');
@@ -5110,7 +5116,7 @@ function renderAchievements(){
 function openAchievementSheet(a){
   const earned = !!a.earned;
   $('achSheetTitle').textContent = a.name;
-  $('achSheetIcon').textContent = a.icon;
+  $('achSheetIcon').innerHTML = `<img src="${a.icon}" alt="" style="width:84px;height:84px;object-fit:contain">`;
   $('achSheetIcon').style.opacity = earned ? '1' : '0.35';
   const status = $('achSheetStatus');
   status.textContent = earned ? t('achEarnedPrefix') : t('achLockedPrefix');
