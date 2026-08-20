@@ -40,10 +40,9 @@
   .top .wrap{ display:flex; align-items:center; justify-content:space-between; height:64px; }
   .brand{ display:flex; align-items:center; gap:10px; }
   .ball-dot{
-    width:22px; height:22px; border-radius:50%; flex-shrink:0;
-    box-shadow:0 0 16px rgba(219,247,28,0.5), 0 0 34px rgba(219,247,28,0.2);
+    width:30px; height:30px; flex-shrink:0; object-fit:contain; display:block;
+    filter: drop-shadow(0 0 10px rgba(219,247,28,0.35));
   }
-  .ball-dot svg{ width:100%; height:100%; display:block; }
   .brand span{ font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:1px; }
   .beta{
     font-family:'Space Mono',monospace; font-size:10px; letter-spacing:1.5px;
@@ -168,6 +167,49 @@
   }
   .sub{ color:var(--muted); max-width:58ch; margin:0 0 38px; }
 
+  /* PLAY · TRACK · IMPROVE · COMPETE · REPEAT — the five words are the site's
+     structure, not a strapline, so each one is a real section tied to a real
+     feature. The words stay in English in every language: they are brand
+     vocabulary, and translating them would break the loop. */
+  .cycle-strip{
+    display:flex; align-items:center; justify-content:center;
+    gap:6px; flex-wrap:wrap; margin:8px 0 34px;
+  }
+  .cycle-step{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+  .cycle-step img{ width:52px; height:52px; object-fit:contain; }
+  .cycle-step span{
+    font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:1.5px;
+    color:var(--muted);
+  }
+  .cycle-step.on span{ color:var(--ball); }
+  .cycle-arrow{ color:var(--panel-line); font-size:19px; padding-bottom:20px; }
+
+  /* The panels keep their original artwork, headline included, so the row
+     reads exactly like the brand banner. The translated line goes underneath
+     rather than on top of the image. */
+  .cycle-cards{
+    display:flex; gap:12px; overflow-x:auto; padding-bottom:6px;
+    scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+  }
+  .cycle-cards::-webkit-scrollbar{ height:6px; }
+  .cycle-cards::-webkit-scrollbar-thumb{ background:var(--panel-line); border-radius:3px; }
+  .cycle-card{
+    flex:0 0 74%; max-width:300px; scroll-snap-align:center;
+    background:var(--panel); border:1px solid var(--panel-line);
+    border-radius:16px; overflow:hidden; display:flex; flex-direction:column;
+  }
+  .cycle-card img{ width:100%; display:block; }
+  .cycle-card .body{ padding:14px 16px 18px; }
+  .cycle-card h3{
+    font-family:'Bebas Neue',sans-serif; font-weight:400; font-size:21px;
+    letter-spacing:1px; margin:0 0 6px; color:var(--ball);
+  }
+  .cycle-card p{ margin:0; color:var(--muted); font-size:14px; line-height:1.6; }
+  @media (min-width:900px){
+    .cycle-cards{ display:grid; grid-template-columns:repeat(5,1fr); overflow:visible; }
+    .cycle-card{ flex:none; max-width:none; }
+  }
+
   .cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
   .card{
     background:var(--panel); border:1px solid var(--panel-line);
@@ -241,7 +283,7 @@
 
 <header class="top">
   <div class="wrap">
-    <div class="brand"><i class="ball-dot"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="58" fill="#DBF71C"/><path d="M17 38c24 14 24 44 0 58" fill="none" stroke="#0B1E2B" stroke-width="9" stroke-linecap="round"/><path d="M103 38c-24 14-24 44 0 58" fill="none" stroke="#0B1E2B" stroke-width="9" stroke-linecap="round"/></svg></i><span>DEUCE SCORE</span><span class="beta">BETA</span></div>
+    <div class="brand"><img class="ball-dot" src="/site/img/logo-mark.png" alt=""><span>DEUCE SCORE</span><span class="beta">BETA</span></div>
     <div class="right">
       <div class="lang-switch">
         <button type="button" data-lang="pt">PT</button>
@@ -425,9 +467,67 @@
 <hr class="chalk">
 
 <!-- ─────────── POR QUE ─────────── -->
-<section id="porque">
+<section id="ciclo">
   <div class="wrap">
     <div class="score-eyebrow">15</div>
+    <h2 data-t-html="cycleTitle"></h2>
+    <p class="sub" data-t="cycleSub"></p>
+    <div class="cycle-strip">
+      <div class="cycle-step on"><img src="/site/img/cycle-play.png" alt=""><span>PLAY</span></div>
+      <div class="cycle-arrow">›</div>
+      <div class="cycle-step on"><img src="/site/img/cycle-track.png" alt=""><span>TRACK</span></div>
+      <div class="cycle-arrow">›</div>
+      <div class="cycle-step on"><img src="/site/img/cycle-improve.png" alt=""><span>IMPROVE</span></div>
+      <div class="cycle-arrow">›</div>
+      <div class="cycle-step on"><img src="/site/img/cycle-compete.png" alt=""><span>COMPETE</span></div>
+      <div class="cycle-arrow">›</div>
+      <div class="cycle-step on"><img src="/site/img/cycle-repeat.png" alt=""><span>REPEAT</span></div>
+    </div>
+    <div class="cycle-cards">
+      <div class="cycle-card">
+        <img src="/site/img/photo-play.jpg" alt="PLAY" loading="lazy">
+        <div class="body">
+          <h3 data-t="playT"></h3>
+          <p data-t="playB"></p>
+        </div>
+      </div>
+      <div class="cycle-card">
+        <img src="/site/img/photo-track.jpg" alt="TRACK" loading="lazy">
+        <div class="body">
+          <h3 data-t="trackT"></h3>
+          <p data-t="trackB"></p>
+        </div>
+      </div>
+      <div class="cycle-card">
+        <img src="/site/img/photo-improve.jpg" alt="IMPROVE" loading="lazy">
+        <div class="body">
+          <h3 data-t="improveT"></h3>
+          <p data-t="improveB"></p>
+        </div>
+      </div>
+      <div class="cycle-card">
+        <img src="/site/img/photo-compete.jpg" alt="COMPETE" loading="lazy">
+        <div class="body">
+          <h3 data-t="competeT"></h3>
+          <p data-t="competeB"></p>
+        </div>
+      </div>
+      <div class="cycle-card">
+        <img src="/site/img/photo-repeat.jpg" alt="REPEAT" loading="lazy">
+        <div class="body">
+          <h3 data-t="repeatT"></h3>
+          <p data-t="repeatB"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="chalk">
+
+<section id="porque">
+  <div class="wrap">
+    <div class="score-eyebrow">30</div>
     <h2 data-t-html="whyTitle"></h2>
     <p class="sub" data-t="whySub"></p>
     <div class="cards">
@@ -455,7 +555,7 @@
 <!-- ─────────── RECURSOS ─────────── -->
 <section id="recursos">
   <div class="wrap">
-    <div class="score-eyebrow">30</div>
+    <div class="score-eyebrow">40</div>
     <h2 data-t="featTitle"></h2>
     <p class="sub" data-t="featSub"></p>
     <div class="feats">
@@ -476,7 +576,7 @@
 <!-- ─────────── INSTALAR ─────────── -->
 <section id="instalar">
   <div class="wrap">
-    <div class="score-eyebrow">40</div>
+    <div class="score-eyebrow">ADV</div>
     <h2 data-t="instTitle"></h2>
 
     <div class="install-grid">
@@ -553,6 +653,13 @@ const TXT = {
     sShare:"COMPARTILHAR", sWin:"VITÓRIA", sTeamAWin:"Você + Rafael 🏆", sShareImage:"COMPARTILHAR IMAGEM",
     sLeagueName:"LIGA DE VERÃO", sLeagueMeta:"8 JOGADORES · RODADA 5 DE 7",
     sYouLeague:"Você<br><span class='m-cap'>4V 2D</span>", sLogRound:"REGISTRAR RODADA",
+    cycleTitle:"Jogue. Anote.<br><em>Repita.</em>",
+    cycleSub:"O Deuce Score acompanha o ciclo do seu tênis, do jogo de sábado à sua evolução no ano.",
+    playT:"Marque o jogo", playB:"Agende a partida e convide o adversário pelo app. Ele aceita e os dois recebem lembrete 24h e 1h antes.",
+    trackT:"Anote o placar", trackB:"Set a set, simples ou duplas, com superfície, local e foto. O histórico fica salvo e com backup na nuvem.",
+    improveT:"Veja sua evolução", improveB:"Rating que sobe e desce a cada partida, aproveitamento por superfície, sequências e retrospectiva do mês.",
+    competeT:"Entre na disputa", competeB:"Monte a liga do grupo, organize torneios com chaveamento e acompanhe o ranking geral.",
+    repeatT:"Volte para a quadra", repeatB:"O app lembra de agendar o próximo, cobra o placar do último e mostra o quanto você já andou.",
     whyTitle:"O jogo acaba.<br>E o placar some.",
     whySub:"Placar anotado no grupo do WhatsApp desaparece na terça-feira. Sem registro, cada partida vira uma sensação, e sensação não mostra progresso.",
     why1Title:"Um número que é seu",
@@ -614,6 +721,13 @@ const TXT = {
     sShare:"SHARE", sWin:"WIN", sTeamAWin:"You + Rafael 🏆", sShareImage:"SHARE IMAGE",
     sLeagueName:"SUMMER LEAGUE", sLeagueMeta:"8 PLAYERS · ROUND 5 OF 7",
     sYouLeague:"You<br><span class='m-cap'>4W 2L</span>", sLogRound:"LOG ROUND",
+    cycleTitle:"Play. Log it.<br><em>Repeat.</em>",
+    cycleSub:"Deuce Score follows the cycle of your tennis, from Saturday's match to how far you have come this year.",
+    playT:"Set up the match", playB:"Schedule and invite your opponent from the app. They accept, and both of you get reminders 24h and 1h before.",
+    trackT:"Log the score", trackB:"Set by set, singles or doubles, with surface, location and a photo. Your history is saved and backed up.",
+    improveT:"See your progress", improveB:"A rating that moves with every match, win rate by surface, streaks and a monthly recap.",
+    competeT:"Get in the race", competeB:"Run your group's league, build tournament brackets and follow the global ranking.",
+    repeatT:"Get back on court", repeatB:"The app nudges you to book the next one, asks for the last score, and shows how far you have come.",
     whyTitle:"The match ends.<br>And the score is gone.",
     whySub:"A score typed into the group chat is gone by Tuesday. With no record, every match becomes a feeling, and a feeling doesn't show progress.",
     why1Title:"A number that's yours",
@@ -675,6 +789,13 @@ const TXT = {
     sShare:"COMPARTIR", sWin:"VICTORIA", sTeamAWin:"Tú + Rafael 🏆", sShareImage:"COMPARTIR IMAGEN",
     sLeagueName:"LIGA DE VERANO", sLeagueMeta:"8 JUGADORES · FECHA 5 DE 7",
     sYouLeague:"Tú<br><span class='m-cap'>4V 2D</span>", sLogRound:"REGISTRAR FECHA",
+    cycleTitle:"Juega. Anota.<br><em>Repite.</em>",
+    cycleSub:"Deuce Score acompaña el ciclo de tu tenis, del partido del sábado a tu evolución del año.",
+    playT:"Arma el partido", playB:"Agenda e invita a tu rival desde la app. Él acepta y ambos reciben recordatorio 24h y 1h antes.",
+    trackT:"Anota el marcador", trackB:"Set a set, individual o dobles, con superficie, lugar y foto. El historial queda guardado y con copia en la nube.",
+    improveT:"Mira tu evolución", improveB:"Un rating que sube y baja en cada partido, rendimiento por superficie, rachas y retrospectiva del mes.",
+    competeT:"Entra en la pelea", competeB:"Arma la liga del grupo, organiza torneos con cuadro y sigue el ranking general.",
+    repeatT:"Vuelve a la cancha", repeatB:"La app te recuerda agendar el próximo, te pide el marcador del último y muestra cuánto has avanzado.",
     whyTitle:"El partido termina.<br>Y el marcador desaparece.",
     whySub:"Un marcador anotado en el grupo de WhatsApp desaparece el martes. Sin registro, cada partido se vuelve una sensación, y una sensación no muestra progreso.",
     why1Title:"Un número que es tuyo",
