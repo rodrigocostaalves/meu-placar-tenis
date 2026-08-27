@@ -182,6 +182,41 @@
     line-height:1; min-width:20px;
   }
   .welcome-desc{ font-size:13px; color:var(--muted); }
+  .stat-hero{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px;
+  }
+  .stat-hero > div{
+    background:var(--panel); border:1px solid var(--panel-line);
+    border-radius:12px; padding:14px 10px; text-align:center;
+  }
+  .sh-num{
+    display:block; font-family:'Bebas Neue',sans-serif; font-size:30px; line-height:1;
+  }
+  .sh-num.win{ color:var(--win); }
+  .sh-num.ball{ color:var(--ball); }
+  .sh-lbl{
+    display:block; font-size:10.5px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--muted); margin-top:4px;
+  }
+  .stat-rating-card{
+    background:var(--panel); border:1px solid var(--panel-line);
+    border-radius:12px; padding:16px; margin-bottom:14px;
+  }
+  .src-top{ display:flex; align-items:center; justify-content:space-between; }
+  .src-cap{
+    font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted);
+  }
+  .src-delta{
+    font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:1px;
+    padding:3px 10px; border-radius:12px;
+  }
+  .src-delta.up{ background:rgba(59,224,143,.15); color:var(--win); }
+  .src-delta.down{ background:rgba(255,106,77,.15); color:var(--loss); }
+  .src-val{
+    font-family:'Bebas Neue',sans-serif; font-size:44px; line-height:1.05;
+    color:var(--ball); text-shadow:0 0 20px rgba(219,247,28,.3); margin:2px 0 10px;
+  }
+  #statsTabs button{ font-size:12px; padding:10px 4px; }
   .extra-opp-row{ margin-top:8px; }
   .extra-opp-line{ display:flex; gap:8px; }
   .extra-opp-line input{
@@ -952,30 +987,9 @@
   <h3 data-i18n="achievementsTitle">Conquistas</h3>
   <div class="achievements-grid" id="achievementsContainer"></div>
 
-  <h3 data-i18n="statsTitle">Estatísticas por Adversário</h3>
-  <div class="stats-list" id="statsContainer"></div>
-
-  <h3 data-i18n="ratingHistoryTitle">Evolução do Rating</h3>
-  <div class="rating-spark" id="ratingSpark"></div>
-  <div class="stats-list" id="ratingSummary"></div>
-  <p class="rating-note" id="ratingNote" data-i18n="ratingExplain"></p>
-
-  <div class="stats-list" id="confirmedLine" style="margin-bottom:14px"></div>
-  <p class="rating-note" data-i18n="confirmedHint"></p>
-
-  <h3 data-i18n="statsBySurfaceTitle">Desempenho por Superfície</h3>
-  <div class="stats-list" id="statsSurfaceContainer"></div>
-
-  <h3 data-i18n="statsByTypeTitle">Desempenho por Tipo</h3>
-  <div class="stats-list" id="statsTypeContainer"></div>
-
-  <h3 data-i18n="recapTitle">Retrospectiva</h3>
-  <p class="rating-note" data-i18n="recapIntro"></p>
-  <div class="field">
-    <label data-i18n="recapLabelMonth">Mês</label>
-    <select id="recapMonth"></select>
-  </div>
-  <button type="button" class="search-btn" id="recapShareBtn" data-i18n="btnShareRecap">Compartilhar Retrospectiva</button>
+  <h3 data-i18n="statsTitle">Estatísticas</h3>
+  <p class="rating-note" data-i18n="statsMenuIntro"></p>
+  <button type="button" class="search-btn" id="openStatsBtn" data-i18n="btnOpenStats">📊 Ver Estatísticas</button>
 
   <h3 data-i18n="friendsTitle">Meus Amigos</h3>
   <p class="rating-note" data-i18n="friendsIntro"></p>
@@ -1262,6 +1276,60 @@
   </div>
 </div>
 
+<div class="sheet" id="statsSheet">
+  <h2 data-i18n="statsSheetTitle">Estatísticas</h2>
+
+  <div class="stat-hero">
+    <div><span class="sh-num" id="shMatches">0</span><span class="sh-lbl" data-i18n="shMatches">Partidas</span></div>
+    <div><span class="sh-num win" id="shWins">0</span><span class="sh-lbl" data-i18n="winsLabel">Vitórias</span></div>
+    <div><span class="sh-num ball" id="shRate">0%</span><span class="sh-lbl" data-i18n="pctLabel">Aproveitamento</span></div>
+  </div>
+
+  <div class="stat-rating-card">
+    <div class="src-top">
+      <span class="src-cap" data-i18n="ratingCurrent">Rating atual</span>
+      <span class="src-delta" id="shDelta"></span>
+    </div>
+    <div class="src-val" id="shRating">-</div>
+    <div class="rating-spark" id="ratingSpark"></div>
+    <div class="stats-list" id="ratingSummary"></div>
+  </div>
+
+  <div class="stats-list" id="confirmedLine" style="margin-bottom:6px"></div>
+  <p class="rating-note" data-i18n="confirmedHint"></p>
+
+  <div class="toggle-group type" id="statsTabs" style="margin-bottom:14px">
+    <button type="button" data-tab="surface" class="active" data-i18n="tabSurface">Por Superfície</button>
+    <button type="button" data-tab="opponent" data-i18n="tabOpponent">Por Adversário</button>
+    <button type="button" data-tab="month" data-i18n="tabMonth">Por Mês</button>
+  </div>
+
+  <div id="tabSurface">
+    <div class="stats-list" id="statsSurfaceContainer"></div>
+    <h3 data-i18n="statsByTypeTitle">Desempenho por Tipo</h3>
+    <div class="stats-list" id="statsTypeContainer"></div>
+  </div>
+  <div id="tabOpponent" style="display:none">
+    <div class="stats-list" id="statsContainer"></div>
+  </div>
+  <div id="tabMonth" style="display:none">
+    <div class="stats-list" id="statsMonthContainer"></div>
+  </div>
+
+  <h3 data-i18n="recapTitle">Retrospectiva</h3>
+  <p class="rating-note" data-i18n="recapIntro"></p>
+  <div class="field">
+    <label data-i18n="recapLabelMonth">Mês</label>
+    <select id="recapMonth"></select>
+  </div>
+  <button type="button" class="search-btn" id="recapShareBtn" data-i18n="btnShareRecap">Compartilhar Retrospectiva</button>
+  <p class="rating-note" id="ratingNote" data-i18n="ratingExplain" style="margin-top:18px"></p>
+
+  <div class="sheet-actions">
+    <button class="btn-cancel" id="closeStatsBtn" data-i18n="btnClose">Fechar</button>
+  </div>
+</div>
+
 <div class="sheet" id="friendPickSheet">
   <h2 data-i18n="friendPickTitle">Escolher amigo</h2>
   <p class="rating-note" data-i18n="friendPickIntro"></p>
@@ -1444,7 +1512,10 @@ const TRANSLATIONS = {
     deleteConfirm: "Excluir esta partida?", alertChooseDate: "Escolha uma data.",
     menuTitle: "Menu", profileTitle: "Perfil", labelName: "Nome", labelCountry: "País",
     labelCity: "Cidade", labelBirthdate: "Data de Nascimento", btnSaveProfile: "Salvar Perfil",
-    statsTitle: "Estatísticas por Adversário", statsEmptyState: "Nenhum adversário registrado ainda.",
+    statsTitle: "Estatísticas", statsEmptyState: "Nenhum adversário registrado ainda.",
+    statsSheetTitle: "Estatísticas", btnOpenStats: "📊 Ver Estatísticas",
+    statsMenuIntro: "Rating, aproveitamento por superfície, por adversário e por mês.",
+    shMatches: "Partidas", tabSurface: "Por Superfície", tabOpponent: "Por Adversário", tabMonth: "Por Mês",
     dataTitle: "Dados", btnExport: "Exportar Dados", btnImport: "Importar Dados",
     settingsTitle: "Configurações", labelUnit: "Unidade de Distância",
     notifTitle: "Notificações", notifStatusLabel: "Status",
@@ -1682,7 +1753,10 @@ const TRANSLATIONS = {
     deleteConfirm: "Delete this match?", alertChooseDate: "Please choose a date.",
     menuTitle: "Menu", profileTitle: "Profile", labelName: "Name", labelCountry: "Country",
     labelCity: "City", labelBirthdate: "Date of Birth", btnSaveProfile: "Save Profile",
-    statsTitle: "Stats by Opponent", statsEmptyState: "No opponents recorded yet.",
+    statsTitle: "Stats", statsEmptyState: "No opponents recorded yet.",
+    statsSheetTitle: "Stats", btnOpenStats: "📊 View Stats",
+    statsMenuIntro: "Rating, win rate by surface, by opponent and by month.",
+    shMatches: "Matches", tabSurface: "By Surface", tabOpponent: "By Opponent", tabMonth: "By Month",
     dataTitle: "Data", btnExport: "Export Data", btnImport: "Import Data",
     settingsTitle: "Settings", labelUnit: "Distance Unit",
     notifTitle: "Notifications", notifStatusLabel: "Status",
@@ -1920,7 +1994,10 @@ const TRANSLATIONS = {
     deleteConfirm: "¿Eliminar este partido?", alertChooseDate: "Elige una fecha.",
     menuTitle: "Menú", profileTitle: "Perfil", labelName: "Nombre", labelCountry: "País",
     labelCity: "Ciudad", labelBirthdate: "Fecha de Nacimiento", btnSaveProfile: "Guardar Perfil",
-    statsTitle: "Estadísticas por Rival", statsEmptyState: "Aún no hay rivales registrados.",
+    statsTitle: "Estadísticas", statsEmptyState: "Aún no hay rivales registrados.",
+    statsSheetTitle: "Estadísticas", btnOpenStats: "📊 Ver Estadísticas",
+    statsMenuIntro: "Rating, rendimiento por superficie, por rival y por mes.",
+    shMatches: "Partidos", tabSurface: "Por Superficie", tabOpponent: "Por Rival", tabMonth: "Por Mes",
     dataTitle: "Datos", btnExport: "Exportar Datos", btnImport: "Importar Datos",
     settingsTitle: "Configuración", labelUnit: "Unidad de Distancia",
     notifTitle: "Notificaciones", notifStatusLabel: "Estado",
@@ -5236,6 +5313,20 @@ function renderRatingSection(){
   if(!spark || !summary) return;
 
   const data = computeRatings();
+
+  // the big rating and its last move, mirrored at the top of the card
+  if($('shRating')){
+    $('shRating').textContent = data.played ? data.rating : '-';
+    const last = data.history[data.history.length - 1];
+    const d = $('shDelta');
+    if(last && last.delta !== 0){
+      d.textContent = (last.delta > 0 ? '▲ +' : '▼ ') + last.delta;
+      d.className = 'src-delta ' + (last.delta > 0 ? 'up' : 'down');
+    } else {
+      d.textContent = ''; d.className = 'src-delta';
+    }
+  }
+
   if(!data.played){
     spark.innerHTML = '';
     summary.innerHTML = `<div class="stats-empty">${t('ratingEmptyState')}</div>`;
@@ -5322,6 +5413,31 @@ function renderStats(){
 
   breakdown($('statsSurfaceContainer'), m => m.surface || 'rapida', surfaceLabel);
   breakdown($('statsTypeContainer'), m => m.matchType || 'amistoso', typeLabel);
+
+  // headline numbers at the top of the stats sheet
+  const wins = completed.filter(m => m.result === 'V').length;
+  const rate = completed.length ? Math.round((wins / completed.length) * 100) : 0;
+  if($('shMatches')){
+    $('shMatches').textContent = completed.length;
+    $('shWins').textContent = wins;
+    $('shRate').textContent = rate + '%';
+  }
+
+  // by month, newest first — the view that shows rhythm rather than skill
+  const monthEl = $('statsMonthContainer');
+  if(monthEl){
+    const g = {};
+    completed.forEach(m => {
+      const k = monthKeyOf(m.date);
+      if(!k) return;
+      if(!g[k]) g[k] = {w:0, l:0};
+      if(m.result === 'V') g[k].w++; else g[k].l++;
+    });
+    const ks = Object.keys(g).sort().reverse();
+    monthEl.innerHTML = ks.length
+      ? ks.map(k => statRowHTML(monthLabel(k), g[k].w, g[k].l)).join('')
+      : `<div class="stats-empty">${t('statsEmptyState')}</div>`;
+  }
 
   renderRatingSection();
   populateRecapMonths();
@@ -5867,6 +5983,25 @@ $('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); ren
 $('inviteBtn').addEventListener('click', toggleWantsInvite);
 $('sendResultBtn').addEventListener('click', toggleWantsSendResult);
 $('closeMenuBtn').addEventListener('click', closeAllSheets);
+$('openStatsBtn').addEventListener('click', () => {
+  renderStats();
+  closeAllSheets();
+  setTimeout(() => openSheet('statsSheet'), 220);
+});
+$('closeStatsBtn').addEventListener('click', () => {
+  // back to the menu it was opened from, rather than dumping the user home
+  closeAllSheets();
+  setTimeout(() => { loadProfile(); renderAchievements(); openSheet('menuSheet'); }, 220);
+});
+$('statsTabs').querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    $('statsTabs').querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+    ['surface','opponent','month'].forEach(k => {
+      $('tab' + k.charAt(0).toUpperCase() + k.slice(1)).style.display = (k === tab) ? 'block' : 'none';
+    });
+  });
+});
 $('openAboutBtn').addEventListener('click', () => {
   closeAllSheets();
   openSheet('aboutSheet');
