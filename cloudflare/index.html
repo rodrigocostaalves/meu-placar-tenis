@@ -182,6 +182,27 @@
     line-height:1; min-width:20px;
   }
   .welcome-desc{ font-size:13px; color:var(--muted); }
+  .profile-summary{
+    width:100%; display:flex; align-items:center; gap:12px;
+    background:var(--panel); border:1px solid var(--panel-line);
+    border-radius:12px; padding:12px 14px; margin-bottom:4px;
+    cursor:pointer; font-family:inherit; text-align:left;
+  }
+  .profile-summary:active{ border-color:var(--ball); }
+  .ps-avatar{
+    width:44px; height:44px; border-radius:50%; flex-shrink:0; overflow:hidden;
+    background:var(--court-deep); border:1px solid var(--panel-line);
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+  }
+  .ps-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .ps-info{ flex:1; min-width:0; }
+  .ps-name{ font-size:15px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ps-email{ font-size:12.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ps-chevron{ color:var(--muted); font-size:14px; flex-shrink:0; }
+  .profile-collapse-btn{
+    background:none; border:none; color:var(--muted); font-size:12.5px;
+    padding:0 0 12px; cursor:pointer; font-family:inherit;
+  }
   .stat-hero{
     display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px;
   }
@@ -933,55 +954,68 @@
   <h2 data-i18n="menuTitle">Menu</h2>
 
   <h3 data-i18n="profileTitle">Perfil</h3>
-  <div class="field">
-    <label data-i18n="labelPhoto">Foto de Perfil</label>
-    <div class="photo-row">
-      <img id="pPhotoPreview" class="avatar-preview" src="" style="display:none">
-      <div id="pPhotoPlaceholder" class="avatar-placeholder">🎾</div>
-      <input type="file" id="pPhotoInput" accept="image/*" style="display:none">
-      <button type="button" class="btn-cancel" id="pPhotoBtn" data-i18n="btnChoosePhoto">Escolher Foto</button>
-      <button type="button" class="btn-cancel" id="pPhotoRemoveBtn" data-i18n="btnRemovePhoto" style="display:none">Remover</button>
+
+  <button type="button" class="profile-summary" id="profileSummaryBtn" style="display:none">
+    <div class="ps-avatar" id="psAvatar">🎾</div>
+    <div class="ps-info">
+      <div class="ps-name" id="psName"></div>
+      <div class="ps-email" id="psEmail"></div>
     </div>
-  </div>
-  <div class="field">
-    <label data-i18n="labelName">Nome</label>
-    <input type="text" id="pName">
-  </div>
-  <div class="field">
-    <label data-i18n="labelEmail">E-mail</label>
-    <input type="email" id="pEmail">
-    <div class="stats-empty" id="emailVerifiedBadge" style="padding-top:6px"></div>
-  </div>
-  <div class="field">
-    <label data-i18n="labelCountry">País</label>
-    <div class="country-pick">
-      <input type="text" id="pCountry" autocomplete="off" data-i18n-ph="countryPlaceholder" placeholder="Digite as primeiras letras">
-      <span class="country-flag" id="pCountryFlag"></span>
-      <div class="app-select-menu" id="countryMenu"></div>
+    <span class="ps-chevron">▾</span>
+  </button>
+
+  <div id="profileFields">
+    <button type="button" class="profile-collapse-btn" id="profileCollapseBtn" style="display:none">▴ <span data-i18n="btnProfileCollapse">Recolher</span></button>
+    <div class="field">
+      <label data-i18n="labelPhoto">Foto de Perfil</label>
+      <div class="photo-row">
+        <img id="pPhotoPreview" class="avatar-preview" src="" style="display:none">
+        <div id="pPhotoPlaceholder" class="avatar-placeholder">🎾</div>
+        <input type="file" id="pPhotoInput" accept="image/*" style="display:none">
+        <button type="button" class="btn-cancel" id="pPhotoBtn" data-i18n="btnChoosePhoto">Escolher Foto</button>
+        <button type="button" class="btn-cancel" id="pPhotoRemoveBtn" data-i18n="btnRemovePhoto" style="display:none">Remover</button>
+      </div>
     </div>
-    <input type="hidden" id="pCountryCode">
-  </div>
-  <div class="field">
-    <label data-i18n="labelCity">Cidade</label>
-    <input type="text" id="pCity">
-  </div>
-  <div class="field">
-    <label data-i18n="labelBirthdate">Data de Nascimento</label>
-    <input type="date" id="pBirthdate">
-  </div>
-  <div class="field">
-    <label data-i18n="labelZip">CEP / ZIP Code (opcional)</label>
-    <input type="text" id="pZip">
-  </div>
-  <div class="field checkbox-field" style="display:none">
-    <label class="checkbox-label">
-      <input type="checkbox" id="pShareLocation">
-      <span data-i18n="labelShareLocation">Permitir que outros jogadores me encontrem por perto</span>
-    </label>
-  </div>
-  <div class="sheet-actions">
-    <button class="btn-save" id="saveProfileBtn" style="flex:1.3" data-i18n="btnSaveProfile">Salvar Perfil</button>
-    <button class="btn-cancel" id="openSettingsBtn" style="flex:1">⚙️ <span data-i18n="btnSettingsShort">Config</span></button>
+    <div class="field">
+      <label data-i18n="labelName">Nome</label>
+      <input type="text" id="pName">
+    </div>
+    <div class="field">
+      <label data-i18n="labelEmail">E-mail</label>
+      <input type="email" id="pEmail">
+      <div class="stats-empty" id="emailVerifiedBadge" style="padding-top:6px"></div>
+    </div>
+    <div class="field">
+      <label data-i18n="labelCountry">País</label>
+      <div class="country-pick">
+        <input type="text" id="pCountry" autocomplete="off" data-i18n-ph="countryPlaceholder" placeholder="Digite as primeiras letras">
+        <span class="country-flag" id="pCountryFlag"></span>
+        <div class="app-select-menu" id="countryMenu"></div>
+      </div>
+      <input type="hidden" id="pCountryCode">
+    </div>
+    <div class="field">
+      <label data-i18n="labelCity">Cidade</label>
+      <input type="text" id="pCity">
+    </div>
+    <div class="field">
+      <label data-i18n="labelBirthdate">Data de Nascimento</label>
+      <input type="date" id="pBirthdate">
+    </div>
+    <div class="field">
+      <label data-i18n="labelZip">CEP / ZIP Code (opcional)</label>
+      <input type="text" id="pZip">
+    </div>
+    <div class="field checkbox-field" style="display:none">
+      <label class="checkbox-label">
+        <input type="checkbox" id="pShareLocation">
+        <span data-i18n="labelShareLocation">Permitir que outros jogadores me encontrem por perto</span>
+      </label>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-save" id="saveProfileBtn" style="flex:1.3" data-i18n="btnSaveProfile">Salvar Perfil</button>
+      <button class="btn-cancel" id="openSettingsBtn" style="flex:1">⚙️ <span data-i18n="btnSettingsShort">Config</span></button>
+    </div>
   </div>
 
   <h3 data-i18n="achievementsTitle">Conquistas</h3>
@@ -1688,7 +1722,7 @@ const TRANSLATIONS = {
     notifDenied: "Você não permitiu as notificações.",
     notifBlocked: "As notificações estão bloqueadas para este site. Libere nas configurações do navegador (cadeado ao lado do endereço → Notificações) e tente de novo.",
     notifEnableError: "Não foi possível ativar as notificações agora.",
-    btnSettingsShort: "Config",
+    btnSettingsShort: "Config", btnProfileCollapse: "Recolher",
     btnAboutApp: "Sobre o App",
     aboutStory: "O Deuce Score nasceu da paixão pelo tênis. Criado por um jogador para jogadores que amam o esporte, o app existe para facilitar o dia a dia de quem joga: acompanhar cada partida, organizar torneios e ligas com os amigos, e nunca mais perder um jogo agendado. Um projeto feito com carinho, quadra a quadra.",
     labelShareLocation: "Permitir que outros jogadores me encontrem por perto",
@@ -1929,7 +1963,7 @@ const TRANSLATIONS = {
     notifDenied: "You did not allow notifications.",
     notifBlocked: "Notifications are blocked for this site. Allow them in your browser settings (the padlock next to the address → Notifications) and try again.",
     notifEnableError: "Could not enable notifications right now.",
-    btnSettingsShort: "Settings",
+    btnSettingsShort: "Settings", btnProfileCollapse: "Collapse",
     btnAboutApp: "About the App",
     aboutStory: "Deuce Score was born out of a love for tennis. Built by a player for players who love the game, the app makes it easy to track every match, organize tournaments and leagues with friends, and never miss a scheduled game again. A project made with care, court by court.",
     labelShareLocation: "Let other players find me nearby",
@@ -2170,7 +2204,7 @@ const TRANSLATIONS = {
     notifDenied: "No permitiste las notificaciones.",
     notifBlocked: "Las notificaciones están bloqueadas para este sitio. Actívalas en la configuración del navegador (el candado junto a la dirección → Notificaciones) e inténtalo de nuevo.",
     notifEnableError: "No se pudieron activar las notificaciones ahora.",
-    btnSettingsShort: "Config",
+    btnSettingsShort: "Config", btnProfileCollapse: "Contraer",
     btnAboutApp: "Acerca de la App",
     aboutStory: "Deuce Score nació del amor por el tenis. Creado por un jugador para jugadores que aman el deporte, la app existe para facilitar el día a día de quien juega: seguir cada partido, organizar torneos y ligas con amigos, y nunca más perder un partido agendado. Un proyecto hecho con cariño, cancha a cancha.",
     labelShareLocation: "Permitir que otros jugadores me encuentren cerca",
@@ -3192,7 +3226,32 @@ function loadProfile(){
     if(badge){
       badge.textContent = p.email ? (p.emailVerified ? t('verifiedBadge') : t('unverifiedBadge')) : '';
     }
+    updateProfileCollapse(p);
   }catch(e){}
+}
+
+// Collapsed to a one-line summary once name + email exist, so returning
+// players aren't shown the whole form again just to glance at their info.
+// A first-time player (nothing saved yet) always sees the fields open.
+function updateProfileCollapse(p, forceExpand){
+  const btn = $('profileSummaryBtn');
+  const fields = $('profileFields');
+  const collapseBtn = $('profileCollapseBtn');
+  if(!btn || !fields) return;
+
+  const hasProfile = !!(p.name && p.email);
+  const expanded = forceExpand || !hasProfile;
+
+  btn.style.display = (hasProfile && !expanded) ? 'flex' : 'none';
+  fields.style.display = expanded ? 'block' : 'none';
+  if(collapseBtn) collapseBtn.style.display = (hasProfile && expanded) ? 'block' : 'none';
+
+  if(hasProfile){
+    $('psName').textContent = p.name || '';
+    $('psEmail').textContent = p.email || '';
+    const av = $('psAvatar');
+    av.innerHTML = p.photo ? `<img src="${esc(p.photo)}" alt="">` : '🎾';
+  }
 }
 function updateProfilePhotoUI(){
   if(currentProfilePhoto){
@@ -6034,6 +6093,15 @@ $('privacyPolicyBtn').addEventListener('click', () => {
 });
 $('toggleNotifBtn').addEventListener('click', toggleNotifications);
 $('saveProfileBtn').addEventListener('click', saveProfile);
+$('profileSummaryBtn').addEventListener('click', () => {
+  const raw = localStorage.getItem(PROFILE_KEY);
+  updateProfileCollapse(raw ? JSON.parse(raw) : {}, true);
+});
+$('profileCollapseBtn').addEventListener('click', () => {
+  // collapses without saving — nothing typed is lost, just hidden again
+  const raw = localStorage.getItem(PROFILE_KEY);
+  updateProfileCollapse(raw ? JSON.parse(raw) : {}, false);
+});
 $('langPt').addEventListener('click', () => setLanguage('pt'));
 $('langEn').addEventListener('click', () => setLanguage('en'));
 $('langEs').addEventListener('click', () => setLanguage('es'));
