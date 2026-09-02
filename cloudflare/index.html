@@ -5850,6 +5850,49 @@ function addLeaguePlayer(){
   renderNewLeaguePlayers();
 }
 
+/* A league remains local to its creator for now, but invitations use the
+   shared Cloudflare service. This lets a registered player receive a push and
+   a new player receive the download e-mail without changing the existing
+   league, backup or web-app flows. */
+async function sendLeagueInvite(email, leagueName){
+  const recipient = String(email || '').trim().toLowerCase();
+  if(!recipient || !recipient.includes('@')) return false;
+  try{
+    const profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+    // A league invitation can be sent as soon as the creator has identified
+    // their profile. This mirrors the native app and avoids silently skipping
+    // an invite when an older web profile has not yet persisted its badge.
+    if(!profile.email) return false;
+    const response = await fetch('/api/send-league-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fromName: profile.name || '',
+        fromEmail: profile.email,
+        toEmail: recipient,
+        leagueName
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if(!data.ok) console.warn('League invite was not sent:', data.error || response.status);
+    return !!data.ok;
+  }catch(error){
+    console.warn('League invite request failed:', error);
+    return false;
+  }
+}
+
+function sendLeagueInvites(league){
+  const profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+  const mine = String(profile.email || '').trim().toLowerCase();
+  if(!mine) return;
+  const emails = [...new Set(league.players
+    .map(player => String(player.email || '').trim().toLowerCase())
+    .filter(email => email.includes('@') && email !== mine))];
+  // Do not block the league creation if a recipient has no connection.
+  Promise.allSettled(emails.map(email => sendLeagueInvite(email, league.name)));
+}
+
 function createLeague(){
   const name = $('lgName').value.trim();
   if(!name){ showAlert(t('alertLeagueNeedName')); return; }
@@ -5866,6 +5909,7 @@ function createLeague(){
   };
   leagues.push(league);
   saveLeagues();
+  sendLeagueInvites(league);
   closeAllSheets();
   openLeagueDetail(league.id);
 }
