@@ -1,4 +1,5 @@
 import { buildPushPayload } from '@block65/webcrypto-web-push';
+import { sendFcmNotification } from './fcm.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -28,6 +29,16 @@ export async function onRequestPost(context) {
     }));
 
     let notified = false;
+    // Native Android devices receive FCM. Keep the existing VAPID delivery for
+    // the browser/PWA so the web app and iPhone flow continue unchanged.
+    if (player?.fcmToken) {
+      notified = await sendFcmNotification(
+        env,
+        player.fcmToken,
+        `🎾 Resultado de ${fromName || 'um jogador'}`,
+        'Um placar foi registrado com você. Abra a Caixa de Entrada para confirmar.'
+      );
+    }
     if (player && player.subscription && env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
       try {
         const vapid = { subject: env.VAPID_SUBJECT, publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY };
@@ -39,7 +50,7 @@ export async function onRequestPost(context) {
         };
         const payload = await buildPushPayload(message, player.subscription, vapid);
         const res = await fetch(player.subscription.endpoint, payload);
-        notified = res.ok;
+        notified = res.ok || notified;
       } catch (err) {
         console.error('Result push error:', err);
       }
