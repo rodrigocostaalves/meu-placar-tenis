@@ -1,5 +1,5 @@
 // Bump whenever the app shell changes so installed web apps fetch the new UI.
-const CACHE_NAME = 'deuce-score-v22';
+const CACHE_NAME = 'deuce-score-v23';
 const APP_SHELL = [
   './index.html',
   './manifest.json',

@@ -1228,6 +1228,14 @@
       <button type="button" id="lmWinP2"></button>
     </div>
   </div>
+  <div class="field">
+    <label>Placar (sets)</label>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">
+      <input type="text" inputmode="numeric" id="lmS1A" placeholder="6"><input type="text" inputmode="numeric" id="lmS1B" placeholder="4">
+      <input type="text" inputmode="numeric" id="lmS2A" placeholder="6"><input type="text" inputmode="numeric" id="lmS2B" placeholder="3">
+      <input type="text" inputmode="numeric" id="lmS3A" placeholder=""><input type="text" inputmode="numeric" id="lmS3B" placeholder="">
+    </div>
+  </div>
   <div class="sheet-actions">
     <button class="btn-cancel" id="cancelLeagueMatchBtn" data-i18n="btnCancel">Cancelar</button>
   </div>
@@ -2786,6 +2794,7 @@ async function cancelScheduledMatch(matchId){
 // ---------- Inbox: Invites + Pending Results ----------
 let pendingInvites = [];
 let pendingResults = [];
+let pendingLeagueResults = [];
 let inviteResponses = [];
 
 function toggleWantsInvite(){
@@ -2915,12 +2924,13 @@ async function refreshInbox(){
   if(!profile.email){
     pendingInvites = [];
     pendingResults = [];
+    pendingLeagueResults = [];
     inviteResponses = [];
     renderInbox();
     return;
   }
   try{
-    const [invRes, resRes] = await Promise.all([
+    const [invRes, resRes, leagueRes] = await Promise.all([
       fetch('/api/get-invites', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: profile.email })
@@ -2928,13 +2938,19 @@ async function refreshInbox(){
       fetch('/api/get-pending-results', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: profile.email })
+      }),
+      fetch('/api/get-pending-league-results', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: profile.email })
       })
     ]);
     const invData = await invRes.json();
     const resData = await resRes.json();
+    const leagueData = await leagueRes.json();
     pendingInvites = Array.isArray(invData.invites) ? invData.invites : [];
     inviteResponses = Array.isArray(invData.responses) ? invData.responses : [];
     pendingResults = Array.isArray(resData.results) ? resData.results : [];
+    pendingLeagueResults = Array.isArray(leagueData.results) ? leagueData.results : [];
     processResultResponses(Array.isArray(resData.responses) ? resData.responses : []);
   }catch(e){
     console.log('Refresh inbox error:', e);
@@ -2984,7 +3000,7 @@ function processResultResponses(responses){
 function renderInbox(){
   const section = $('inboxSection');
   section.style.display = 'block';
-  const total = pendingInvites.length + pendingResults.length
+  const total = pendingInvites.length + pendingResults.length + pendingLeagueResults.length
     + inviteResponses.length + unloggedMatches().length;
   if(total === 0){
     $('inboxList').innerHTML = `<div class="inbox-card inbox-empty" id="inboxEmptyCard"><div class="inbox-text">${t('inboxEmptyState')}</div></div>`;
@@ -3052,12 +3068,27 @@ function renderInbox(){
       </div>
     </div>`;
   });
+  pendingLeagueResults.forEach(r => {
+    const scoreStr = (r.sets && r.sets.length) ? r.sets.map(s => `${s.a}-${s.b}`).join(', ') : '';
+    html += `
+    <div class="inbox-card">
+      <div class="inbox-tag">RESULTADO DA LIGA</div>
+      <div class="inbox-text"><strong>${esc(r.leagueName || 'Liga')}</strong> · ${esc(scoreStr || 'placar informado')}</div>
+      <div class="invite-actions">
+        <button data-kind="league-result" data-id="${r.id}" data-action="accepted" class="invite-accept">${t('btnAcceptInvite')}</button>
+        <button data-kind="league-result" data-id="${r.id}" data-action="rejected" class="invite-dismiss">${t('btnDismissInvite')}</button>
+      </div>
+    </div>`;
+  });
   $('inboxList').innerHTML = html;
   $('inboxList').querySelectorAll('button[data-kind="invite"]').forEach(btn => {
     btn.addEventListener('click', () => respondInvite(btn.dataset.id, btn.dataset.action));
   });
   $('inboxList').querySelectorAll('button[data-kind="result"]').forEach(btn => {
     btn.addEventListener('click', () => respondResult(btn.dataset.id, btn.dataset.action));
+  });
+  $('inboxList').querySelectorAll('button[data-kind="league-result"]').forEach(btn => {
+    btn.addEventListener('click', () => respondLeagueResult(btn.dataset.id, btn.dataset.action));
   });
   $('inboxList').querySelectorAll('button[data-log]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -3137,6 +3168,25 @@ function findScheduledMatch(email, name, date){
     .filter(m => (m.date || '') <= date)
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   return past[0] || null;
+}
+
+async function respondLeagueResult(resultId, response){
+  try{
+    const profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+    const result = await fetch('/api/respond-shared-league-result', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resultId, email: profile.email || '', response })
+    });
+    const data = await result.json();
+    if(!data.ok){ showAlert(data.error || 'Não foi possível validar o resultado.'); return; }
+    pendingLeagueResults = pendingLeagueResults.filter(item => item.id !== resultId);
+    renderInbox();
+    await refreshSharedLeagues();
+    showAlert(response === 'accepted' ? 'Resultado da liga confirmado.' : 'Resultado da liga recusado.');
+  }catch(error){
+    console.log('League validation error:', error);
+    showAlert('Não foi possível validar o resultado da liga.');
+  }
 }
 
 async function respondResult(resultId, response){
@@ -5893,22 +5943,48 @@ function sendLeagueInvites(league){
   Promise.allSettled(emails.map(email => sendLeagueInvite(email, league.name)));
 }
 
-function createLeague(){
+async function refreshSharedLeagues(){
+  try{
+    const profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+    if(!profile.email) return;
+    const response = await fetch('/api/get-shared-leagues', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: profile.email })
+    });
+    const data = await response.json();
+    if(!data.ok || !Array.isArray(data.leagues)) return;
+    const localOnly = leagues.filter(league => !league.shared);
+    leagues = [...localOnly, ...data.leagues];
+    localStorage.setItem(LEAGUES_KEY, JSON.stringify(leagues));
+    if($('leaguesListSheet').classList.contains('show')) renderLeaguesList();
+    if(currentLeagueId && leagues.some(league => league.id === currentLeagueId)) renderLeagueDetail();
+  }catch(error){
+    console.log('Shared league refresh error:', error);
+  }
+}
+
+async function createLeague(){
   const name = $('lgName').value.trim();
   if(!name){ showAlert(t('alertLeagueNeedName')); return; }
   if(newLeaguePlayers.length < 2){ showAlert(t('alertLeagueNeedPlayers')); return; }
-  const league = {
-    id: Date.now().toString(),
-    name,
-    createdAt: new Date().toISOString(),
-    players: newLeaguePlayers.map((p, i) => ({
-      id: 'pl_' + i + '_' + Date.now().toString(36),
-      name: p.name, email: p.email || '', points: 0
-    })),
-    matchLog: []
-  };
-  leagues.push(league);
-  saveLeagues();
+  const profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+  if(!profile.email || !profile.name){ showAlert('Salve seu nome e e-mail no Perfil antes de criar uma liga compartilhada.'); return; }
+  let league;
+  try{
+    const response = await fetch('/api/create-shared-league', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, creatorName: profile.name, creatorEmail: profile.email, players: newLeaguePlayers })
+    });
+    const data = await response.json();
+    if(!data.ok || !data.league){ showAlert(data.error || 'Não foi possível criar a liga.'); return; }
+    league = data.league;
+  }catch(error){
+    console.log('Create shared league error:', error);
+    showAlert('Não foi possível conectar à liga compartilhada.');
+    return;
+  }
+  leagues = [...leagues.filter(item => item.id !== league.id), league];
+  localStorage.setItem(LEAGUES_KEY, JSON.stringify(leagues));
   sendLeagueInvites(league);
   closeAllSheets();
   openLeagueDetail(league.id);
@@ -5924,7 +6000,9 @@ function openLeagueDetail(id){
 function renderLeagueDetail(){
   const lg = leagues.find(x => x.id === currentLeagueId);
   if(!lg) return;
-  $('leagueDetailTitle').textContent = lg.name;
+  $('leagueDetailTitle').textContent = lg.shared ? `${lg.name} · criada por ${lg.createdByName || 'jogador'}` : lg.name;
+  const profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+  $('deleteLeagueBtn').style.display = (!lg.shared || String(lg.createdBy || '').toLowerCase() === String(profile.email || '').toLowerCase()) ? '' : 'none';
   const ranked = getLeagueRanking(lg);
   $('leagueClassification').innerHTML = ranked.map((p, i) => `
     <div class="stat-row"><span class="stat-name">${i+1}. ${esc(p.name)}</span><span class="stat-record">${p.points} pts</span></div>
@@ -5947,6 +6025,7 @@ function openLeagueMatchSheet(){
   $('lmP1').innerHTML = options;
   $('lmP2').innerHTML = options;
   $('lmP2').selectedIndex = 1;
+  ['lmS1A','lmS1B','lmS2A','lmS2B','lmS3A','lmS3B'].forEach(id => { $(id).value = ''; });
   if($('lmP1')._syncAppSelect) $('lmP1')._syncAppSelect();
   if($('lmP2')._syncAppSelect) $('lmP2')._syncAppSelect();
   updateLeagueWinnerButtons();
@@ -5963,11 +6042,14 @@ function updateLeagueWinnerButtons(){
   $('lmWinP2').textContent = p2 ? p2.name : '';
 }
 
-function recordLeagueMatch(winnerSlot){
+async function recordLeagueMatch(winnerSlot){
   const lg = leagues.find(x => x.id === currentLeagueId);
   if(!lg) return;
   const p1Id = $('lmP1').value, p2Id = $('lmP2').value;
   if(p1Id === p2Id){ showAlert(t('leagueSamePlayer')); return; }
+  const sets = [['lmS1A','lmS1B'], ['lmS2A','lmS2B'], ['lmS3A','lmS3B']]
+    .map(([a,b]) => ({ a: Number($(a).value), b: Number($(b).value) }))
+    .filter(set => Number.isFinite(set.a) && Number.isFinite(set.b) && (set.a || set.b));
   const ranked = getLeagueRanking(lg);
   const rankOf = (id) => ranked.findIndex(p => p.id === id) + 1;
   const winnerId = winnerSlot === 1 ? p1Id : p2Id;
@@ -5976,13 +6058,33 @@ function recordLeagueMatch(winnerSlot){
   const pts = pointsForRank(loserRank);
   const winner = lg.players.find(p => p.id === winnerId);
   const loser = lg.players.find(p => p.id === loserId);
+  if(lg.shared){
+    const profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+    try{
+      const response = await fetch('/api/submit-shared-league-result', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leagueId: lg.id, reporterEmail: profile.email || '', playerOneId: p1Id, playerTwoId: p2Id, winnerId, sets })
+      });
+      const data = await response.json();
+      if(!data.ok){ showAlert(data.error || 'Não foi possível registrar o resultado.'); return; }
+      showAlert(data.status === 'pending' ? 'Resultado enviado para validação do adversário.' : 'Resultado registrado pelo criador: o outro jogador ainda não possui conta.');
+      closeAllSheets();
+      await refreshSharedLeagues();
+      openLeagueDetail(currentLeagueId);
+      return;
+    }catch(error){
+      console.log('Shared league result error:', error);
+      showAlert('Não foi possível enviar o resultado da liga.');
+      return;
+    }
+  }
   winner.points += pts;
   lg.matchLog.push({
     id: Date.now().toString(),
     date: new Date().toISOString().slice(0,10),
     winnerId, loserId,
     winnerName: winner.name, loserName: loser.name,
-    points: pts
+    points: pts, sets
   });
   saveLeagues();
   closeAllSheets();
@@ -6188,6 +6290,7 @@ $('backFromBracketBtn').addEventListener('click', backToTournamentsList);
 $('leaguesShortcut').addEventListener('click', () => {
   renderLeaguesList();
   openSheet('leaguesListSheet');
+  refreshSharedLeagues();
 });
 $('closeLeaguesListBtn').addEventListener('click', closeAllSheets);
 function setNearbyMode(m){
@@ -6268,6 +6371,22 @@ $('createLeagueBtn').addEventListener('click', createLeague);
 $('registerLeagueMatchBtn').addEventListener('click', openLeagueMatchSheet);
 $('deleteLeagueBtn').addEventListener('click', async () => {
   if(!await askConfirm(t('deleteLeagueConfirm'))) return;
+  const league = leagues.find(item => item.id === currentLeagueId);
+  if(league?.shared){
+    try{
+      const profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+      const response = await fetch('/api/delete-shared-league', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leagueId: league.id, creatorEmail: profile.email || '' })
+      });
+      const data = await response.json();
+      if(!data.ok){ showAlert(data.error || 'Não foi possível excluir a liga.'); return; }
+    }catch(error){
+      console.log('Delete shared league error:', error);
+      showAlert('Não foi possível excluir a liga.');
+      return;
+    }
+  }
   leagues = leagues.filter(x => x.id !== currentLeagueId);
   saveLeagues();
   closeAllSheets();
@@ -6302,7 +6421,7 @@ initCountryPicker();
 loadFriends();
 renderFriends();
 refreshSyncStatus();
-autoRestoreIfEmpty();
+autoRestoreIfEmpty().finally(refreshSharedLeagues);
 maybeShowWelcome();
 
 if('serviceWorker' in navigator){
