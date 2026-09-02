@@ -45,6 +45,33 @@ export async function onRequestPost(context) {
       }
     } while (cursor);
 
+    // Shared leagues are indexed by member e-mail. Removing an account also
+    // removes its membership; leagues created by that account are removed as
+    // a whole so other members do not retain an orphaned organiser.
+    const sharedIds = await env.DEUCE_KV.get(`shared-league-index:${key}`, 'json') || [];
+    for (const leagueId of sharedIds) {
+      const league = await env.DEUCE_KV.get(`shared-leagues:${leagueId}`, 'json');
+      if (!league) continue;
+      if ((league.createdBy || '').toLowerCase() === key) {
+        await env.DEUCE_KV.delete(`shared-leagues:${leagueId}`);
+      } else {
+        league.players = (league.players || []).filter(player => (player.email || '').toLowerCase() !== key);
+        await env.DEUCE_KV.put(`shared-leagues:${leagueId}`, JSON.stringify(league));
+      }
+    }
+    await env.DEUCE_KV.delete(`shared-league-index:${key}`);
+
+    // A pending shared-league score may contain account data, too.
+    let pendingCursor;
+    do {
+      const page = await env.DEUCE_KV.list({ prefix: 'pending-league-results:', cursor: pendingCursor });
+      pendingCursor = page.list_complete ? undefined : page.cursor;
+      for (const item of page.keys) {
+        const result = await env.DEUCE_KV.get(item.name, 'json');
+        if (result && ((result.pendingFor || '').toLowerCase() === key || (result.reporterEmail || '').toLowerCase() === key)) await env.DEUCE_KV.delete(item.name);
+      }
+    } while (pendingCursor);
+
     return new Response(JSON.stringify({ ok: true, deleted, invitesRemoved }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
