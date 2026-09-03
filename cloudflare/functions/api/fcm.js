@@ -32,7 +32,7 @@ async function accessToken(serviceAccount) {
   return (await response.json()).access_token;
 }
 
-/** Sends a native Android notification. It is intentionally independent of web VAPID. */
+/** Sends a native Android notification, independently from web VAPID. */
 export async function sendFcmNotification(env, token, title, body) {
   if (!token || !env.FCM_SERVICE_ACCOUNT_JSON) return false;
   try {
@@ -41,7 +41,19 @@ export async function sendFcmNotification(env, token, title, body) {
     const response = await fetch(`https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: { token, notification: { title, body }, data: { type: 'deuce_score' }, android: { priority: 'high' } } })
+      // Data-only delivery makes Android call DeuceMessagingService in the background.
+      body: JSON.stringify({
+        message: {
+          token,
+          data: {
+            type: 'deuce_score',
+            title: String(title || 'Deuce Score'),
+            body: String(body || 'Você tem uma nova atualização.'),
+            screen: 'inbox'
+          },
+          android: { priority: 'high' }
+        }
+      })
     });
     if (!response.ok) console.error('FCM error:', await response.text());
     return response.ok;
