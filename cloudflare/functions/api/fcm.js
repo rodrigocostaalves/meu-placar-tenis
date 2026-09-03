@@ -33,7 +33,7 @@ async function accessToken(serviceAccount) {
 }
 
 /** Sends a native Android notification, independently from web VAPID. */
-export async function sendFcmNotification(env, token, title, body) {
+export async function sendFcmNotification(env, token, title, body, screen = 'inbox') {
   if (!token || !env.FCM_SERVICE_ACCOUNT_JSON) return false;
   try {
     const serviceAccount = JSON.parse(env.FCM_SERVICE_ACCOUNT_JSON);
@@ -49,7 +49,7 @@ export async function sendFcmNotification(env, token, title, body) {
             type: 'deuce_score',
             title: String(title || 'Deuce Score'),
             body: String(body || 'Você tem uma nova atualização.'),
-            screen: 'inbox'
+            screen: String(screen || 'inbox')
           },
           android: { priority: 'high' }
         }
