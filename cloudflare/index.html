@@ -2779,12 +2779,12 @@ async function syncScheduledMatch(match){
   }
 }
 
-async function cancelScheduledMatch(matchId){
+async function cancelScheduledMatch(matchId, inviteId = '', fromEmail = ''){
   try{
     await fetch('/api/cancel-match', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ matchId })
+      body: JSON.stringify({ matchId, inviteId, fromEmail })
     });
   }catch(e){
     console.log('Cancel scheduled match error:', e);
@@ -2796,6 +2796,7 @@ let pendingInvites = [];
 let pendingResults = [];
 let pendingLeagueResults = [];
 let inviteResponses = [];
+let cancelledInvites = [];
 
 function toggleWantsInvite(){
   wantsInvite = !wantsInvite;
@@ -2845,7 +2846,7 @@ function inviteRecipients(){
   return list;
 }
 
-async function sendInvite(){
+async function sendInvite(matchToLink = null){
   const date = $('fDate').value;
   const recipients = inviteRecipients();
   // one of the two is enough: typed addresses, or a handle from the board
@@ -2856,7 +2857,7 @@ async function sendInvite(){
     const localDateTime = new Date(`${date}T${$('fTime').value || '09:00'}:00`);
 
     const targets = recipients.length ? recipients : [null];
-    let notified = 0, sent = 0;
+    let notified = 0, sent = 0, firstInviteId = '';
 
     for(const toEmail of targets){
       const res = await fetch('/api/send-invite', {
@@ -2876,6 +2877,14 @@ async function sendInvite(){
       const data = await res.json();
       if(data.ok !== false) sent++;
       if(data.notified) notified++;
+      if(!firstInviteId && data.inviteId) firstInviteId = data.inviteId;
+    }
+
+    // Store the canonical invite id with the local appointment. It lets a
+    // cancellation remove the same appointment on the other device.
+    if(matchToLink && firstInviteId){
+      matchToLink.inviteId = firstInviteId;
+      saveMatches();
     }
 
     if(targets.length > 1){
@@ -2925,7 +2934,8 @@ async function refreshInbox(){
     pendingInvites = [];
     pendingResults = [];
     pendingLeagueResults = [];
-    inviteResponses = [];
+      inviteResponses = [];
+      cancelledInvites = [];
     renderInbox();
     return;
   }
@@ -2949,9 +2959,11 @@ async function refreshInbox(){
     const leagueData = await leagueRes.json();
     pendingInvites = Array.isArray(invData.invites) ? invData.invites : [];
     inviteResponses = Array.isArray(invData.responses) ? invData.responses : [];
+    cancelledInvites = Array.isArray(invData.cancellations) ? invData.cancellations : [];
     pendingResults = Array.isArray(resData.results) ? resData.results : [];
     pendingLeagueResults = Array.isArray(leagueData.results) ? leagueData.results : [];
     processResultResponses(Array.isArray(resData.responses) ? resData.responses : []);
+    processInviteCancellations(cancelledInvites);
   }catch(e){
     console.log('Refresh inbox error:', e);
   }
@@ -2994,6 +3006,32 @@ function processResultResponses(responses){
     }).catch(e => console.log('Mark result seen error:', e));
   });
 
+  if(touched){ saveMatches(); render(); renderStats(); }
+}
+
+function processInviteCancellations(cancellations){
+  if(!cancellations.length) return;
+  let touched = false;
+  cancellations.forEach(inv => {
+    const cancelledDate = String(inv.dateTime || '').slice(0, 10);
+    const sender = String(inv.fromEmail || '').trim().toLowerCase();
+    const before = matches.length;
+    matches = matches.filter(match => {
+      if(match.result) return true;
+      const sameInvite = inv.id && match.inviteId === inv.id;
+      const sameLegacyMatch = sender && String(match.opponentEmail || '').trim().toLowerCase() === sender
+        && (!cancelledDate || match.date === cancelledDate);
+      return !(sameInvite || sameLegacyMatch);
+    });
+    if(matches.length !== before) touched = true;
+    if(inv.id){
+      fetch('/api/mark-invite-cancel-seen', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inviteId: inv.id })
+      }).catch(error => console.log('Mark cancellation seen error:', error));
+    }
+  });
   if(touched){ saveMatches(); render(); renderStats(); }
 }
 
@@ -3131,7 +3169,7 @@ async function respondInvite(inviteId, response){
           opponentEmail: inv.fromEmail || '',
           format: 'individual', partner: '', opponent2: '',
           result: null, matchType: 'amistoso', surface: 'rapida', sets: [],
-          location: '', notes: '', photo: null
+          location: '', notes: '', photo: null, inviteId: inv.id || ''
         };
         matches.push(newMatch);
         saveMatches();
@@ -4957,7 +4995,9 @@ async function deleteMatch(id){
   matches = matches.filter(m => m.id !== id);
   saveMatches();
   if(m && !m.result){
-    cancelScheduledMatch(id);
+      const profileRaw = localStorage.getItem(PROFILE_KEY);
+      const profile = profileRaw ? JSON.parse(profileRaw) : {};
+      cancelScheduledMatch(id, m.inviteId || '', profile.email || '');
   }
   render();
 }
@@ -5202,7 +5242,7 @@ function handleSave(){
       cancelScheduledMatch(savedMatch.id);
     }
     if(wantsInvite){
-      sendInvite();
+      sendInvite(savedMatch);
     }
     if(wantsSendResult){
       sendResult();
