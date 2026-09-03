@@ -50,20 +50,20 @@ const CONTACT_EMAIL = 'deucescore@gmail.com';
 const CONTENT = {
   pt: `
   <h1>🎾 Deuce Score — Política de Privacidade</h1>
-  <div class="subtitle">Última atualização: julho de 2026</div>
+  <div class="subtitle">Última atualização: 3 de setembro de 2026</div>
 
-  <p>Esta política explica quais dados o Deuce Score coleta, como são usados, e quais são as suas opções. O aplicativo foi feito para ser o mais privado possível: a maior parte dos seus dados nunca sai do seu celular.</p>
+  <p>Esta política explica quais dados o Deuce Score coleta, como são usados e quais são as suas opções no app Android e na versão web. Dados só saem do aparelho quando você conecta a conta ou usa um recurso que precisa funcionar entre jogadores ou aparelhos.</p>
 
   <h2>1. O que fica só no seu aparelho</h2>
-  <p>O histórico de partidas, torneios, ligas, fotos, e o restante do seu perfil ficam salvos localmente no armazenamento do navegador do seu celular. Isso nunca é enviado a nenhum servidor, a menos que você use a opção de exportar dados manualmente.</p>
+  <p>Histórico de partidas, torneios, ligas, amigos, configurações e foto de perfil ficam salvos no aparelho. Ao conectar uma conta ou ativar o Backup na Nuvem, perfil e histórico podem ser enviados ao servidor para restauração em outro aparelho. A foto de perfil do Android permanece local.</p>
 
   <h2>2. O que é enviado ao servidor (e por quê)</h2>
   <p>Para que os recursos abaixo funcionem entre aparelhos diferentes, uma quantidade mínima de dados é enviada e guardada em um servidor (Cloudflare):</p>
   <ul>
-    <li><strong>Nome e e-mail</strong> — usados para identificar você e permitir que outros jogadores te encontrem por e-mail (convites, confirmação de resultado).</li>
+    <li><strong>Nome, e-mail e perfil</strong> — nome, país, cidade, data de nascimento e CEP/ZIP Code podem ser usados para identificar sua conta, restaurar seu perfil e permitir convites e confirmação de resultados.</li>
     <li><strong>CEP/ZIP code</strong> — convertido em coordenadas aproximadas (nível de cidade/bairro, nunca endereço exato) para mostrar previsão do tempo e quadras próximas.</li>
-    <li><strong>Inscrição de notificação push</strong> — um identificador técnico do navegador usado para enviar lembretes de partidas agendadas.</li>
-    <li><strong>Backup do seu histórico</strong> — se você usar o Backup na Nuvem, suas partidas, torneios e ligas ficam guardados no servidor para poder restaurar em outro aparelho. As fotos das partidas não são enviadas.</li>
+    <li><strong>Identificador de notificação push</strong> — um identificador técnico do navegador ou Android usado para enviar avisos de convites, partidas, resultados e lembretes.</li>
+    <li><strong>Backup do seu histórico</strong> — se você usar o Backup na Nuvem, perfil, partidas, torneios e ligas ficam guardados no servidor para poder restaurar em outro aparelho. Fotos não são enviadas.</li>
     <li><strong>Seu rating e posição no ranking</strong> — o número calculado a partir do seu histórico, junto com seu nome, para montar o ranking geral.</li>
     <li><strong>Anúncios em "Procuro Jogo"</strong> — quando você publica um anúncio, o local que você digitou, a data e sua observação ficam visíveis para outros jogadores até o anúncio expirar. Seu e-mail não é exibido a ninguém.</li>
   </ul>
@@ -77,8 +77,9 @@ const CONTENT = {
     <li><strong>Open-Meteo</strong> — fornece previsão do tempo com base em coordenadas.</li>
     <li><strong>OpenStreetMap / Overpass</strong> — busca quadras de tênis públicas próximas.</li>
     <li><strong>Brevo</strong> — envia o e-mail com o código de verificação.</li>
+    <li><strong>Firebase Cloud Messaging</strong> — entrega notificações push no Android.</li>
   </ul>
-  <p>Nenhum desses serviços recebe seu nome ou identificação pessoal — apenas coordenadas ou o e-mail estritamente necessário para o envio do código.</p>
+  <p>Cada provedor recebe apenas os dados necessários ao recurso correspondente, como e-mail para verificação, token para notificações ou coordenadas aproximadas para quadras e clima.</p>
 
   <h2>4. O que o app NÃO faz</h2>
   <ul>
@@ -97,13 +98,16 @@ const CONTENT = {
     <li>Se preferir, você também pode solicitar a remoção pelo e-mail abaixo</li>
   </ul>
 
-  <h2>6. Menores de idade</h2>
+  <h2>6. Retenção, segurança e exclusão</h2>
+  <p>Você pode editar seu perfil, exportar ou importar backup, desligar notificações e excluir a conta no app ou pela página pública de exclusão. A exclusão remove conta, backup, ranking, convites e registros relacionados do servidor, além dos dados locais quando confirmada no app. Usamos conexões seguras para transmissão; nenhum serviço pode garantir segurança absoluta.</p>
+
+  <h2>7. Menores de idade</h2>
   <p>O Deuce Score não é direcionado especificamente a crianças menores de 13 anos e não coleta intencionalmente dados sabendo que pertencem a essa faixa etária.</p>
 
-  <h2>7. Alterações a esta política</h2>
+  <h2>8. Alterações a esta política</h2>
   <p>Podemos atualizar esta política conforme o app evolui. A data no topo da página sempre reflete a versão mais recente.</p>
 
-  <h2>8. Contato</h2>
+  <h2>9. Contato</h2>
   <p>Dúvidas sobre privacidade ou solicitações de remoção de dados:</p>
   <div class="contact-box">
     <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
@@ -112,20 +116,20 @@ const CONTENT = {
 
   en: `
   <h1>🎾 Deuce Score — Privacy Policy</h1>
-  <div class="subtitle">Last updated: July 2026</div>
+  <div class="subtitle">Last updated: September 3, 2026</div>
 
-  <p>This policy explains what data Deuce Score collects, how it is used, and what your options are. The app was built to be as private as possible: most of your data never leaves your phone.</p>
+  <p>This policy explains what data Deuce Score collects, how it is used and what your options are in the Android app and web app. Data leaves your device only when you connect an account or use a feature that must work across players or devices.</p>
 
   <h2>1. What stays only on your device</h2>
-  <p>Your match history, tournaments, leagues, photos, and the rest of your profile are saved locally in your phone's browser storage. None of it is ever sent to a server unless you use the manual data export option.</p>
+  <p>Match history, tournaments, leagues, friends, settings and your profile photo are saved on your device. When you connect an account or enable Cloud Backup, your profile and history may be sent to the server to restore them on another device. The Android profile photo remains local.</p>
 
   <h2>2. What is sent to the server (and why)</h2>
   <p>So that the features below can work across different devices, a minimal amount of data is sent to and stored on a server (Cloudflare):</p>
   <ul>
-    <li><strong>Name and email</strong> — used to identify you and let other players find you by email (invites, result confirmation).</li>
+    <li><strong>Name, email and profile</strong> — your name, country, city, date of birth and ZIP/postal code may be used to identify your account, restore your profile and enable invitations and result confirmation.</li>
     <li><strong>ZIP/postal code</strong> — converted into approximate coordinates (city/neighborhood level, never an exact address) to show the weather forecast and nearby courts.</li>
-    <li><strong>Push notification subscription</strong> — a technical browser identifier used to send reminders for scheduled matches.</li>
-    <li><strong>A backup of your history</strong> — if you use Cloud Backup, your matches, tournaments and leagues are stored on the server so you can restore them on another device. Match photos are not uploaded.</li>
+    <li><strong>Push notification identifier</strong> — a technical browser or Android identifier used to send invitations, match, result and reminder notifications.</li>
+    <li><strong>A backup of your history</strong> — if you use Cloud Backup, your profile, matches, tournaments and leagues are stored on the server so you can restore them on another device. Photos are not uploaded.</li>
     <li><strong>Your rating and ranking position</strong> — the number computed from your own history, together with your name, to build the global ranking.</li>
     <li><strong>"Find a Game" posts</strong> — when you publish a post, the location you typed, the date and your note are visible to other players until the post expires. Your email is never shown to anyone.</li>
   </ul>
@@ -139,8 +143,9 @@ const CONTENT = {
     <li><strong>Open-Meteo</strong> — provides the weather forecast based on coordinates.</li>
     <li><strong>OpenStreetMap / Overpass</strong> — finds nearby public tennis courts.</li>
     <li><strong>Brevo</strong> — sends the email containing your verification code.</li>
+    <li><strong>Firebase Cloud Messaging</strong> — delivers Android push notifications.</li>
   </ul>
-  <p>None of these services receives your name or personal identification — only coordinates, or the email address strictly needed to deliver the code.</p>
+  <p>Each provider receives only the data needed for its feature, such as email for verification, a token for notifications, or approximate coordinates for courts and weather.</p>
 
   <h2>4. What the app does NOT do</h2>
   <ul>
@@ -159,13 +164,16 @@ const CONTENT = {
     <li>If you prefer, you can also request removal by email at the address below</li>
   </ul>
 
-  <h2>6. Children</h2>
+  <h2>6. Retention, security and deletion</h2>
+  <p>You can edit your profile, export or import a backup, turn off notifications and delete your account in the app or from the public deletion page. Deletion removes your account, backup, ranking, invitations and related server records, and removes local data when confirmed in the app. We use secure connections for transmission; no service can guarantee absolute security.</p>
+
+  <h2>7. Children</h2>
   <p>Deuce Score is not specifically directed at children under 13, and does not knowingly collect data belonging to that age group.</p>
 
-  <h2>7. Changes to this policy</h2>
+  <h2>8. Changes to this policy</h2>
   <p>We may update this policy as the app evolves. The date at the top of the page always reflects the most recent version.</p>
 
-  <h2>8. Contact</h2>
+  <h2>9. Contact</h2>
   <p>Privacy questions or data removal requests:</p>
   <div class="contact-box">
     <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
@@ -174,20 +182,20 @@ const CONTENT = {
 
   es: `
   <h1>🎾 Deuce Score — Política de Privacidad</h1>
-  <div class="subtitle">Última actualización: julio de 2026</div>
+  <div class="subtitle">Última actualización: 3 de septiembre de 2026</div>
 
-  <p>Esta política explica qué datos recoge Deuce Score, cómo se usan y cuáles son tus opciones. La app fue creada para ser lo más privada posible: la mayor parte de tus datos nunca sale de tu teléfono.</p>
+  <p>Esta política explica qué datos recoge Deuce Score, cómo se usan y cuáles son tus opciones en la app Android y web. Los datos salen del dispositivo solo cuando conectas una cuenta o usas una función entre jugadores o dispositivos.</p>
 
   <h2>1. Lo que se queda solo en tu dispositivo</h2>
-  <p>El historial de partidos, torneos, ligas, fotos y el resto de tu perfil se guardan localmente en el almacenamiento del navegador de tu teléfono. Nada de esto se envía a ningún servidor, salvo que uses la opción de exportar datos manualmente.</p>
+  <p>El historial, torneos, ligas, amigos, ajustes y foto de perfil se guardan en tu dispositivo. Al conectar una cuenta o activar la copia en la nube, perfil e historial pueden enviarse al servidor para restaurarlos en otro dispositivo. La foto de perfil de Android permanece local.</p>
 
   <h2>2. Lo que se envía al servidor (y por qué)</h2>
   <p>Para que las funciones de abajo puedan funcionar entre distintos dispositivos, se envía y se guarda una cantidad mínima de datos en un servidor (Cloudflare):</p>
   <ul>
-    <li><strong>Nombre y correo electrónico</strong> — se usan para identificarte y permitir que otros jugadores te encuentren por correo (invitaciones, confirmación de resultados).</li>
+    <li><strong>Nombre, correo y perfil</strong> — nombre, país, ciudad, fecha de nacimiento y código postal pueden usarse para identificar tu cuenta, restaurar tu perfil y permitir invitaciones y confirmación de resultados.</li>
     <li><strong>Código postal</strong> — se convierte en coordenadas aproximadas (a nivel de ciudad/barrio, nunca la dirección exacta) para mostrar el pronóstico del tiempo y las canchas cercanas.</li>
-    <li><strong>Suscripción de notificaciones push</strong> — un identificador técnico del navegador que se usa para enviar recordatorios de partidos agendados.</li>
-    <li><strong>Una copia de tu historial</strong> — si usas la Copia en la Nube, tus partidos, torneos y ligas se guardan en el servidor para poder restaurarlos en otro dispositivo. Las fotos de los partidos no se suben.</li>
+    <li><strong>Identificador de notificaciones push</strong> — un identificador técnico del navegador o Android usado para avisos de invitaciones, partidos, resultados y recordatorios.</li>
+    <li><strong>Una copia de tu historial</strong> — si usas la Copia en la Nube, perfil, partidos, torneos y ligas se guardan en el servidor para restaurarlos en otro dispositivo. Las fotos no se suben.</li>
     <li><strong>Tu rating y posición en el ranking</strong> — el número calculado a partir de tu historial, junto con tu nombre, para armar el ranking general.</li>
     <li><strong>Anuncios de "Busco Partido"</strong> — cuando publicas un anuncio, el lugar que escribiste, la fecha y tu nota son visibles para otros jugadores hasta que el anuncio expira. Tu correo nunca se muestra a nadie.</li>
   </ul>
@@ -201,8 +209,9 @@ const CONTENT = {
     <li><strong>Open-Meteo</strong> — proporciona el pronóstico del tiempo a partir de coordenadas.</li>
     <li><strong>OpenStreetMap / Overpass</strong> — busca canchas de tenis públicas cercanas.</li>
     <li><strong>Brevo</strong> — envía el correo con el código de verificación.</li>
+    <li><strong>Firebase Cloud Messaging</strong> — entrega notificaciones push en Android.</li>
   </ul>
-  <p>Ninguno de estos servicios recibe tu nombre ni tu identificación personal — solo coordenadas, o el correo estrictamente necesario para enviar el código.</p>
+  <p>Cada proveedor recibe solo los datos necesarios para su función, como correo para verificación, token para notificaciones o coordenadas aproximadas para canchas y clima.</p>
 
   <h2>4. Lo que la app NO hace</h2>
   <ul>
@@ -221,13 +230,16 @@ const CONTENT = {
     <li>Si lo prefieres, también puedes solicitar la eliminación por correo en la dirección de abajo</li>
   </ul>
 
-  <h2>6. Menores de edad</h2>
+  <h2>6. Conservación, seguridad y eliminación</h2>
+  <p>Puedes editar el perfil, exportar o importar una copia, desactivar notificaciones y eliminar la cuenta en la app o en la página pública. La eliminación borra cuenta, copia, ranking, invitaciones y registros relacionados del servidor, y datos locales al confirmarla en la app. Usamos conexiones seguras; ningún servicio puede garantizar seguridad absoluta.</p>
+
+  <h2>7. Menores de edad</h2>
   <p>Deuce Score no está dirigida específicamente a menores de 13 años y no recoge intencionadamente datos sabiendo que pertenecen a ese grupo de edad.</p>
 
-  <h2>7. Cambios en esta política</h2>
+  <h2>8. Cambios en esta política</h2>
   <p>Podemos actualizar esta política a medida que la app evoluciona. La fecha en la parte superior de la página siempre refleja la versión más reciente.</p>
 
-  <h2>8. Contacto</h2>
+  <h2>9. Contacto</h2>
   <p>Dudas sobre privacidad o solicitudes de eliminación de datos:</p>
   <div class="contact-box">
     <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
