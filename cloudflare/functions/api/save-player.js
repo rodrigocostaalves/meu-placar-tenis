@@ -2,8 +2,8 @@ async function geocodeZip(zip) {
   if (!zip) return null;
   const digits = zip.replace(/\D/g, '');
   try {
-    if (digits.length === 5) {
-      const res = await fetch(`https://api.zippopotam.us/us/${digits}`);
+    if (digits.length === 5 || digits.length === 9) {
+      const res = await fetch(`https://api.zippopotam.us/us/${digits.slice(0, 5)}`);
       if (res.ok) {
         const data = await res.json();
         const place = data.places && data.places[0];

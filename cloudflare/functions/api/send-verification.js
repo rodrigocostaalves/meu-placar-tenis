@@ -5,7 +5,7 @@ function genCode() {
 export async function onRequestPost(context) {
   const { request, env } = context;
   try {
-    const { email } = await request.json();
+    const { email, language } = await request.json();
     if (!email) {
       return new Response(JSON.stringify({ error: 'Missing email' }), { status: 400 });
     }
@@ -22,6 +22,21 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ ok: false, error: 'Email service not configured' }), { status: 500 });
     }
 
+    const messages = {
+      pt: {
+        subject: 'Seu código de verificação - Deuce Score',
+        text: `Seu código de verificação é: ${code}\n\nEsse código expira em 15 minutos. Se você não pediu isso, pode ignorar este e-mail.`
+      },
+      es: {
+        subject: 'Tu código de verificación - Deuce Score',
+        text: `Tu código de verificación es: ${code}\n\nEste código vence en 15 minutos. Si no lo solicitaste, puedes ignorar este correo.`
+      },
+      en: {
+        subject: 'Your verification code - Deuce Score',
+        text: `Your verification code is: ${code}\n\nThis code expires in 15 minutes. If you did not request it, you can ignore this email.`
+      }
+    };
+    const message = messages[String(language || '').toLowerCase()] || messages.en;
     const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -32,8 +47,8 @@ export async function onRequestPost(context) {
       body: JSON.stringify({
         sender: { email: env.BREVO_SENDER_EMAIL, name: 'Deuce Score' },
         to: [{ email: key }],
-        subject: 'Seu código de verificação - Deuce Score',
-        textContent: `Seu código de verificação é: ${code}\n\nEsse código expira em 15 minutos. Se você não pediu isso, pode ignorar este e-mail.`
+        subject: message.subject,
+        textContent: message.text
       })
     });
 
