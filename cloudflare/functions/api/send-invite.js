@@ -1,4 +1,5 @@
 import { buildPushPayload } from '@block65/webcrypto-web-push';
+import { sendFcmNotification } from './fcm.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -36,6 +37,15 @@ export async function onRequestPost(context) {
     }));
 
     let notified = false;
+    // Native Android users receive FCM; browser/PWA users keep using VAPID.
+    if (player?.fcmToken) {
+      notified = await sendFcmNotification(
+        env,
+        player.fcmToken,
+        `🎾 Convite de ${fromName || 'um jogador'}`,
+        message ? String(message).slice(0, 120) : 'Você recebeu um convite para jogar. Abra o Deuce Score para ver os detalhes.'
+      );
+    }
     if (player && player.subscription && env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
       try {
         const vapid = { subject: env.VAPID_SUBJECT, publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY };
@@ -49,7 +59,7 @@ export async function onRequestPost(context) {
         };
         const payload = await buildPushPayload(pushMessage, player.subscription, vapid);
         const res = await fetch(player.subscription.endpoint, payload);
-        notified = res.ok;
+        notified = res.ok || notified;
       } catch (err) {
         console.error('Invite push error:', err);
       }
