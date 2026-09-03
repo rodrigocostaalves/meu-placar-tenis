@@ -56,7 +56,7 @@ export async function onRequestPost(context) {
       }
     }
 
-    return new Response(JSON.stringify({ ok: true, notified }), {
+    return new Response(JSON.stringify({ ok: true, notified, resultId }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
