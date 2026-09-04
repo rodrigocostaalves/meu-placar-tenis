@@ -2853,7 +2853,7 @@ function inviteRecipients(){
   return list;
 }
 
-async function sendInvite(){
+async function sendInvite(matchId = ''){
   const date = $('fDate').value;
   const recipients = inviteRecipients();
   // one of the two is enough: typed addresses, or a handle from the board
@@ -2867,10 +2867,14 @@ async function sendInvite(){
     let notified = 0, sent = 0;
 
     for(const toEmail of targets){
+      // One shared id per opponent. A multi-recipient invitation therefore
+      // creates independent appointments instead of retrying/overwriting one.
+      const recipientMatchId = targets.length === 1 ? matchId : `${matchId}_${crypto.randomUUID()}`;
       const res = await fetch('/api/send-invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          matchId: recipientMatchId,
           fromName: profile.name || t('defaultOpponent'),
           fromEmail: profile.email || '',
           toEmail: toEmail || '',
@@ -2897,7 +2901,7 @@ async function sendInvite(){
   }
 }
 
-async function sendResult(){
+async function sendResult(matchId = ''){
   const toEmail = $('fOpponentEmail').value.trim();
   if(!toEmail || !selectedResult){ showAlert(t('inviteNeedInfo')); return; }
   try{
@@ -2908,6 +2912,7 @@ async function sendResult(){
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        matchId,
         fromName: profile.name || t('defaultOpponent'),
         fromEmail: profile.email || '',
         toEmail,
@@ -3185,7 +3190,8 @@ async function respondInvite(inviteId, response){
       if(inv){
         const d = new Date(inv.dateTime);
         const newMatch = {
-          id: Date.now().toString(),
+          // This is the very same id used by the sender and the Worker.
+          id: inviteId,
           date: isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10),
           time: isNaN(d.getTime()) ? '' : d.toTimeString().slice(0,5),
           opponent: inv.fromName || '',
@@ -3210,7 +3216,10 @@ async function respondInvite(inviteId, response){
 // Prefer the exact day; if the game was played early or late, choose the
 // closest appointment for the same opponent. A validated score always wins
 // over the original calendar time.
-function findScheduledMatch(email, name, date){
+function findScheduledMatch(matchId, email, name, date){
+  if(matchId){
+    return matches.find(m => !m.result && m.id === matchId) || null;
+  }
   const key = (email || '').trim().toLowerCase();
   const nick = (name || '').trim().toLowerCase();
 
@@ -3272,7 +3281,7 @@ async function respondResult(resultId, response){
         // from when they accepted the invite. Fill THAT entry in instead of
         // adding a second one, otherwise the game shows up in the history and
         // stays in "Próximos jogos" at the same time.
-        const scheduled = findScheduledMatch(r.fromEmail, r.fromName, date);
+        const scheduled = findScheduledMatch(r.matchId, r.fromEmail, r.fromName, date);
 
         if(scheduled){
           scheduled.confirmed = true;
@@ -5274,10 +5283,10 @@ function handleSave(){
       cancelScheduledMatch(savedMatch.id);
     }
     if(wantsInvite){
-      sendInvite();
+      sendInvite(savedMatch.id);
     }
     if(wantsSendResult){
-      sendResult();
+      sendResult(savedMatch.id);
     }
   }
 }
