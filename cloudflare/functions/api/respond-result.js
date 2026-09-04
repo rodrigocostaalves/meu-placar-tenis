@@ -1,87 +1,52 @@
 import { buildPushPayload } from '@block65/webcrypto-web-push';
+import { sendFcmNotification } from './fcm.js';
+import { recomputeRatings } from './recompute-ratings.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   try {
     const { resultId, response } = await request.json();
-    if (!resultId || !response) {
-      return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
+    if (!resultId || !['accepted', 'dismissed'].includes(response)) return Response.json({ error: 'Missing or invalid fields' }, { status: 400 });
+    const key = `pending-results:${resultId}`;
+    const data = await env.DEUCE_KV.get(key, 'json');
+    if (!data) return Response.json({ error: 'Result not found' }, { status: 404 });
+    if (data.status !== 'pending') return Response.json({ ok: true, alreadyProcessed: true });
+
+    // One KV write only. Two immediate puts to this same key were the direct
+    // source of 429 responses because KV allows one write/key/second.
+    data.status = response;
+    data.respondedAt = new Date().toISOString();
+    data.senderSeen = false;
+    await env.DEUCE_KV.put(key, JSON.stringify(data));
+
+    let ranking = null;
+    if (response === 'accepted') {
+      await env.DEUCE_KV.put(`cmatch:${resultId}`, JSON.stringify({
+        id: resultId, a: (data.fromEmail || '').trim().toLowerCase(), b: (data.toEmail || '').trim().toLowerCase(),
+        aName: data.fromName || '', bName: data.toName || '', date: data.date || '', sets: Array.isArray(data.sets) ? data.sets : [],
+        winner: data.result === 'V' ? 'a' : 'b', matchType: data.matchType || 'amistoso', surface: data.surface || 'rapida', confirmedAt: data.respondedAt
+      }));
+      // A ranking changes only when a validated result changes it.
+      ranking = await recomputeRatings(env);
     }
-    const data = await env.DEUCE_KV.get(`pending-results:${resultId}`, 'json');
-    if (data) {
-      data.status = response;
-      await env.DEUCE_KV.put(`pending-results:${resultId}`, JSON.stringify(data));
 
-      data.respondedAt = new Date().toISOString();
-      data.senderSeen = false;
-      await env.DEUCE_KV.put(`pending-results:${resultId}`, JSON.stringify(data));
-
-      // A confirmed result is the only thing the shared ranking trusts, so it
-      // gets its own canonical record. Sets are stored from the sender's side,
-      // which is who 'a' refers to.
-      if (response === 'accepted') {
-        await env.DEUCE_KV.put(`cmatch:${resultId}`, JSON.stringify({
-          id: resultId,
-          a: (data.fromEmail || '').trim().toLowerCase(),
-          b: (data.toEmail || '').trim().toLowerCase(),
-          aName: data.fromName || '',
-          bName: data.toName || '',
-          date: data.date || '',
-          sets: Array.isArray(data.sets) ? data.sets : [],
-          winner: data.result === 'V' ? 'a' : 'b',
-          matchType: data.matchType || 'amistoso',
-          surface: data.surface || 'rapida',
-          confirmedAt: new Date().toISOString()
-        }));
-      }
-
-      // Confirmation used to go nowhere: the sender had no way to know their
-      // result had been accepted, so nothing could ever be marked confirmed.
-      if (response === 'accepted' && data.fromEmail && env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
-        const senderKey = data.fromEmail.trim().toLowerCase();
-        const sender = await env.DEUCE_KV.get(`players:${senderKey}`, 'json');
-        if (sender && sender.subscription) {
-          try {
-            const vapid = { subject: env.VAPID_SUBJECT, publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY };
-            const pushMessage = {
-              data: JSON.stringify({
-                title: '✅ Resultado confirmado',
-                body: `${data.toName || 'Seu adversário'} confirmou o placar da partida.`
-              })
-            };
-            const payload = await buildPushPayload(pushMessage, sender.subscription, vapid);
-            await fetch(sender.subscription.endpoint, payload);
-          } catch (err) {
-            console.error('Confirmation push error:', err);
-          }
-        }
-      }
-
-      if (response === 'dismissed' && data.fromEmail && env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
-        const senderKey = data.fromEmail.trim().toLowerCase();
-        const sender = await env.DEUCE_KV.get(`players:${senderKey}`, 'json');
-        if (sender && sender.subscription) {
-          try {
-            const vapid = { subject: env.VAPID_SUBJECT, publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY };
-            const message = {
-              data: JSON.stringify({
-                title: '🎾 Resultado recusado',
-                body: 'O resultado que você enviou foi recusado pelo adversário.'
-              })
-            };
-            const payload = await buildPushPayload(message, sender.subscription, vapid);
-            await fetch(sender.subscription.endpoint, payload);
-          } catch (err) {
-            console.error('Rejection push error:', err);
-          }
-        }
+    const senderKey = (data.fromEmail || '').trim().toLowerCase();
+    if (senderKey) {
+      const sender = await env.DEUCE_KV.get(`players:${senderKey}`, 'json');
+      const accepted = response === 'accepted';
+      const title = accepted ? '✅ Resultado confirmado' : '🎾 Resultado recusado';
+      const body = accepted ? `${data.toName || 'Seu adversário'} confirmou o placar da partida.` : 'O resultado que você enviou foi recusado pelo adversário.';
+      if (sender?.fcmToken) await sendFcmNotification(env, sender.fcmToken, title, body);
+      if (sender?.subscription && env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
+        try {
+          const vapid = { subject: env.VAPID_SUBJECT, publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY };
+          const payload = await buildPushPayload({ data: JSON.stringify({ title, body }) }, sender.subscription, vapid);
+          await fetch(sender.subscription.endpoint, payload);
+        } catch (err) { console.error('Confirmation push error:', err); }
       }
     }
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return Response.json({ ok: true, ranking });
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+    return Response.json({ error: String(err) }, { status: 500 });
   }
 }
