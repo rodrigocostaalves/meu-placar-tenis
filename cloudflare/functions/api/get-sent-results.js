@@ -21,6 +21,10 @@ export async function onRequestPost(context) {
             toEmail: result.toEmail || '',
             toName: result.toName || '',
             date: result.date || '',
+            result: result.result || '',
+            sets: Array.isArray(result.sets) ? result.sets : [],
+            matchType: result.matchType || 'amistoso',
+            surface: result.surface || 'rapida',
             respondedAt: result.respondedAt || ''
           });
         }
