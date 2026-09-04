@@ -3194,9 +3194,9 @@ async function respondInvite(inviteId, response){
 }
 
 // Finds the pending scheduled entry that this confirmed result belongs to.
-// Prefers an exact date match, then falls back to the nearest scheduled game
-// with the same opponent that isn't in the future, since matches often get
-// played a day or two off what was agreed.
+// Prefer the exact day; if the game was played early or late, choose the
+// closest appointment for the same opponent. A validated score always wins
+// over the original calendar time.
 function findScheduledMatch(email, name, date){
   const key = (email || '').trim().toLowerCase();
   const nick = (name || '').trim().toLowerCase();
@@ -3212,10 +3212,14 @@ function findScheduledMatch(email, name, date){
   const exact = samePlayer.find(m => (m.date || '') === date);
   if(exact) return exact;
 
-  const past = samePlayer
-    .filter(m => (m.date || '') <= date)
-    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  return past[0] || null;
+  const target = Date.parse(`${date || ''}T12:00:00`);
+  return [...samePlayer].sort((a, b) => {
+    const aTime = Date.parse(`${a.date || ''}T12:00:00`);
+    const bTime = Date.parse(`${b.date || ''}T12:00:00`);
+    const aDistance = Number.isNaN(target) || Number.isNaN(aTime) ? Number.MAX_SAFE_INTEGER : Math.abs(aTime - target);
+    const bDistance = Number.isNaN(target) || Number.isNaN(bTime) ? Number.MAX_SAFE_INTEGER : Math.abs(bTime - target);
+    return aDistance - bDistance;
+  })[0] || null;
 }
 
 async function respondLeagueResult(resultId, response){
