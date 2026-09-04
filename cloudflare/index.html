@@ -2254,6 +2254,7 @@ const PROFILE_KEY = 'tennis_profile_v1';
 const LANG_KEY = 'tennis_lang_v1';
 const TOURNAMENTS_KEY = 'tennis_tournaments_v1';
 const PLAYER_ID_KEY = 'tennis_player_id_v1';
+const PLAYER_SYNC_KEY = 'tennis_player_sync_v1';
 const LEAGUES_KEY = 'tennis_leagues_v1';
 const UNIT_KEY = 'tennis_unit_v1';
 
@@ -2925,7 +2926,14 @@ async function sendResult(){
   }
 }
 
-async function refreshInbox(){
+let inboxRefreshPromise = null;
+let lastInboxRefreshAt = 0;
+async function refreshInbox(force = false){
+  // The menu and the initial page load can request this at nearly the same
+  // time. Coalesce them instead of tripling the same KV reads.
+  if(inboxRefreshPromise) return inboxRefreshPromise;
+  if(!force && Date.now() - lastInboxRefreshAt < 10_000) return;
+  inboxRefreshPromise = (async () => {
   const profileRaw = localStorage.getItem(PROFILE_KEY);
   const profile = profileRaw ? JSON.parse(profileRaw) : {};
   if(!profile.email){
@@ -2964,6 +2972,11 @@ async function refreshInbox(){
     console.log('Refresh inbox error:', e);
   }
   renderInbox();
+  })().finally(() => {
+    lastInboxRefreshAt = Date.now();
+    inboxRefreshPromise = null;
+  });
+  return inboxRefreshPromise;
 }
 
 // A scheduled match is "unlogged" from two hours after its start time until
@@ -3187,7 +3200,7 @@ async function respondInvite(inviteId, response){
         showAlert(t('inviteAccepted'));
       }
     }
-    refreshInbox();
+    refreshInbox(true);
   }catch(e){
     console.log('Respond invite error:', e);
   }
@@ -3290,7 +3303,7 @@ async function respondResult(resultId, response){
         showAlert(t('resultAccepted'));
       }
     }
-    refreshInbox();
+    refreshInbox(true);
   }catch(e){
     console.log('Respond result error:', e);
   }
@@ -3476,27 +3489,34 @@ function getPlayerId(){
   return id;
 }
 
+let playerSyncPromise = null;
 async function syncPlayerProfile(profile){
   if(!profile.email) return;
+  if(playerSyncPromise) return playerSyncPromise;
+  playerSyncPromise = (async () => {
   try{
     const sub = await ensurePushSubscription();
-    await fetch('/api/save-player', {
+    const subscription = sub ? (sub.toJSON ? sub.toJSON() : sub) : null;
+    const payload = {
+      playerId: getPlayerId(), name: profile.name || '',
+      email: profile.email.trim().toLowerCase(), zip: profile.zip || '',
+      country: profile.country || '', countryCode: profile.countryCode || '',
+      shareLocation: !!profile.shareLocation, subscription
+    };
+    const signature = JSON.stringify(payload);
+    // Reopening the web app must not write the same player record every time.
+    if(localStorage.getItem(PLAYER_SYNC_KEY) === signature) return;
+    const response = await fetch('/api/save-player', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        playerId: getPlayerId(),
-        name: profile.name || '',
-        email: profile.email,
-        zip: profile.zip || '',
-        country: profile.country || '',
-        countryCode: profile.countryCode || '',
-        shareLocation: !!profile.shareLocation,
-        subscription: sub ? (sub.toJSON ? sub.toJSON() : sub) : null
-      })
+      body: signature
     });
+    if(response.ok) localStorage.setItem(PLAYER_SYNC_KEY, signature);
   }catch(e){
     console.log('Sync player profile error:', e);
   }
+  })().finally(() => { playerSyncPromise = null; });
+  return playerSyncPromise;
 }
 
 function updateUnitLabels(){
