@@ -1628,6 +1628,8 @@ const TRANSLATIONS = {
     invitesSentMany: "{sent} convites enviados ({notified} com notificação).",
     respAcceptedTag: "CONVITE ACEITO", respDeclinedTag: "CONVITE RECUSADO",
     respAcceptedText: "aceitou seu convite para", respDeclinedText: "recusou seu convite para",
+    resultResponseAcceptedTag: "PLACAR VALIDADO", resultResponseRejectedTag: "PLACAR RECUSADO",
+    resultResponseAcceptedText: "validou o placar enviado", resultResponseRejectedText: "recusou o placar enviado",
     btnWzNext: "Avançar", btnWzBack: "Voltar", btnWzSkip: "Pular",
     wz0t: "Bem-vindo ao Deuce Score",
     wz0b: "O app que guarda o placar dos seus jogos de tênis. Registre partidas, monte a liga do seu grupo e acompanhe sua evolução. Leva um minuto para ver como funciona.",
@@ -1869,6 +1871,8 @@ const TRANSLATIONS = {
     invitesSentMany: "{sent} invites sent ({notified} with a notification).",
     respAcceptedTag: "INVITE ACCEPTED", respDeclinedTag: "INVITE DECLINED",
     respAcceptedText: "accepted your invite for", respDeclinedText: "declined your invite for",
+    resultResponseAcceptedTag: "SCORE VALIDATED", resultResponseRejectedTag: "SCORE DECLINED",
+    resultResponseAcceptedText: "validated the score you sent", resultResponseRejectedText: "declined the score you sent",
     btnWzNext: "Next", btnWzBack: "Back", btnWzSkip: "Skip",
     wz0t: "Welcome to Deuce Score",
     wz0b: "The app that keeps the score of your tennis matches. Log games, run your group's league and follow your progress. One minute to see how it works.",
@@ -2110,6 +2114,8 @@ const TRANSLATIONS = {
     invitesSentMany: "{sent} invitaciones enviadas ({notified} con notificación).",
     respAcceptedTag: "INVITACIÓN ACEPTADA", respDeclinedTag: "INVITACIÓN RECHAZADA",
     respAcceptedText: "aceptó tu invitación para", respDeclinedText: "rechazó tu invitación para",
+    resultResponseAcceptedTag: "MARCADOR VALIDADO", resultResponseRejectedTag: "MARCADOR RECHAZADO",
+    resultResponseAcceptedText: "validó el marcador enviado", resultResponseRejectedText: "rechazó el marcador enviado",
     btnWzNext: "Siguiente", btnWzBack: "Atrás", btnWzSkip: "Saltar",
     wz0t: "Bienvenido a Deuce Score",
     wz0b: "La app que guarda el marcador de tus partidos de tenis. Registra partidos, arma la liga de tu grupo y sigue tu evolución. Un minuto para ver cómo funciona.",
@@ -2779,12 +2785,12 @@ async function syncScheduledMatch(match){
   }
 }
 
-async function cancelScheduledMatch(matchId, inviteId = '', fromEmail = ''){
+async function cancelScheduledMatch(matchId){
   try{
     await fetch('/api/cancel-match', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ matchId, inviteId, fromEmail })
+      body: JSON.stringify({ matchId })
     });
   }catch(e){
     console.log('Cancel scheduled match error:', e);
@@ -2796,7 +2802,7 @@ let pendingInvites = [];
 let pendingResults = [];
 let pendingLeagueResults = [];
 let inviteResponses = [];
-let cancelledInvites = [];
+let resultResponses = [];
 
 function toggleWantsInvite(){
   wantsInvite = !wantsInvite;
@@ -2846,7 +2852,7 @@ function inviteRecipients(){
   return list;
 }
 
-async function sendInvite(matchToLink = null){
+async function sendInvite(){
   const date = $('fDate').value;
   const recipients = inviteRecipients();
   // one of the two is enough: typed addresses, or a handle from the board
@@ -2857,7 +2863,7 @@ async function sendInvite(matchToLink = null){
     const localDateTime = new Date(`${date}T${$('fTime').value || '09:00'}:00`);
 
     const targets = recipients.length ? recipients : [null];
-    let notified = 0, sent = 0, firstInviteId = '';
+    let notified = 0, sent = 0;
 
     for(const toEmail of targets){
       const res = await fetch('/api/send-invite', {
@@ -2877,14 +2883,6 @@ async function sendInvite(matchToLink = null){
       const data = await res.json();
       if(data.ok !== false) sent++;
       if(data.notified) notified++;
-      if(!firstInviteId && data.inviteId) firstInviteId = data.inviteId;
-    }
-
-    // Store the canonical invite id with the local appointment. It lets a
-    // cancellation remove the same appointment on the other device.
-    if(matchToLink && firstInviteId){
-      matchToLink.inviteId = firstInviteId;
-      saveMatches();
     }
 
     if(targets.length > 1){
@@ -2934,8 +2932,8 @@ async function refreshInbox(){
     pendingInvites = [];
     pendingResults = [];
     pendingLeagueResults = [];
-      inviteResponses = [];
-      cancelledInvites = [];
+    inviteResponses = [];
+    resultResponses = [];
     renderInbox();
     return;
   }
@@ -2959,11 +2957,9 @@ async function refreshInbox(){
     const leagueData = await leagueRes.json();
     pendingInvites = Array.isArray(invData.invites) ? invData.invites : [];
     inviteResponses = Array.isArray(invData.responses) ? invData.responses : [];
-    cancelledInvites = Array.isArray(invData.cancellations) ? invData.cancellations : [];
     pendingResults = Array.isArray(resData.results) ? resData.results : [];
     pendingLeagueResults = Array.isArray(leagueData.results) ? leagueData.results : [];
     processResultResponses(Array.isArray(resData.responses) ? resData.responses : []);
-    processInviteCancellations(cancelledInvites);
   }catch(e){
     console.log('Refresh inbox error:', e);
   }
@@ -2986,6 +2982,7 @@ function unloggedMatches(){
 // When the opponent confirms, mark OUR copy of that match as confirmed and
 // tell the server we've handled it, so it isn't reprocessed on every refresh.
 function processResultResponses(responses){
+  resultResponses = responses;
   if(!responses.length) return;
   let touched = false;
 
@@ -2999,39 +2996,8 @@ function processResultResponses(responses){
       );
       if(hit){ hit.confirmed = true; touched = true; }
     }
-    fetch('/api/mark-result-seen', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ resultId: r.id })
-    }).catch(e => console.log('Mark result seen error:', e));
   });
 
-  if(touched){ saveMatches(); render(); renderStats(); }
-}
-
-function processInviteCancellations(cancellations){
-  if(!cancellations.length) return;
-  let touched = false;
-  cancellations.forEach(inv => {
-    const cancelledDate = String(inv.dateTime || '').slice(0, 10);
-    const sender = String(inv.fromEmail || '').trim().toLowerCase();
-    const before = matches.length;
-    matches = matches.filter(match => {
-      if(match.result) return true;
-      const sameInvite = inv.id && match.inviteId === inv.id;
-      const sameLegacyMatch = sender && String(match.opponentEmail || '').trim().toLowerCase() === sender
-        && (!cancelledDate || match.date === cancelledDate);
-      return !(sameInvite || sameLegacyMatch);
-    });
-    if(matches.length !== before) touched = true;
-    if(inv.id){
-      fetch('/api/mark-invite-cancel-seen', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ inviteId: inv.id })
-      }).catch(error => console.log('Mark cancellation seen error:', error));
-    }
-  });
   if(touched){ saveMatches(); render(); renderStats(); }
 }
 
@@ -3039,17 +3005,26 @@ function renderInbox(){
   const section = $('inboxSection');
   section.style.display = 'block';
   const total = pendingInvites.length + pendingResults.length + pendingLeagueResults.length
-    + inviteResponses.length + unloggedMatches().length;
+    + inviteResponses.length + resultResponses.length + unloggedMatches().length;
   if(total === 0){
     $('inboxList').innerHTML = `<div class="inbox-card inbox-empty" id="inboxEmptyCard"><div class="inbox-text">${t('inboxEmptyState')}</div></div>`;
     $('inboxEmptyCard').addEventListener('click', () => openMatchSheet(null, true));
     return;
   }
   let html = '';
+  // Keep the inbox useful rather than turning it into a permanent activity
+  // feed. Data remains on the server; this cap affects only what is shown.
+  let availableSlots = 20;
+  const recent = items => {
+    const timestamp = item => Date.parse(item.respondedAt || item.createdAt || item.cancelledAt || item.dateTime || item.date || '') || 0;
+    const shown = [...items].sort((a, b) => timestamp(b) - timestamp(a)).slice(0, Math.max(availableSlots, 0));
+    availableSlots -= shown.length;
+    return shown;
+  };
 
   // matches whose time has passed with no score entered — the point where
   // people drop off, since nothing was ever asking them to finish
-  unloggedMatches().forEach(m => {
+  recent(unloggedMatches()).forEach(m => {
     const d = new Date(`${m.date}T${m.time || '12:00'}`);
     const when = isNaN(d.getTime()) ? '' : d.toLocaleDateString();
     html += `
@@ -3063,7 +3038,7 @@ function renderInbox(){
   });
 
   // answers to invites I sent
-  inviteResponses.forEach(inv => {
+  recent(inviteResponses).forEach(inv => {
     const d = new Date(inv.dateTime);
     const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
     const accepted = inv.status === 'accepted';
@@ -3078,7 +3053,7 @@ function renderInbox(){
     </div>`;
   });
 
-  pendingInvites.forEach(inv => {
+  recent(pendingInvites).forEach(inv => {
     const d = new Date(inv.dateTime);
     const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
     html += `
@@ -3093,25 +3068,46 @@ function renderInbox(){
       </div>
     </div>`;
   });
-  pendingResults.forEach(r => {
+  recent(pendingResults).forEach(r => {
     const scoreStr = (r.sets && r.sets.length) ? r.sets.map(s => `${s.a}-${s.b}`).join(', ') : '';
     const claim = r.result === 'V' ? t('claimedWin') : t('claimedLoss');
+    const d = new Date(r.createdAt || r.date || '');
+    const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
     html += `
     <div class="inbox-card">
       <div class="inbox-tag">${t('resultTag')}</div>
       <div class="inbox-text"><strong>${esc(r.fromName || '')}</strong> ${claim}${scoreStr ? ' (' + esc(scoreStr) + ')' : ''}</div>
+      ${dateStr ? `<div class="inbox-text" style="font-size:12px">${esc(dateStr)}</div>` : ''}
       <div class="invite-actions">
         <button data-kind="result" data-id="${r.id}" data-action="accepted" class="invite-accept">${t('btnAcceptInvite')}</button>
         <button data-kind="result" data-id="${r.id}" data-action="dismissed" class="invite-dismiss">${t('btnDismissInvite')}</button>
       </div>
     </div>`;
   });
-  pendingLeagueResults.forEach(r => {
+  recent(resultResponses).forEach(r => {
+    const accepted = r.status === 'accepted';
     const scoreStr = (r.sets && r.sets.length) ? r.sets.map(s => `${s.a}-${s.b}`).join(', ') : '';
+    const d = new Date(r.respondedAt || r.createdAt || r.date || '');
+    const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
+    html += `
+    <div class="inbox-card">
+      <div class="inbox-tag" style="color:${accepted ? 'var(--win)' : 'var(--loss)'}">${accepted ? '✓ ' + t('resultResponseAcceptedTag') : t('resultResponseRejectedTag')}</div>
+      <div class="inbox-text"><strong>${esc(r.toName || r.toEmail || t('defaultOpponent'))}</strong> ${accepted ? t('resultResponseAcceptedText') : t('resultResponseRejectedText')}${scoreStr ? ' (' + esc(scoreStr) + ')' : ''}</div>
+      ${dateStr ? `<div class="inbox-text" style="font-size:12px">${esc(dateStr)}</div>` : ''}
+      <div class="invite-actions">
+        <button type="button" class="btn-cancel" data-result-seen="${esc(r.id)}">${t('btnDismiss')}</button>
+      </div>
+    </div>`;
+  });
+  recent(pendingLeagueResults).forEach(r => {
+    const scoreStr = (r.sets && r.sets.length) ? r.sets.map(s => `${s.a}-${s.b}`).join(', ') : '';
+    const d = new Date(r.createdAt || r.date || '');
+    const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
     html += `
     <div class="inbox-card">
       <div class="inbox-tag">RESULTADO DA LIGA</div>
       <div class="inbox-text"><strong>${esc(r.leagueName || 'Liga')}</strong> · ${esc(scoreStr || 'placar informado')}</div>
+      ${dateStr ? `<div class="inbox-text" style="font-size:12px">${esc(dateStr)}</div>` : ''}
       <div class="invite-actions">
         <button data-kind="league-result" data-id="${r.id}" data-action="accepted" class="invite-accept">${t('btnAcceptInvite')}</button>
         <button data-kind="league-result" data-id="${r.id}" data-action="rejected" class="invite-dismiss">${t('btnDismissInvite')}</button>
@@ -3148,6 +3144,20 @@ function renderInbox(){
       }catch(e){ console.log('Dismiss response error:', e); }
     });
   });
+  $('inboxList').querySelectorAll('button[data-result-seen]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.resultSeen;
+      resultResponses = resultResponses.filter(r => r.id !== id);
+      renderInbox();
+      try{
+        await fetch('/api/mark-result-seen', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resultId: id })
+        });
+      }catch(e){ console.log('Dismiss result response error:', e); }
+    });
+  });
 }
 
 async function respondInvite(inviteId, response){
@@ -3169,7 +3179,7 @@ async function respondInvite(inviteId, response){
           opponentEmail: inv.fromEmail || '',
           format: 'individual', partner: '', opponent2: '',
           result: null, matchType: 'amistoso', surface: 'rapida', sets: [],
-          location: '', notes: '', photo: null, inviteId: inv.id || ''
+          location: '', notes: '', photo: null
         };
         matches.push(newMatch);
         saveMatches();
@@ -4995,9 +5005,7 @@ async function deleteMatch(id){
   matches = matches.filter(m => m.id !== id);
   saveMatches();
   if(m && !m.result){
-      const profileRaw = localStorage.getItem(PROFILE_KEY);
-      const profile = profileRaw ? JSON.parse(profileRaw) : {};
-      cancelScheduledMatch(id, m.inviteId || '', profile.email || '');
+    cancelScheduledMatch(id);
   }
   render();
 }
@@ -5242,7 +5250,7 @@ function handleSave(){
       cancelScheduledMatch(savedMatch.id);
     }
     if(wantsInvite){
-      sendInvite(savedMatch);
+      sendInvite();
     }
     if(wantsSendResult){
       sendResult();
