@@ -32,8 +32,11 @@ async function accessToken(serviceAccount) {
   return (await response.json()).access_token;
 }
 
-/** Sends a native Android notification, independently from web VAPID. */
-export async function sendFcmNotification(env, token, title, body, screen = 'inbox') {
+/**
+ * Data-only high-priority FCM lets DeuceMessagingService both show the native
+ * notification and flag a one-time cloud refresh when the player returns.
+ */
+export async function sendFcmNotification(env, token, title, body) {
   if (!token || !env.FCM_SERVICE_ACCOUNT_JSON) return false;
   try {
     const serviceAccount = JSON.parse(env.FCM_SERVICE_ACCOUNT_JSON);
@@ -41,16 +44,10 @@ export async function sendFcmNotification(env, token, title, body, screen = 'inb
     const response = await fetch(`https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
-      // Data-only delivery makes Android call DeuceMessagingService in the background.
       body: JSON.stringify({
         message: {
           token,
-          data: {
-            type: 'deuce_score',
-            title: String(title || 'Deuce Score'),
-            body: String(body || 'Você tem uma nova atualização.'),
-            screen: String(screen || 'inbox')
-          },
+          data: { type: 'deuce_score', title: String(title), body: String(body), screen: 'inbox' },
           android: { priority: 'high' }
         }
       })
