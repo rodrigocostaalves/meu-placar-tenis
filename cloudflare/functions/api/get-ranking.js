@@ -1,78 +1,36 @@
-// Global ranking, highest rating first. Returns the top slice plus the
-// requester's own position, so a player outside the top still sees where
-// they stand.
+import { json, normalEmail, rankOrderSql, requireRankingDatabase } from './_ranking.js';
 
 const TOP_LIMIT = 10;
 
-export async function onRequestPost(context) {
-  const { request, env } = context;
+export async function onRequestPost({ request, env }) {
   try {
-    const body = await request.json().catch(() => ({}));
-    const key = (body.email || '').trim().toLowerCase();
-
-    const all = [];
-    let cursor;
-    do {
-      const page = await env.DEUCE_KV.list({ prefix: 'ratings:', cursor });
-      cursor = page.list_complete ? undefined : page.cursor;
-      for (const k of page.keys) {
-        const r = await env.DEUCE_KV.get(k.name, 'json');
-        if (r && Number.isFinite(Number(r.rating))) all.push(r);
-      }
-    } while (cursor);
-
-    all.sort((a, b) => b.rating - a.rating || (b.played || 0) - (a.played || 0));
-
-    let myPosition = null;
-    let myRating = null;
-    let me = null;
-    if (key) {
-      const idx = all.findIndex(r => r.email === key);
-      if (idx > -1) {
-        myPosition = idx + 1;
-        myRating = all[idx].rating;
-        // Sent separately so a player outside the top ten still gets their own
-        // row to look at, appended below the list.
-        if (myPosition > TOP_LIMIT) {
-          const r = all[idx];
-          me = {
-            position: myPosition,
-            name: r.name || '',
-            countryCode: r.countryCode || '',
-            rating: r.rating,
-            level: r.level || '',
-            played: r.played || 0,
-            isMe: true
-          };
-        }
-      }
-    }
-
-    // Email is only needed to flag "this row is me" — don't leak the rest.
-    const top = all.slice(0, TOP_LIMIT).map((r, i) => ({
-      position: i + 1,
-      name: r.name || '',
-      countryCode: r.countryCode || '',
-      rating: r.rating,
-      level: r.level || '',
-      played: r.played || 0,
-      isMe: key ? r.email === key : false
-    }));
-
-    return new Response(JSON.stringify({
-      total: all.length,
-      myPosition,
-      myRating,
-      me,
-      top
-    }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    const { email: rawEmail } = await request.json().catch(() => ({}));
+    const email = normalEmail(rawEmail);
+    const db = requireRankingDatabase(env);
+    const order = rankOrderSql();
+    const total = Number((await db.prepare('SELECT COUNT(*) AS total FROM ranking_players').first())?.total || 0);
+    const topRows = (await db.prepare(`SELECT email, name, country_code, rating, level, played FROM ranking_players ORDER BY ${order} LIMIT ?`).bind(TOP_LIMIT).all()).results || [];
+    const mine = email ? await db.prepare(`
+      SELECT position, name, country_code, rating, level, played
+      FROM (
+        SELECT email, name, country_code, rating, level, played,
+          ROW_NUMBER() OVER (ORDER BY ${order}) AS position
+        FROM ranking_players
+      ) WHERE email = ?
+    `).bind(email).first() : null;
+    const meta = await db.prepare("SELECT value FROM ranking_meta WHERE key = 'updated_at'").first();
+    const mapPlayer = (row, isMe = false) => ({
+      position: Number(row.position), name: row.name || '', countryCode: row.country_code || '',
+      rating: Number(row.rating), level: row.level || '', played: Number(row.played || 0), isMe
     });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
+    const top = topRows.map((row, index) => mapPlayer({ ...row, position: index + 1 }, row.email === email));
+    return json({
+      total,
+      myPosition: mine ? Number(mine.position) : null,
+      myRating: mine ? Number(mine.rating) : null,
+      me: mine && Number(mine.position) > TOP_LIMIT ? mapPlayer(mine, true) : null,
+      top,
+      updatedAt: meta?.value || null
     });
-  }
+  } catch (error) { return json({ error: String(error) }, 500); }
 }
