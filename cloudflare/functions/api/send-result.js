@@ -5,14 +5,14 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   try {
     const body = await request.json();
-    const { fromName, fromEmail, toEmail, toName, date, result, sets, matchType, surface } = body;
+    const { matchId, fromName, fromEmail, toEmail, toName, date, result, sets, matchType, surface } = body;
     if (!toEmail || !result) return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
 
     const key = toEmail.trim().toLowerCase();
     const player = await env.DEUCE_KV.get(`players:${key}`, 'json');
     const resultId = 'res_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
     await env.DEUCE_KV.put(`pending-results:${resultId}`, JSON.stringify({
-      id: resultId, fromName: fromName || '', fromEmail: fromEmail || '', toEmail: key, toName: toName || '',
+      id: resultId, matchId: String(matchId || '').trim(), fromName: fromName || '', fromEmail: fromEmail || '', toEmail: key, toName: toName || '',
       date: date || '', result, sets: Array.isArray(sets) ? sets : [], matchType: matchType || 'amistoso',
       surface: surface || 'rapida', status: 'pending', createdAt: new Date().toISOString()
     }));

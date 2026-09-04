@@ -5,7 +5,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   try {
     const body = await request.json();
-    const { fromName, fromEmail, toEmail, listingId, dateTime, opponent, location, message } = body;
+    const { matchId, fromName, fromEmail, toEmail, listingId, dateTime, opponent, location, message } = body;
 
     // Either an address typed by the user, or a board listing handle that only
     // the server can turn back into an address.
@@ -22,7 +22,20 @@ export async function onRequestPost(context) {
     const key = resolvedEmail;
     const player = await env.DEUCE_KV.get(`players:${key}`, 'json');
 
-    const inviteId = 'inv_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+    // The initiating client creates a durable match id before the request.
+    // Retries therefore remain idempotent and every device refers to the
+    // exact same match, rather than guessing from a date or an opponent.
+    const requestedId = String(matchId || '').trim();
+    const inviteId = /^[A-Za-z0-9_-]{12,120}$/.test(requestedId)
+      ? requestedId
+      : `match_${crypto.randomUUID()}`;
+    const existing = await env.DEUCE_KV.get(`invites:${inviteId}`, 'json');
+    if (existing) {
+      return new Response(JSON.stringify({ ok: true, notified: false, inviteId, duplicate: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
     await env.DEUCE_KV.put(`invites:${inviteId}`, JSON.stringify({
       id: inviteId,
       fromName: fromName || '',

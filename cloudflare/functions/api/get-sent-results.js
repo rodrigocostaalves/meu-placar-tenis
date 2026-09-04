@@ -17,6 +17,7 @@ export async function onRequestPost(context) {
           // was closed between submitting the score and saving resultId.
           results.push({
             id: result.id,
+            matchId: result.matchId || '',
             status: result.status || 'pending',
             toEmail: result.toEmail || '',
             toName: result.toName || '',
