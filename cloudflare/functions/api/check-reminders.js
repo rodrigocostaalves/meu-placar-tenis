@@ -14,61 +14,133 @@ async function trySend(subscription, vapid, payloadData) {
 }
 
 async function checkReminders(env) {
-  const vapid = { subject: env.VAPID_SUBJECT, publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY };
-  if (!vapid.publicKey || !vapid.privateKey) return { error: 'VAPID keys not configured' };
+  const vapid = {
+    subject: env.VAPID_SUBJECT,
+    publicKey: env.VAPID_PUBLIC_KEY,
+    privateKey: env.VAPID_PRIVATE_KEY
+  };
+
+  if (!vapid.publicKey || !vapid.privateKey) {
+    console.error('VAPID keys not configured');
+    return { error: 'VAPID keys not configured' };
+  }
 
   const now = Date.now();
   const stats = { checked: 0, sent24h: 0, sent1h: 0, sentResult: 0, deleted: 0 };
+
   let cursor;
   do {
     const list = await env.DEUCE_KV.list({ prefix: 'reminders:', cursor });
     cursor = list.list_complete ? undefined : list.cursor;
-    for (const key of list.keys) {
-      const data = await env.DEUCE_KV.get(key.name, 'json');
+
+    for (const k of list.keys) {
+      const data = await env.DEUCE_KV.get(k.name, 'json');
       if (!data) continue;
+
       stats.checked++;
+
       const matchTime = new Date(data.dateTime).getTime();
-      if (Number.isNaN(matchTime) || matchTime - now < -30 * 60 * 60 * 1000) {
-        await env.DEUCE_KV.delete(key.name); stats.deleted++; continue;
+      if (Number.isNaN(matchTime)) {
+        await env.DEUCE_KV.delete(k.name);
+        stats.deleted++;
+        continue;
       }
 
-      const hoursUntil = (matchTime - now) / (60 * 60 * 1000);
-      let gone = false, updated = false;
+      const msUntil = matchTime - now;
+      const hoursUntil = msUntil / (1000 * 60 * 60);
+
+      // The entry used to be dropped an hour after the match. It now survives
+      // long enough to send the "log the result" nudge, then goes.
+      if (hoursUntil < -30) {
+        await env.DEUCE_KV.delete(k.name);
+        stats.deleted++;
+        continue;
+      }
+
+      let subscriptionGone = false;
+      let updated = false;
+
       if (!data.sent24h && hoursUntil <= 24.25 && hoursUntil > 23.5) {
-        const sent = await trySend(data.subscription, vapid, { title: 'Partida amanhã 🎾', body: data.opponent ? `Você tem uma partida contra ${data.opponent} em 24 horas.` : 'Você tem uma partida agendada em 24 horas.' });
-        if (sent === 'gone') gone = true;
-        else if (sent) { data.sent24h = true; updated = true; stats.sent24h++; }
+        const result = await trySend(data.subscription, vapid, {
+          title: 'Partida amanhã 🎾',
+          body: data.opponent
+            ? `Você tem uma partida contra ${data.opponent} em 24 horas.`
+            : 'Você tem uma partida agendada em 24 horas.'
+        });
+        if (result === 'gone') subscriptionGone = true;
+        else if (result) { data.sent24h = true; updated = true; stats.sent24h++; }
       }
-      if (!gone && !data.sent1h && hoursUntil <= 1.25 && hoursUntil > 0.5) {
-        const sent = await trySend(data.subscription, vapid, { title: 'Partida em 1 hora 🎾', body: data.opponent ? `Sua partida contra ${data.opponent} começa em 1 hora.` : 'Sua partida começa em 1 hora.' });
-        if (sent === 'gone') gone = true;
-        else if (sent) { data.sent1h = true; updated = true; stats.sent1h++; }
+
+      if (!subscriptionGone && !data.sent1h && hoursUntil <= 1.25 && hoursUntil > 0.5) {
+        const result = await trySend(data.subscription, vapid, {
+          title: 'Partida em 1 hora 🎾',
+          body: data.opponent
+            ? `Sua partida contra ${data.opponent} começa em 1 hora.`
+            : 'Sua partida começa em 1 hora.'
+        });
+        if (result === 'gone') subscriptionGone = true;
+        else if (result) { data.sent1h = true; updated = true; stats.sent1h++; }
       }
-      if (!gone && !data.sentResult && hoursUntil <= -2.5 && hoursUntil > -26) {
-        const sent = await trySend(data.subscription, vapid, { title: 'Como foi o jogo? 🎾', body: data.opponent ? `Registre o placar da partida contra ${data.opponent}.` : 'Registre o placar da sua partida.' });
-        if (sent === 'gone') gone = true;
-        else if (sent) { data.sentResult = true; updated = true; stats.sentResult++; }
+
+      // A few hours after the match, ask for the score. This is the step where
+      // people drop off: they play, leave, and the match is never recorded.
+      // The window is wide so a cron miss doesn't lose the nudge entirely.
+      if (!subscriptionGone && !data.sentResult && hoursUntil <= -2.5 && hoursUntil > -26) {
+        const result = await trySend(data.subscription, vapid, {
+          title: 'Como foi o jogo? 🎾',
+          body: data.opponent
+            ? `Registre o placar da partida contra ${data.opponent}.`
+            : 'Registre o placar da sua partida.'
+        });
+        if (result === 'gone') subscriptionGone = true;
+        else if (result) { data.sentResult = true; updated = true; stats.sentResult++; }
       }
-      if (gone) { await env.DEUCE_KV.delete(key.name); stats.deleted++; }
-      else if (updated) await env.DEUCE_KV.put(key.name, JSON.stringify(data));
+
+      if (subscriptionGone) {
+        await env.DEUCE_KV.delete(k.name);
+        stats.deleted++;
+      } else if (updated) {
+        await env.DEUCE_KV.put(k.name, JSON.stringify(data));
+      }
     }
   } while (cursor);
+
   return stats;
 }
 
 export async function onRequest(context) {
   const { request, env } = context;
+
+  // Simple shared-secret guard so this endpoint isn't publicly triggerable.
+  // Set REMINDERS_SECRET in the Pages project variables to enable it.
   if (env.REMINDERS_SECRET) {
     const url = new URL(request.url);
-    const provided = request.headers.get('x-reminders-secret') || url.searchParams.get('token');
-    if (provided !== env.REMINDERS_SECRET) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    const provided =
+      request.headers.get('x-reminders-secret') || url.searchParams.get('token');
+    if (provided !== env.REMINDERS_SECRET) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
   }
+
   try {
-    // Ranking is intentionally NOT rebuilt here. This endpoint runs on a
-    // schedule; ranking is rebuilt when a score is accepted instead.
-    return Response.json({ ok: true, ...(await checkReminders(env)) });
+    const stats = await checkReminders(env);
+
+    // This endpoint is called often to catch reminder windows. Rebuilding the
+    // entire global ranking here would list/read every match and player on
+    // every cron tick. Ranking is deliberately handled by its own scheduled
+    // job, not by the reminder loop.
+    return new Response(JSON.stringify({ ok: true, ...stats }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   } catch (err) {
     console.error('checkReminders failed:', err);
-    return Response.json({ error: String(err) }, { status: 500 });
+    return new Response(JSON.stringify({ error: String(err) }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
