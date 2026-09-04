@@ -65,6 +65,8 @@ export async function onRequestPost(context) {
       }
     }
 
+    // The mobile app saves this id with its local appointment. Responses must
+    // be matched by this immutable id, never by an ambiguous email/date pair.
     return new Response(JSON.stringify({ ok: true, notified, inviteId }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
