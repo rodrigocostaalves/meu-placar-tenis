@@ -805,7 +805,6 @@
          vazio frustra mais do que ajuda. A sheet e as functions continuam no
          lugar — basta remover o style="display:none" para trazer de volta. -->
     <button type="button" class="activity-chip" id="boardShortcut" style="display:none">🔎 <span data-i18n="chipBoard">Procuro Jogo</span></button>
-    <button type="button" class="activity-chip" id="rankingShortcut"><img class="ico" src="icons/ui-stats.png" alt=""><span class="lbl" data-i18n="chipRanking">Ranking</span></button>
   </div>
 </header>
 
@@ -813,10 +812,6 @@
   <div id="inboxSection" style="display:none">
     <h3 class="upcoming-title" data-i18n="inboxTitle">Caixa de Entrada</h3>
     <div id="inboxList"></div>
-  </div>
-  <div id="upcomingSection" style="display:none">
-    <h3 class="upcoming-title" data-i18n="upcomingTitle">Próximos Jogos</h3>
-    <div id="upcomingList"></div>
   </div>
   <div class="filters">
     <input type="text" id="searchInput" class="search-input" data-i18n-ph="searchPlaceholder" placeholder="Buscar adversário...">
@@ -831,7 +826,6 @@
 </main>
 
 <div class="fab-row">
-  <button class="fab fab-secondary" id="scheduleBtn" data-i18n="btnSchedule">+ Agendar</button>
   <button class="fab" id="addBtn" data-i18n="addBtn">+ Nova Partida</button>
 </div>
 
@@ -875,11 +869,6 @@
     </div>
     <div id="extraOpponents"></div>
     <button type="button" class="add-set-btn" id="addOpponentBtn" style="margin-top:8px; display:none" data-i18n="btnAddOpponent">+ Adicionar jogador</button>
-    <div id="inviteMessageField" style="display:none; margin-top:10px">
-      <label data-i18n="labelInviteMessage" style="display:block; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Mensagem para o adversário (opcional)</label>
-      <input type="text" id="fInviteMessage" data-i18n-ph="phInviteMessage" placeholder="Ex: consigo às 9h, quadra 3. Confirma?" style="width:100%; background:var(--panel); border:1px solid var(--panel-line); color:var(--chalk); border-radius:8px; padding:11px 12px; font-size:15px; font-family:inherit;">
-    </div>
-    <button type="button" class="add-set-btn" id="inviteBtn" style="margin-top:8px" data-i18n="btnInvite">Convidar por notificação</button>
     <button type="button" class="add-set-btn" id="sendResultBtn" style="margin-top:8px; display:none" data-i18n="btnSendResult">Enviar Resultado para Confirmação</button>
   </div>
   <div class="field">
@@ -1432,16 +1421,6 @@
   </div>
   <div class="sheet-actions">
     <button class="btn-cancel" id="closeReferBtn" data-i18n="btnClose">Fechar</button>
-  </div>
-</div>
-
-<div class="sheet" id="rankingSheet">
-  <h2 data-i18n="rankingTitle">Ranking Geral</h2>
-  <div class="rank-mine" id="rankingMine"></div>
-  <div id="rankingContainer"></div>
-  <p class="rating-note" data-i18n="rankingNote"></p>
-  <div class="sheet-actions">
-    <button class="btn-cancel" id="closeRankingBtn" data-i18n="btnClose">Fechar</button>
   </div>
 </div>
 
@@ -2757,7 +2736,9 @@ function renderCourts(courts, filteredOut){
   });
 }
 
-async function syncScheduledMatch(match){
+/* Retired scheduling transport. Kept commented only to make upgrades from
+   older cached Pages deployments non-destructive. */
+/* async function syncScheduledMatch(match){
   if(match.result) return; // only sync matches without a result yet
   if(!match.date) return;
   try{
@@ -2796,7 +2777,7 @@ async function cancelScheduledMatch(matchId){
   }catch(e){
     console.log('Cancel scheduled match error:', e);
   }
-}
+} */
 
 // ---------- Inbox: Invites + Pending Results ----------
 let pendingInvites = [];
@@ -2805,10 +2786,10 @@ let pendingLeagueResults = [];
 let inviteResponses = [];
 let resultResponses = [];
 
-function toggleWantsInvite(){
+/* function toggleWantsInvite(){
   wantsInvite = !wantsInvite;
   $('inviteBtn').classList.toggle('active', wantsInvite);
-}
+} */
 
 function toggleWantsSendResult(){
   wantsSendResult = !wantsSendResult;
@@ -2853,7 +2834,7 @@ function inviteRecipients(){
   return list;
 }
 
-async function sendInvite(matchId = ''){
+/* async function sendInvite(matchId = ''){
   const date = $('fDate').value;
   const recipients = inviteRecipients();
   // one of the two is enough: typed addresses, or a handle from the board
@@ -2899,7 +2880,7 @@ async function sendInvite(matchId = ''){
     console.log('Send invite error:', e);
     showAlert(t('inviteError'));
   }
-}
+} */
 
 async function sendResult(matchId = ''){
   const toEmail = $('fOpponentEmail').value.trim();
@@ -2951,11 +2932,7 @@ async function refreshInbox(force = false){
     return;
   }
   try{
-    const [invRes, resRes, leagueRes] = await Promise.all([
-      fetch('/api/get-invites', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: profile.email })
-      }),
+    const [resRes, leagueRes] = await Promise.all([
       fetch('/api/get-pending-results', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: profile.email })
@@ -2965,11 +2942,10 @@ async function refreshInbox(force = false){
         body: JSON.stringify({ email: profile.email })
       })
     ]);
-    const invData = await invRes.json();
     const resData = await resRes.json();
     const leagueData = await leagueRes.json();
-    pendingInvites = Array.isArray(invData.invites) ? invData.invites : [];
-    inviteResponses = Array.isArray(invData.responses) ? invData.responses : [];
+    pendingInvites = [];
+    inviteResponses = [];
     pendingResults = Array.isArray(resData.results) ? resData.results : [];
     pendingLeagueResults = Array.isArray(leagueData.results) ? leagueData.results : [];
     processResultResponses(Array.isArray(resData.responses) ? resData.responses : []);
@@ -2982,19 +2958,6 @@ async function refreshInbox(force = false){
     inboxRefreshPromise = null;
   });
   return inboxRefreshPromise;
-}
-
-// A scheduled match is "unlogged" from two hours after its start time until
-// two weeks later, after which nagging stops being useful.
-function unloggedMatches(){
-  const now = Date.now();
-  return matches.filter(m => {
-    if(m.result) return false;
-    const d = new Date(`${m.date}T${m.time || '12:00'}`);
-    if(isNaN(d.getTime())) return false;
-    const age = now - d.getTime();
-    return age > 2 * 3600 * 1000 && age < 14 * 24 * 3600 * 1000;
-  }).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 }
 
 // When the opponent confirms, mark OUR copy of that match as confirmed and
@@ -3022,11 +2985,10 @@ function processResultResponses(responses){
 function renderInbox(){
   const section = $('inboxSection');
   section.style.display = 'block';
-  const total = pendingInvites.length + pendingResults.length + pendingLeagueResults.length
-    + inviteResponses.length + resultResponses.length + unloggedMatches().length;
+  const total = pendingResults.length + pendingLeagueResults.length + resultResponses.length;
   if(total === 0){
     $('inboxList').innerHTML = `<div class="inbox-card inbox-empty" id="inboxEmptyCard"><div class="inbox-text">${t('inboxEmptyState')}</div></div>`;
-    $('inboxEmptyCard').addEventListener('click', () => openMatchSheet(null, true));
+    $('inboxEmptyCard').addEventListener('click', () => openMatchSheet(null, false));
     return;
   }
   let html = '';
@@ -3040,52 +3002,6 @@ function renderInbox(){
     return shown;
   };
 
-  // matches whose time has passed with no score entered — the point where
-  // people drop off, since nothing was ever asking them to finish
-  recent(unloggedMatches()).forEach(m => {
-    const d = new Date(`${m.date}T${m.time || '12:00'}`);
-    const when = isNaN(d.getTime()) ? '' : d.toLocaleDateString();
-    html += `
-    <div class="inbox-card">
-      <div class="inbox-tag" style="color:var(--ball)">${t('logTag')}</div>
-      <div class="inbox-text">${t('logAsk').replace('{name}', esc(m.opponent || t('defaultOpponent')))} ${esc(when)}</div>
-      <div class="invite-actions">
-        <button type="button" class="btn-save" data-log="${esc(m.id)}">${t('btnLogResult')}</button>
-      </div>
-    </div>`;
-  });
-
-  // answers to invites I sent
-  recent(inviteResponses).forEach(inv => {
-    const d = new Date(inv.dateTime);
-    const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
-    const accepted = inv.status === 'accepted';
-    const who = inv.toName || inv.opponent || '';
-    html += `
-    <div class="inbox-card">
-      <div class="inbox-tag" style="color:${accepted ? 'var(--win)' : 'var(--loss)'}">${accepted ? t('respAcceptedTag') : t('respDeclinedTag')}</div>
-      <div class="inbox-text"><strong>${esc(who)}</strong> ${accepted ? t('respAcceptedText') : t('respDeclinedText')} ${esc(dateStr)}</div>
-      <div class="invite-actions">
-        <button type="button" class="btn-cancel" data-seen="${esc(inv.id)}">${t('btnDismiss')}</button>
-      </div>
-    </div>`;
-  });
-
-  recent(pendingInvites).forEach(inv => {
-    const d = new Date(inv.dateTime);
-    const dateStr = isNaN(d.getTime()) ? '' : d.toLocaleString();
-    html += `
-    <div class="inbox-card">
-      <div class="inbox-tag">${t('inviteTag')}</div>
-      <div class="inbox-text"><strong>${esc(inv.fromName || '')}</strong> ${t('inviteFromLabel')} ${esc(dateStr)}</div>
-      ${inv.location ? `<div class="inbox-text" style="font-size:13px">📍 ${esc(inv.location)}</div>` : ''}
-      ${inv.message ? `<div class="inbox-text" style="font-size:13px; font-style:italic">"${esc(inv.message)}"</div>` : ''}
-      <div class="invite-actions">
-        <button data-kind="invite" data-id="${inv.id}" data-action="accepted" class="invite-accept">${t('btnAcceptInvite')}</button>
-        <button data-kind="invite" data-id="${inv.id}" data-action="dismissed" class="invite-dismiss">${t('btnDismissInvite')}</button>
-      </div>
-    </div>`;
-  });
   recent(pendingResults).forEach(r => {
     const scoreStr = (r.sets && r.sets.length) ? r.sets.map(s => `${s.a}-${s.b}`).join(', ') : '';
     const claim = r.result === 'V' ? t('claimedWin') : t('claimedLoss');
@@ -3133,34 +3049,11 @@ function renderInbox(){
     </div>`;
   });
   $('inboxList').innerHTML = html;
-  $('inboxList').querySelectorAll('button[data-kind="invite"]').forEach(btn => {
-    btn.addEventListener('click', () => respondInvite(btn.dataset.id, btn.dataset.action));
-  });
   $('inboxList').querySelectorAll('button[data-kind="result"]').forEach(btn => {
     btn.addEventListener('click', () => respondResult(btn.dataset.id, btn.dataset.action));
   });
   $('inboxList').querySelectorAll('button[data-kind="league-result"]').forEach(btn => {
     btn.addEventListener('click', () => respondLeagueResult(btn.dataset.id, btn.dataset.action));
-  });
-  $('inboxList').querySelectorAll('button[data-log]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const m = matches.find(x => String(x.id) === btn.dataset.log);
-      if(m) openMatchSheet(m, false);
-    });
-  });
-  $('inboxList').querySelectorAll('button[data-seen]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = btn.dataset.seen;
-      inviteResponses = inviteResponses.filter(r => r.id !== id);
-      renderInbox();
-      try{
-        await fetch('/api/mark-invite-seen', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ inviteId: id })
-        });
-      }catch(e){ console.log('Dismiss response error:', e); }
-    });
   });
   $('inboxList').querySelectorAll('button[data-result-seen]').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -3178,7 +3071,7 @@ function renderInbox(){
   });
 }
 
-async function respondInvite(inviteId, response){
+/* async function respondInvite(inviteId, response){
   try{
     await fetch('/api/respond-invite', {
       method: 'POST',
@@ -3210,7 +3103,7 @@ async function respondInvite(inviteId, response){
   }catch(e){
     console.log('Respond invite error:', e);
   }
-}
+} */
 
 // Finds the pending scheduled entry that this confirmed result belongs to.
 // Prefer the exact day; if the game was played early or late, choose the
@@ -3876,31 +3769,12 @@ async function autoRestoreIfEmpty(){
   }
 }
 
-/* ---------------- Global ranking ----------------
-   The rating itself is computed on-device, so it has to be pushed up
-   before it can be ranked. lastKnownPosition lets the header show the
-   placing without refetching on every render.                          */
-let lastKnownPosition = null;
-let lastKnownTotal = null;
+/* Global ranking was retired. Personal statistics stay on this device. */
+async function syncRating(){}
 
-// Registers us in the ranking. The shared rating itself is computed on the
-// server from confirmed matches, so nothing about our local number is sent.
-async function syncRating(){
-  const raw = localStorage.getItem(PROFILE_KEY);
-  const profile = raw ? JSON.parse(raw) : {};
-  if(!profile.email || !profile.emailVerified) return;
-  try{
-    await fetch('/api/post-rating', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: profile.email })
-    });
-  }catch(e){
-    console.log('Sync rating error:', e);
-  }
-}
-
-async function loadRanking(){
+/* Retained temporarily only so an older cached page cannot fail while it is
+   being replaced; no navigation path calls this function. */
+/* async function loadRanking(){
   const mine = $('rankingMine');
   const container = $('rankingContainer');
   const raw = localStorage.getItem(PROFILE_KEY);
@@ -3958,7 +3832,7 @@ async function loadRanking(){
     mine.style.display = 'none';
     container.innerHTML = `<div class="stats-empty">${t('rankingError')}</div>`;
   }
-}
+} */
 
 /* ---------------- "Looking for a game" board ----------------
    Unlike the nearby-players search (which only tells you who exists),
@@ -4923,8 +4797,6 @@ function render(){
   updateStreakDisplay();
   updateRatingDisplay();
 
-  renderUpcoming();
-
   const completed = matches.filter(m => m.result === 'V' || m.result === 'D');
 
   if(completed.length === 0){
@@ -4987,59 +4859,11 @@ function render(){
   });
 }
 
-function renderUpcoming(){
-  const upcoming = matches.filter(m => !m.result);
-  const section = $('upcomingSection');
-  section.style.display = 'block';
-  if(upcoming.length === 0){
-    $('upcomingList').innerHTML = `<div class="stats-empty">${t('noUpcomingMatches')}</div>`;
-    return;
-  }
-  const sorted = [...upcoming].sort((a,b) => {
-    const da = `${a.date || ''}T${a.time || '00:00'}`;
-    const db = `${b.date || ''}T${b.time || '00:00'}`;
-    return da.localeCompare(db);
-  });
-  $('upcomingList').innerHTML = sorted.map(m => {
-    const timeStr = m.time ? ` ${m.time}` : '';
-    return `
-    <div class="upcoming-card" data-id="${m.id}">
-      <button class="del" data-id="${m.id}">✕</button>
-      <div class="row1">
-        <div>
-          <div class="opponent">${opponentDisplay(m)}</div>
-          <div class="date">${formatDate(m.date)}${timeStr} · ${typeLabel(m.matchType)} · ${surfaceLabel(m.surface)}</div>
-        </div>
-        <div class="upcoming-tag">${t('upcomingTag')}</div>
-      </div>
-      <div class="weather-slot" id="wx-${m.id}"></div>
-    </div>
-  `;
-  }).join('');
-  attachWeatherToUpcoming(sorted);
-
-  $('upcomingList').querySelectorAll('.del').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      deleteMatch(btn.dataset.id);
-    });
-  });
-  $('upcomingList').querySelectorAll('.upcoming-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const m = matches.find(x => x.id === card.dataset.id);
-      if(m) openMatchSheet(m, false);
-    });
-  });
-}
-
 async function deleteMatch(id){
   if(!await askConfirm(t('deleteConfirm'))) return;
   const m = matches.find(x => x.id === id);
   matches = matches.filter(m => m.id !== id);
   saveMatches();
-  if(m && !m.result){
-    cancelScheduledMatch(id);
-  }
   render();
 }
 
@@ -5102,15 +4926,12 @@ function updateMatchSheetTexts(){
   if(editingId){
     $('matchSheetTitle').textContent = t('editMatchTitle');
     $('saveBtn').textContent = t('btnUpdate');
-  } else if(schedulingMode){
-    $('matchSheetTitle').textContent = t('scheduleTitle');
-    $('saveBtn').textContent = t('btnScheduleSave');
   } else {
     $('matchSheetTitle').textContent = t('sheetTitle');
     $('saveBtn').textContent = t('btnSave');
   }
-  $('resultFieldWrap').style.display = schedulingMode ? 'none' : 'block';
-  $('setsFieldWrap').style.display = schedulingMode ? 'none' : 'block';
+  $('resultFieldWrap').style.display = 'block';
+  $('setsFieldWrap').style.display = 'block';
 }
 
 function updateMatchPhotoUI(){
@@ -5190,18 +5011,12 @@ function openMatchSheet(matchToEdit, isScheduling){
     // only offer it when starting a brand-new match, never when editing
     repeatBtn.style.display = (!matchToEdit && lastPlayedMatch()) ? 'block' : 'none';
   }
-  $('inviteBtn').style.display = schedulingMode ? 'block' : 'none';
-  $('inviteMessageField').style.display = schedulingMode ? 'block' : 'none';
-  $('addOpponentBtn').style.display = schedulingMode ? 'block' : 'none';
   if(!matchToEdit){
-    $('fInviteMessage').value = '';
     pendingListingId = null;
     $('extraOpponents').innerHTML = '';
   }
-  $('sendResultBtn').style.display = schedulingMode ? 'none' : 'block';
-  wantsInvite = false;
+  $('sendResultBtn').style.display = 'block';
   wantsSendResult = false;
-  $('inviteBtn').classList.remove('active');
   $('sendResultBtn').classList.remove('active');
   renderSetsUI();
   updateMatchSheetTexts();
@@ -5243,7 +5058,6 @@ function handleSave(){
   const sets = currentSets
     .filter(s => s.a !== '' && s.b !== '')
     .map(s => ({a: Number(s.a), b: Number(s.b)}));
-  const wasScheduled = editingId ? !matches.find(m => m.id === editingId)?.result : false;
   const matchData = {
     date,
     time: $('fTime').value,
@@ -5252,10 +5066,10 @@ function handleSave(){
     format: selectedFormat,
     partner: selectedFormat === 'duplas' ? $('fPartner').value.trim() : '',
     opponent2: selectedFormat === 'duplas' ? $('fOpponent2').value.trim() : '',
-    result: schedulingMode ? null : selectedResult,
+    result: selectedResult,
     matchType: selectedType,
     surface: selectedSurface,
-    sets: schedulingMode ? [] : sets,
+    sets,
     location: $('fLocation').value.trim(),
     notes: $('fNotes').value.trim(),
     photo: currentMatchPhoto
@@ -5273,18 +5087,9 @@ function handleSave(){
   }
   saveMatches();
   render();
-  syncRating();
   closeAllSheets();
 
   if(savedMatch){
-    if(!savedMatch.result){
-      syncScheduledMatch(savedMatch);
-    } else if(wasScheduled){
-      cancelScheduledMatch(savedMatch.id);
-    }
-    if(wantsInvite){
-      sendInvite(savedMatch.id);
-    }
     if(wantsSendResult){
       sendResult(savedMatch.id);
     }
@@ -6175,10 +5980,6 @@ async function recordLeagueMatch(winnerSlot){
 // Event bindings
 $('addBtn').addEventListener('click', () => openMatchSheet(null, false));
 $('fDate').addEventListener('change', updateFormWeather);
-$('scheduleBtn').addEventListener('click', () => {
-  ensurePushSubscription();
-  openMatchSheet(null, true);
-});
 $('cancelBtn').addEventListener('click', closeAllSheets);
 $('overlay').addEventListener('click', closeAllSheets);
 $('saveBtn').addEventListener('click', handleSave);
@@ -6269,7 +6070,6 @@ $('filterLeague').addEventListener('click', () => setTypeFilter('liga'));
 $('filterChampionship').addEventListener('click', () => setTypeFilter('campeonato'));
 
 $('menuBtn').addEventListener('click', () => { loadProfile(); renderStats(); renderAchievements(); renderFriends(); openSheet('menuSheet'); });
-$('inviteBtn').addEventListener('click', toggleWantsInvite);
 $('sendResultBtn').addEventListener('click', toggleWantsSendResult);
 $('closeMenuBtn').addEventListener('click', closeAllSheets);
 $('openStatsBtn').addEventListener('click', () => {
@@ -6385,11 +6185,6 @@ $('nearbyShortcut').addEventListener('click', () => {
   setNearbyMode('courts');
   openSheet('nearbyPlayersSheet');
 });
-$('rankingShortcut').addEventListener('click', () => {
-  openSheet('rankingSheet');
-  syncRating().then(loadRanking);
-});
-$('closeRankingBtn').addEventListener('click', closeAllSheets);
 $('recapShareBtn').addEventListener('click', shareRecapImage);
 // wrapped, otherwise the click Event would arrive as the target argument
 $('pickFriendBtn').addEventListener('click', () => openFriendPicker());
