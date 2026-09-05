@@ -2229,6 +2229,9 @@ const TRANSLATIONS = {
 };
 
 const MATCHES_KEY = 'tennis_matches_v1';
+// A small local safety copy.  Cloud sync must never be able to erase the
+// history that is already on this device.
+const MATCHES_SAFE_KEY = 'tennis_matches_last_safe_v1';
 const PROFILE_KEY = 'tennis_profile_v1';
 const LANG_KEY = 'tennis_lang_v1';
 const TOURNAMENTS_KEY = 'tennis_tournaments_v1';
@@ -3216,14 +3219,35 @@ function loadMatches(){
   try{
     const raw = localStorage.getItem(MATCHES_KEY);
     matches = raw ? JSON.parse(raw) : [];
+    // A deliberate empty list is saved as "[]".  Recover only if the primary
+    // key vanished altogether (or is unreadable), never after a normal delete.
+    if(!Array.isArray(matches)){
+      matches = [];
+    }
+    if(raw === null){
+      const safeRaw = localStorage.getItem(MATCHES_SAFE_KEY);
+      const safeMatches = safeRaw ? JSON.parse(safeRaw) : [];
+      if(Array.isArray(safeMatches) && safeMatches.length){
+        matches = safeMatches;
+        localStorage.setItem(MATCHES_KEY, JSON.stringify(matches));
+      }
+    }
   }catch(e){
-    matches = [];
+    try{
+      const safeRaw = localStorage.getItem(MATCHES_SAFE_KEY);
+      matches = safeRaw ? JSON.parse(safeRaw) : [];
+    }catch(safeError){
+      matches = [];
+    }
   }
 }
 function saveMatches(){
   queueSync();
   try{
     localStorage.setItem(MATCHES_KEY, JSON.stringify(matches));
+    if(Array.isArray(matches) && matches.length){
+      localStorage.setItem(MATCHES_SAFE_KEY, JSON.stringify(matches));
+    }
   }catch(e){
     showAlert(t('dlgStorageError'));
   }
@@ -3558,17 +3582,63 @@ function buildSyncPayload(){
   };
 }
 
+function isFinalValidationStatus(status){
+  return status === 'accepted' || status === 'rejected';
+}
+
+// Sync is a merge, not a replacement.  The backup may be older than the
+// device (or temporarily empty), so it must never make a local match vanish.
+function mergeSyncedMatches(localMatches, remoteMatches){
+  const pendingLocal = new Map();
+  (Array.isArray(localMatches) ? localMatches : []).forEach(match => {
+    if(match && match.id) pendingLocal.set(String(match.id), match);
+  });
+
+  const merged = [];
+  (Array.isArray(remoteMatches) ? remoteMatches : []).forEach(remote => {
+    if(!remote || !remote.id) return;
+    const id = String(remote.id);
+    const local = pendingLocal.get(id);
+    if(!local){
+      merged.push(remote);
+      return;
+    }
+
+    pendingLocal.delete(id);
+    const remoteStatus = String(remote.validationStatus || '').toLowerCase();
+    const localStatus = String(local.validationStatus || '').toLowerCase();
+    // Preserve the local record and its photo.  A final answer received from
+    // the other player is the one remote value that must take precedence.
+    const combined = { ...remote, ...local, photo: local.photo || remote.photo || null };
+    if(isFinalValidationStatus(remoteStatus) && !isFinalValidationStatus(localStatus)){
+      combined.validationStatus = remote.validationStatus;
+      combined.confirmed = remoteStatus === 'accepted' || !!remote.confirmed;
+      if(remote.confirmedAt) combined.confirmedAt = remote.confirmedAt;
+    }
+    merged.push(combined);
+  });
+
+  // Matches that only exist on this device are valid local history and stay.
+  pendingLocal.forEach(match => merged.push(match));
+  return merged;
+}
+
+function persistPulledMatches(){
+  try{
+    localStorage.setItem(MATCHES_KEY, JSON.stringify(matches));
+    if(matches.length) localStorage.setItem(MATCHES_SAFE_KEY, JSON.stringify(matches));
+  }catch(e){
+    console.log('Local sync persistence error:', e);
+  }
+}
+
 function applySyncPayload(payload){
   if(!payload || typeof payload !== 'object') return false;
   if(Array.isArray(payload.matches)){
-    // keep any local photo we already have for a match we also received
-    const localPhotos = {};
-    matches.forEach(m => { if(m.photo) localPhotos[m.id] = m.photo; });
-    matches = payload.matches.map(m => {
-      if(!m.photo && localPhotos[m.id]) return { ...m, photo: localPhotos[m.id] };
-      return m;
-    });
-    saveMatches();
+    matches = mergeSyncedMatches(matches, payload.matches);
+    // A pull must not call saveMatches(): doing so queues a second cloud write
+    // and could push an incomplete payload back to the server.
+    persistPulledMatches();
   }
   if(Array.isArray(payload.tournaments)){
     tournaments = payload.tournaments;
@@ -5502,6 +5572,7 @@ async function toggleNotifications(){
 async function clearAllData(){
   if(!await askConfirm(t('clearAllConfirm'))) return;
   localStorage.removeItem(MATCHES_KEY);
+  localStorage.removeItem(MATCHES_SAFE_KEY);
   localStorage.removeItem(TOURNAMENTS_KEY);
   localStorage.removeItem(LEAGUES_KEY);
   localStorage.removeItem(PROFILE_KEY);
