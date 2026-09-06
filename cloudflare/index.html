@@ -1496,6 +1496,7 @@
   </div>
 </div>
 
+<script src="match-report.js"></script>
 <script>
 const TRANSLATIONS = {
   pt: {
@@ -4656,124 +4657,24 @@ function drawBall(ctx, cx, cy, r){
 }
 
 async function shareMatchImage(matchId){
-  const m = matches.find(x => x.id === matchId);
-  if(!m) return;
-
-  // Bebas/Space Mono come from Google Fonts; without this the canvas can fall
-  // back to a system face on the first share of a session.
-  try{ await document.fonts.ready; }catch(e){}
-
-  const W = 800, H = 800;
-  const won = m.result === 'V';
-  const accent = won ? '#5FCB8D' : '#E06B4E';
-  const canvas = document.createElement('canvas');
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
-
-  ctx.fillStyle = '#0A2B3D';
-  ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = accent;
-  ctx.fillRect(0, 0, 16, H);
-
-  // header
-  drawBall(ctx, 76, 84, 16);
-  ctx.fillStyle = '#F3F6F2';
-  ctx.font = "56px 'Bebas Neue', sans-serif";
-  ctx.fillText('DEUCE SCORE', 108, 100);
-
-  // result pill
-  const label = (won ? t('resultTagWin') : t('resultTagLoss')).toUpperCase();
-  ctx.font = "34px 'Bebas Neue', sans-serif";
-  const pillW = ctx.measureText(label).width + 44;
-  ctx.fillStyle = accent;
-  ctx.beginPath();
-  if(ctx.roundRect) ctx.roundRect(70, 150, pillW, 52, 26);
-  else ctx.rect(70, 150, pillW, 52);
-  ctx.fill();
-  ctx.fillStyle = '#0A2B3D';
-  ctx.fillText(label, 92, 187);
-
-  // --- scoreboard: both names, so nobody has to guess who won ---
-  const raw = localStorage.getItem(PROFILE_KEY);
-  const profile = raw ? JSON.parse(raw) : {};
-  const myName = (profile.name || '').trim() || t('shareYouLabel');
-  const theirName = opponentDisplayPlain(m) || '—';
-  const sets = Array.isArray(m.sets) ? m.sets.filter(x => x.a !== '' || x.b !== '') : [];
-
-  function drawPlayerRow(name, scores, isWinner, y){
-    ctx.fillStyle = isWinner ? '#D7F205' : '#8FADBE';
-    ctx.font = "44px 'Bebas Neue', sans-serif";
-    let text = name;
-    while(ctx.measureText(text).width > 430 && text.length > 3){
-      text = text.slice(0, -2);
-    }
-    if(text !== name) text += '…';
-    ctx.fillText(text, 70, y);
-
-    if(isWinner){
-      ctx.font = "34px sans-serif";
-      ctx.fillText('🏆', 500, y);
-    }
-
-    ctx.font = "bold 42px 'Space Mono', monospace";
-    ctx.fillStyle = isWinner ? '#F3F6F2' : '#8FADBE';
-    scores.forEach((v, i) => {
-      ctx.fillText(String(v), 560 + i * 62, y);
-    });
-  }
-
-  const rowY = 300;
-  drawPlayerRow(myName, sets.map(x => x.a), won, rowY);
-  ctx.strokeStyle = 'rgba(143,173,190,0.25)';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(70, rowY + 30); ctx.lineTo(W - 70, rowY + 30); ctx.stroke();
-  drawPlayerRow(theirName, sets.map(x => x.b), !won, rowY + 90);
-
-  // rating movement — the part people actually react to
-  const ratingInfo = computeRatings().history.find(h => h.id === m.id);
-  if(ratingInfo){
-    ctx.fillStyle = '#8FADBE';
-    ctx.font = "24px 'Bebas Neue', sans-serif";
-    ctx.fillText(t('ratingLabel').toUpperCase(), 70, 500);
-    ctx.fillStyle = '#D7F205';
-    ctx.font = "62px 'Bebas Neue', sans-serif";
-    ctx.fillText(String(ratingInfo.rating), 70, 560);
-    const sign = ratingInfo.delta > 0 ? '+' : '';
-    ctx.fillStyle = ratingInfo.delta >= 0 ? '#5FCB8D' : '#E06B4E';
-    ctx.font = "34px 'Bebas Neue', sans-serif";
-    ctx.fillText(`${sign}${ratingInfo.delta}`, 70 + ctx.measureText(String(ratingInfo.rating)).width + 90, 560);
-  }
-
-  // meta
-  ctx.fillStyle = '#8FADBE';
-  ctx.font = "26px Inter, sans-serif";
-  ctx.fillText(`${formatDate(m.date)} · ${typeLabel(m.matchType)} · ${surfaceLabel(m.surface)}`, 70, 650);
-  if(m.location){
-    let loc = m.location;
-    while(ctx.measureText(loc).width > 640 && loc.length > 4) loc = loc.slice(0, -2);
-    if(loc !== m.location) loc += '…';
-    ctx.fillText('📍 ' + loc, 70, 692);
-  }
-
-  ctx.fillStyle = '#8FADBE';
-  ctx.font = "22px Inter, sans-serif";
-  ctx.fillText('🎾 Deuce Score', 70, 762);
-
-  canvas.toBlob(async (blob) => {
-    if(!blob) return;
-    const file = new File([blob], 'placar.png', { type: 'image/png' });
-    if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
-      try{
-        await navigator.share({ files: [file], title: 'Deuce Score' });
-      }catch(e){ /* user cancelled */ }
-    } else {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'placar.png';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  }, 'image/png');
+  const m=matches.find(x=>x.id===matchId);if(!m)return;
+  try {
+    try {await document.fonts.ready;} catch(e){}
+    const profile=JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}');
+    const canvas=await DeuceMatchReport.draw(m,{lang:currentLang,playerName:profile.name||t('shareYouLabel'),opponentName:opponentDisplayPlain(m)});
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+    if(!blob)throw new Error('card_failed');
+    const file=new File([blob],'deuce-score.png',{type:'image/png'});
+    const download=()=>{
+      const url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    };
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      try {await navigator.share({files:[file],title:'Deuce Score'});}
+      catch(e){if(e.name!=='AbortError')download();}
+    }else download();
+  }catch(e){showAlert(currentLang==='pt'?'Não foi possível gerar o card.':currentLang==='es'?'No se pudo crear la imagen.':'Could not create the card.');}
 }
 
 function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
@@ -4884,11 +4785,14 @@ function render(){
       </div>
       ${scoreStr ? `<div class="score">${esc(scoreStr)}</div>` : ''}
       ${metaParts.length ? `<div class="meta">${metaParts.map(esc).join(' · ')}</div>` : ''}
+      <details class="match-report-details"><summary>${currentLang==='pt'?'Relatório da partida':currentLang==='es'?'Informe del partido':'Match report'}</summary>
+      ${DeuceMatchReport.fields(m,currentLang).map(([key,value])=>'<p><strong>'+esc(key)+':</strong> '+esc(value)+'</p>').join('')}</details>
       ${m.photo ? `<img class="card-photo" src="${m.photo}" alt="">` : ''}
     </div>
   `;
   }).join('');
 
+  list.querySelectorAll('.match-report-details').forEach(el=>el.addEventListener('click',e=>e.stopPropagation()));
   list.querySelectorAll('.del').forEach(btn => {
     btn.addEventListener('click', (e) => { e.stopPropagation(); deleteMatch(btn.dataset.id); });
   });
