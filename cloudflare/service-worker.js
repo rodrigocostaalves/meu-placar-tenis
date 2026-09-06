@@ -1,65 +1,16 @@
-// Bump whenever the app shell changes so installed web apps fetch the new UI.
-const CACHE_NAME = 'deuce-score-v23';
-const APP_SHELL = [
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
-  );
-  self.skipWaiting();
+// Retire the web UI only. Never intercept API, authentication, APK or privacy requests.
+const CACHE='deuce-score-web-paused-v1';
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/index.html','/icons/share-logo.png'])));self.skipWaiting();});
+self.addEventListener('activate',event=>{event.waitUntil(self.clients.claim());});
+self.addEventListener('fetch',event=>{
+ const url=new URL(event.request.url);
+ if(event.request.method!=='GET'||url.origin!==self.location.origin)return;
+ if(url.pathname==='/'||url.pathname==='/index.html')event.respondWith(fetch('/index.html',{cache:'no-store'}).then(response=>{
+  if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE).then(c=>c.put('/index.html',copy)));}return response;
+ }).catch(()=>caches.match('/index.html',{cacheName:CACHE})));
+ else if(url.pathname==='/icons/share-logo.png')event.respondWith(caches.match(event.request,{cacheName:CACHE}).then(cached=>cached||fetch(event.request)));
 });
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-        return response;
-      })
-      .catch(() => caches.match(event.request))
-  );
-});
-
-self.addEventListener('push', (event) => {
-  let data = {};
-  try {
-    data = event.data ? event.data.json() : {};
-  } catch (e) {
-    data = { title: 'Deuce Score', body: event.data ? event.data.text() : '' };
-  }
-  const title = data.title || 'Deuce Score';
-  const options = {
-    body: data.body || '',
-    icon: 'icon-192.png',
-    badge: 'icon-192.png',
-    vibrate: [200, 100, 200]
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((clientList) => {
-      for (const client of clientList) {
-        if ('focus' in client) return client.focus();
-      }
-      if (clients.openWindow) return clients.openWindow('./index.html');
-    })
-  );
-});
+// Existing push subscriptions are not deleted by the UI pause.
+self.addEventListener('push',event=>{let data={};try{data=event.data?event.data.json():{};}catch(e){data={body:event.data?event.data.text():''};}
+event.waitUntil(self.registration.showNotification(data.title||'Deuce Score',{body:data.body||'',icon:'/icon-192.png',badge:'/icon-192.png'}));});
+self.addEventListener('notificationclick',event=>{event.notification.close();event.waitUntil(self.clients.matchAll({type:'window'}).then(list=>{const client=list.find(c=>'focus' in c);return client?client.focus():self.clients.openWindow('/');}));});
