@@ -1,3 +1,5 @@
+import {issueSession} from '../lib/competition-auth.js';
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   try {
@@ -46,7 +48,10 @@ export async function onRequestPost(context) {
       shareLocation: !!player.shareLocation
     } : null;
 
-    return new Response(JSON.stringify({ ok: true, existing }), {
+    // Competition access is tied to this verified inbox, never a profile email supplied by a client.
+    let competitionSession = '';
+    if (env.COMPETITIONS_DB) competitionSession = await issueSession(env.COMPETITIONS_DB, key);
+    return new Response(JSON.stringify({ ok: true, existing, competitionSession }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

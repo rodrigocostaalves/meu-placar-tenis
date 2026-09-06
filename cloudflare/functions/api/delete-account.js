@@ -1,3 +1,5 @@
+import {authenticate} from '../lib/competition-auth.js';
+import {cleanupCompetitions} from '../lib/competition-cleanup.js';
 // Removes everything this player has on the server. Required by both stores
 // (Apple 5.1.1(v) and Google's Data Safety form) — asking people to email for
 // deletion is not accepted.
@@ -15,6 +17,13 @@ export async function onRequestPost(context) {
 
     const key = email.trim().toLowerCase();
     const deleted = [];
+    if (env.COMPETITIONS_DB) {
+      const actor = await authenticate(request, env.COMPETITIONS_DB);
+      if (actor !== key) return new Response(JSON.stringify({ok:false,error:'verify_account'}), {status:401,headers:{'Content-Type':'application/json'}});
+      if (!await cleanupCompetitions(env.COMPETITIONS_DB, key))
+        return new Response(JSON.stringify({ok:false,error:'cleanup_continue'}), {status:409,headers:{'Content-Type':'application/json'}});
+      deleted.push('competitions');
+    }
 
     // The board listing carries an opaque handle with its own pointer key,
     // so read it before deleting or the pointer would be orphaned.
@@ -72,6 +81,7 @@ export async function onRequestPost(context) {
       }
     } while (pendingCursor);
 
+    if (env.COMPETITIONS_DB) await env.COMPETITIONS_DB.prepare('DELETE FROM ds_competition_sessions WHERE email=?').bind(key).run();
     return new Response(JSON.stringify({ ok: true, deleted, invitesRemoved }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
