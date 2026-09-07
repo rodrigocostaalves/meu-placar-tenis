@@ -85,10 +85,20 @@ export function mutateCompetition(original, input, actor) {
   }
   requireThat(input.action === 'submit', 'invalid_action');
   const one = c.players.find(p => p.id === input.a), two = c.players.find(p => p.id === input.b);
-  requireThat(one && two && one.id !== two.id && [one.id,two.id].includes(input.winner), 'invalid_players');
+  requireThat(one && two && one.id !== two.id, 'invalid_players');
   const isMatchPlayer = [one.email, two.email].includes(actor);
   requireThat(owner || isMatchPlayer, 'match_player_only', 403);
   requireThat(Array.isArray(input.sets) && input.sets.length >= 1 && input.sets.length <= 5 && input.sets.every(s => s && Number.isSafeInteger(s.a) && s.a >= 0 && Number.isSafeInteger(s.b) && s.b >= 0), 'invalid_score');
+  // A replay of an already stored legacy operation is read-only. Preserve its
+  // original outcome rather than recomputing history or trapping a retry.
+  const replay = c.results.find(m => m.id === input.requestId);
+  if (replay && replay.reporter === actor &&
+      replay.signature === JSON.stringify([input.a,input.b,input.winner,input.sets,input.slot || '']))
+    return original;
+  // The server derives the same winner as Android; never trust a manual winner.
+  const balance = input.sets.reduce((sum, s) => sum + Math.sign(s.a - s.b), 0);
+  requireThat(balance !== 0, 'score_tied');
+  input = {...input, winner: balance > 0 ? one.id : two.id};
   const reviewer = one.email === actor ? two.email : one.email;
   requireThat(owner || (reviewer && reviewer !== actor), 'creator_required_without_email', 403);
   const signature = JSON.stringify([input.a,input.b,input.winner,input.sets,input.slot || '']);
