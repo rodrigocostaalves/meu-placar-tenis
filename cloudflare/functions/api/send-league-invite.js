@@ -1,7 +1,7 @@
 import { buildPushPayload } from '@block65/webcrypto-web-push';
 import { sendFcmNotification } from './fcm.js';
 
-const APP_URL = 'https://meu-placar-tenis.pages.dev/site/';
+const APP_URL = 'https://deuce-score-site.pages.dev/';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
