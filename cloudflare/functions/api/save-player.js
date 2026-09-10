@@ -16,7 +16,7 @@ export async function onRequestPost(context) {
       city: body.city ?? previous?.city ?? '', birthdate: body.birthdate ?? previous?.birthdate ?? '',
       shareLocation: body.shareLocation === undefined ? !!previous?.shareLocation : !!body.shareLocation,
       // Do not erase Android FCM when the web site saves its VAPID subscription.
-      subscription: body.subscription || previous?.subscription || null,
+      subscription: previous?.subscription || null,
       fcmToken: previous?.fcmToken || null
     };
     // Include subscription nested keys: JSON.stringify's array replacer would omit them.

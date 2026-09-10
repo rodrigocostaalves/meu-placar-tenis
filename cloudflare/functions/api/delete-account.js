@@ -17,6 +17,7 @@ export async function onRequestPost(context) {
 
     const key = email.trim().toLowerCase();
     const deleted = [];
+    if (!env.COMPETITIONS_DB) return new Response(JSON.stringify({ok:false,error:'setup_required'}), {status:503,headers:{'Content-Type':'application/json'}});
     if (env.COMPETITIONS_DB) {
       const actor = await authenticate(request, env.COMPETITIONS_DB);
       if (actor !== key) return new Response(JSON.stringify({ok:false,error:'verify_account'}), {status:401,headers:{'Content-Type':'application/json'}});
