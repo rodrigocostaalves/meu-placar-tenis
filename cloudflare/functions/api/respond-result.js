@@ -28,7 +28,7 @@ export async function onRequestPost(context) {
       const accepted = response === 'accepted';
       const title = accepted ? '✅ Resultado confirmado' : '🎾 Resultado recusado';
       const body = accepted ? `${data.toName || 'Seu adversário'} confirmou o placar da partida.` : 'O resultado que você enviou foi recusado pelo adversário.';
-      if (sender?.fcmToken) await sendFcmNotification(env, sender.fcmToken, title, body);
+      if (sender?.fcmToken) await sendFcmNotification(env, sender.fcmToken, title, body, { recipientEmail: senderKey });
       if (sender?.subscription && env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
         try {
           const vapid = { subject: env.VAPID_SUBJECT, publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY };

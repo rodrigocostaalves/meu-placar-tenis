@@ -64,7 +64,7 @@ export async function onRequestPost(context) {
     const body = `${fromName || 'Um jogador'} convidou você para participar. Abra o Deuce Score para ver.`;
     const [webNotified, androidNotified] = await Promise.all([
       sendWebPush(player, env, title, body),
-      sendFcmNotification(env, player.fcmToken, title, body, { type: 'league_invite', inviteId })
+      sendFcmNotification(env, player.fcmToken, title, body, { recipientEmail: recipient })
     ]);
     return json({ ok: true, registered: true, notified: webNotified || androidNotified });
   } catch (error) {

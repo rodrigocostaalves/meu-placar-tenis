@@ -71,7 +71,7 @@ export async function notify(env, email, title, body) {
   if (!player) return false;
   const [web, android] = await Promise.all([
     webPush(player, env, title, body),
-    sendFcmNotification(env, player.fcmToken, title, body)
+    sendFcmNotification(env, player.fcmToken, title, body, { recipientEmail: email })
   ]);
   return web || android;
 }

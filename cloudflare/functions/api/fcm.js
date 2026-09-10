@@ -36,8 +36,9 @@ async function accessToken(serviceAccount) {
  * Data-only high-priority FCM lets DeuceMessagingService both show the native
  * notification and flag a one-time cloud refresh when the player returns.
  */
-export async function sendFcmNotification(env, token, title, body) {
-  if (!token || !env.FCM_SERVICE_ACCOUNT_JSON) return false;
+export async function sendFcmNotification(env, token, title, body, options = {}) {
+  const recipientEmail = String(options.recipientEmail || '').trim().toLowerCase();
+  if (!token || !recipientEmail || !env.FCM_SERVICE_ACCOUNT_JSON) return false;
   try {
     const serviceAccount = JSON.parse(env.FCM_SERVICE_ACCOUNT_JSON);
     const bearer = await accessToken(serviceAccount);
@@ -47,7 +48,7 @@ export async function sendFcmNotification(env, token, title, body) {
       body: JSON.stringify({
         message: {
           token,
-          data: { type: 'deuce_score', title: String(title), body: String(body), screen: 'inbox' },
+          data: { type: 'deuce_score', title: String(title), body: String(body), screen: 'inbox', recipientEmail },
           android: { priority: 'high' }
         }
       })

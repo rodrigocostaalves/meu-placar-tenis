@@ -20,7 +20,7 @@ export async function onRequestPost(context) {
     let notified = false;
     const title = `🎾 Resultado de ${fromName || 'um jogador'}`;
     const message = 'Um placar foi registrado com você. Abra a Caixa de Entrada para confirmar.';
-    if (player?.fcmToken) notified = await sendFcmNotification(env, player.fcmToken, title, message);
+    if (player?.fcmToken) notified = await sendFcmNotification(env, player.fcmToken, title, message, { recipientEmail: key });
     if (player?.subscription && env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
       try {
         const vapid = { subject: env.VAPID_SUBJECT, publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY };
