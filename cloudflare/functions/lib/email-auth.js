@@ -1,5 +1,6 @@
 import {emailKey, validEmail, readBody, json, takeLimit} from './api-security.js';
-import {issueSession} from './competition-auth.js';
+import {issueSession,tokenHash} from './competition-auth.js';
+import {accountHash,accountState,createPrivateStore} from './private-data.js';
 const ttl = 15*60000;
 async function digest(env, value) {
   const key = await crypto.subtle.importKey('raw',new TextEncoder().encode(env.AUTH_CODE_SECRET),{name:'HMAC',hash:'SHA-256'},false,['sign']);
@@ -36,10 +37,23 @@ export async function emailAuth(context, verify) {
       const used = await db.prepare(`UPDATE ds_auth_challenges SET consumed=1
         WHERE email=? AND id=? AND consumed=0 AND ready=1 AND expires>? RETURNING email`).bind(email,row.id,Date.now()).first();
       if (!used) return json({ok:false,error:'invalid_or_expired_code'},400);
-      const competitionSession = await issueSession(db,email);
-      const player = await env.DEUCE_KV.get(`players:${email}`,'json');
+      const ownerHash=await accountHash(email),state=await accountState(db,ownerHash);
+      if(state.state==='deleting') {
+        // OTP proves ownership, but does not reopen a partially erased account.
+        // Return a deletion-only receipt so another installation can resume it.
+        const receipt=crypto.randomUUID()+crypto.randomUUID();
+        const rebound=await db.prepare("UPDATE ds_account_deletions SET receipt_hash=? WHERE id=? AND account_hash=? AND state='pending'")
+          .bind(await tokenHash(receipt),state.job_id,ownerHash).run();
+        if(rebound.meta.changes!==1) return json({ok:false,error:'account_changed'},409);
+        return json({ok:true,existing:null,deletionPending:true,deletionSession:receipt,requestId:state.job_id,accountEpoch:state.epoch});
+      }
+      if(state.state==='deleted') await db.prepare("UPDATE ds_data_accounts SET state='active' WHERE account_hash=? AND state='deleted' AND epoch=?")
+        .bind(ownerHash,state.epoch).run();
+      const competitionSession = await issueSession(db,email,state.epoch);
+      const store=await createPrivateStore(env,email,state.epoch);
+      const player = await store.get(`players:${email}`,'json');
       const existing = player ? {name:player.name||'',zip:player.zip||'',country:player.country||'',countryCode:player.countryCode||'',shareLocation:!!player.shareLocation} : null;
-      return json({ok:true,existing,competitionSession});
+      return json({ok:true,existing,competitionSession,accountEpoch:state.epoch});
     }
     if (!await takeLimit(db,`email-send:${email}`,5,3600000)) return json({ok:false,error:'rate_limited'},429,{'Retry-After':'3600'});
     const id = crypto.randomUUID(), code = randomCode(), hash = await digest(env,`${email}\n${id}\n${code}`);

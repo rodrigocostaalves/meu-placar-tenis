@@ -1,4 +1,5 @@
-import {authenticate, tokenHash} from './competition-auth.js';
+import {authenticateSession, tokenHash} from './competition-auth.js';
+import {createPrivateStore} from './private-data.js';
 export const json = (body, status = 200, extra = {}) => new Response(JSON.stringify(body), {
   status, headers: {'Content-Type':'application/json','Cache-Control':'no-store',...extra}
 });
@@ -30,6 +31,13 @@ export async function takeLimit(db, key, maximum, windowMs, now = Date.now()) {
 }
 export async function requireActor(context) {
   if (!context.env.COMPETITIONS_DB) return {response:json({ok:false,error:'setup_required'},503)};
-  const actor = await authenticate(context.request,context.env.COMPETITIONS_DB);
-  return actor ? {actor} : {response:json({ok:false,error:'verify_account'},401)};
+  const session = await authenticateSession(context.request,context.env.COMPETITIONS_DB);
+  return session ? {actor:session.email,epoch:session.epoch} : {response:json({ok:false,error:'verify_account'},401)};
+}
+// Request-local environment: never mutate Cloudflare's shared binding object.
+export async function privateContext(context) {
+  if(context.data?.privateEnv) return {...context,env:context.data.privateEnv};
+  const session=await authenticateSession(context.request,context.env.COMPETITIONS_DB);
+  if(!session) throw Object.assign(new Error('verify_account'),{status:401});
+  return {...context,data:{...context.data,actor:session.email},env:{...context.env,DEUCE_KV:await createPrivateStore(context.env,session.email,session.epoch)}};
 }
