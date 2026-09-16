@@ -1,7 +1,9 @@
+import {privateContext} from '../lib/api-security.js';
 import { buildPushPayload } from '@block65/webcrypto-web-push';
 import { sendFcmNotification } from './fcm.js';
 
 export async function onRequestPost(context) {
+  context = await privateContext(context);
   const { request, env } = context;
   try {
     const body = await request.json();

@@ -1,3 +1,4 @@
+import {privateContext} from '../lib/api-security.js';
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status, headers: { 'Content-Type':'application/json', 'Cache-Control':'no-store' }
 });
@@ -20,7 +21,8 @@ export function mergeHistory(oldPayload, incoming) {
   const order = [...new Set([...(incoming.matches || []).map(m=>m?.id), ...byId.keys()])];
   return {...oldPayload,...incoming,deletedMatchIds:deleted,matches:order.filter(id=>byId.has(id)&&!tombstones.has(id)).map(id=>byId.get(id))};
 }
-export async function onRequestPost({request,env}) {
+export async function onRequestPost(context) {
+  const {request,env}=await privateContext(context);
   try {
     const {email,payload} = await request.json();
     if(typeof email !== 'string' || !email.includes('@') || !payload || Array.isArray(payload) || typeof payload !== 'object')
@@ -30,20 +32,15 @@ export async function onRequestPost({request,env}) {
     const key=email.trim().toLowerCase();
     const player=await env.DEUCE_KV.get('players:'+key,'json');
     if(!player) return json({error:'not_registered'},403);
-    const old=await env.DEUCE_KV.get('backup:'+key,'json');
-    const merged=mergeHistory(old?.payload || {},payload);
-    const content=canonical(merged);
-    if(new TextEncoder().encode(content).length > 2*1024*1024) return json({error:'too_large'},413);
-    if(old && canonical(old.payload)===content) {
-      console.log('kv_usage sync-push reads=2 writes=0 unchanged');
-      return json({ok:true,skipped:true,savedAt:old.savedAt});
-    }
-    const now=new Date().toISOString();
-    await env.DEUCE_KV.put('backup:'+key,JSON.stringify({payload:merged,updatedAt:now,savedAt:now}));
-    console.log('kv_usage sync-push reads=2 writes=1 changed');
-    return json({ok:true,savedAt:now});
+    const saved=await env.DEUCE_KV.update('backup:'+key,old=>{
+      const merged=mergeHistory(old?.payload || {},payload),content=canonical(merged);
+      if(new TextEncoder().encode(content).length>2*1024*1024) throw Object.assign(new Error('too_large'),{status:413});
+      if(old && canonical(old.payload)===content) return old;
+      const now=new Date().toISOString();
+      return {payload:merged,updatedAt:now,savedAt:now};
+    });
+    return json({ok:true,skipped:!saved.changed,savedAt:saved.data.savedAt});
   } catch(error) {
-    console.error('sync-push failed',String(error));
-    return json({error:'sync_unavailable'},503);
+    return json({error:error.status?error.message:'sync_unavailable'},error.status||503);
   }
 }

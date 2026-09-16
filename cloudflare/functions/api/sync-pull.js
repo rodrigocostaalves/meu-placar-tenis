@@ -1,4 +1,6 @@
+import {privateContext} from '../lib/api-security.js';
 export async function onRequestPost(context) {
+  context = await privateContext(context);
   const { request, env } = context;
   try {
     const { email } = await request.json();
@@ -14,6 +16,7 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({
       found: !!record,
       payload: record ? record.payload : null,
+      redactionMask: record ? await env.DEUCE_KV.privacyMask('backup:'+email.trim().toLowerCase()) : {},
       updatedAt: record ? record.updatedAt : null,
       savedAt: record ? record.savedAt : null
     }), {

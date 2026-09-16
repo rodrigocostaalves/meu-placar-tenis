@@ -1,5 +1,6 @@
 import {emailKey, json, readBody, requireActor, takeLimit} from '../lib/api-security.js';
-const publicRoutes = new Set(['send-verification','verify-email']);
+import {createPrivateStore} from '../lib/private-data.js';
+const publicRoutes = new Set(['send-verification','verify-email','request-account-deletion','verify-account-deletion']);
 const accountFields = {
   'sync-pull':'email','sync-push':'email','save-player':'email','register-fcm-token':'email',
   'get-pending-results':'email','get-sent-results':'email','delete-pending-result':'email',
@@ -9,22 +10,27 @@ const activeRoutes = new Set([...Object.keys(accountFields),'competitions','resp
 export async function onRequest(context) {
   try {
     const route = new URL(context.request.url).pathname.replace(/\/$/,'').split('/').pop();
+    if(route==='account-deletion') return context.request.method==='GET'?await context.next():json({ok:false,error:'method_not_allowed'},405,{Allow:'GET'});
     if (!publicRoutes.has(route) && !activeRoutes.has(route)) return json({ok:false,error:'endpoint_retired'},410);
     if (context.request.method !== 'POST') return json({ok:false,error:'method_not_allowed'},405,{Allow:'POST'});
     if (publicRoutes.has(route)) return await context.next();
-    const {actor,response} = await requireActor(context); if (response) return response;
+    // This handler checks its receipt itself, even after revocation of sessions.
+    if(route==='delete-account') return await context.next();
+    const {actor,epoch,response} = await requireActor(context); if (response) return response;
+    const privateStore=await createPrivateStore(context.env,actor,epoch);
+    context.data.privateEnv={...context.env,DEUCE_KV:privateStore};
     const body = await readBody(context.request,route === 'sync-push' ? 2200000 : 65536);
     const field = accountFields[route];
     if (field && emailKey(body[field]) !== actor) return json({ok:false,error:'account_mismatch'},403);
     if (field) body[field] = actor;
     if (route === 'respond-result' || route === 'mark-result-seen') {
       if (typeof body.resultId !== 'string' || body.resultId.length > 150) return json({ok:false,error:'invalid_result'},400);
-      const result = await context.env.DEUCE_KV.get(`pending-results:${body.resultId}`,'json');
+      const result = await privateStore.get(`pending-results:${body.resultId}`,'json');
       const owner = route === 'respond-result' ? result?.toEmail : result?.fromEmail;
       if (!result || emailKey(owner) !== actor) return json({ok:false,error:'not_found'},404);
       if (route === 'respond-result' && !['accepted','rejected'].includes(body.response)) return json({ok:false,error:'invalid_response'},400);
-      if (route === 'respond-result' && result.status !== 'pending')
-        return result.status === body.response ? json({ok:true,skipped:true}) : json({ok:false,error:'result_already_resolved'},409);
+      if (route === 'respond-result' && result.status !== 'pending' && result.status !== body.response)
+        return json({ok:false,error:'result_already_resolved'},409);
     }
     if (['send-result','send-league-invite'].includes(route)) {
       if (!await takeLimit(context.env.COMPETITIONS_DB,`notice:${actor}`,30,3600000))

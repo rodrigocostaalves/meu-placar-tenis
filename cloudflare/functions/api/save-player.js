@@ -1,6 +1,8 @@
+import {privateContext} from '../lib/api-security.js';
 // Writes the public player record only when a meaningful field changed.
 // This keeps repeated app/web openings from exhausting KV's daily write quota.
 export async function onRequestPost(context) {
+  context = await privateContext(context);
   const { request, env } = context;
   try {
     const body = await request.json();

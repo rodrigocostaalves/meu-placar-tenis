@@ -1,20 +1,23 @@
+import {privateContext} from '../lib/api-security.js';
 import { buildPushPayload } from '@block65/webcrypto-web-push';
 import { sendFcmNotification } from './fcm.js';
 
 // A response is persisted once. Two immediate puts to the same KV key cause
 // free-plan 429 errors and leave the sender with an inconsistent state.
 export async function onRequestPost(context) {
+  context = await privateContext(context);
   const { request, env } = context;
   try {
     const { resultId, response } = await request.json();
     if (!resultId || !response) return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
-    const data = await env.DEUCE_KV.get(`pending-results:${resultId}`, 'json');
-    if (!data) return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
-    data.status = response;
-    data.respondedAt = new Date().toISOString();
-    data.senderSeen = false;
-    await env.DEUCE_KV.put(`pending-results:${resultId}`, JSON.stringify(data));
-    if (response === 'accepted') {
+    const saved=await env.DEUCE_KV.update(`pending-results:${resultId}`,data=>{
+      if(!data||data.toEmail!==context.data.actor) throw Object.assign(new Error('not_found'),{status:404});
+      if(data.status===response) return data;
+      if(data.status!=='pending') throw Object.assign(new Error('result_already_resolved'),{status:409});
+      return {...data,status:response,respondedAt:new Date().toISOString(),senderSeen:false};
+    });
+    const data=saved.data;
+    if (response === 'accepted' && !await env.DEUCE_KV.get(`cmatch:${resultId}`,'json')) {
       await env.DEUCE_KV.put(`cmatch:${resultId}`, JSON.stringify({
         id: resultId, a: (data.fromEmail || '').trim().toLowerCase(), b: (data.toEmail || '').trim().toLowerCase(),
         aName: data.fromName || '', bName: data.toName || '', date: data.date || '',
@@ -23,7 +26,7 @@ export async function onRequestPost(context) {
       }));
     }
     const senderKey = (data.fromEmail || '').trim().toLowerCase();
-    if (senderKey) {
+    if (senderKey && saved.changed) {
       const sender = await env.DEUCE_KV.get(`players:${senderKey}`, 'json');
       const accepted = response === 'accepted';
       const title = accepted ? '✅ Resultado confirmado' : '🎾 Resultado recusado';
@@ -37,8 +40,8 @@ export async function onRequestPost(context) {
         } catch (error) { console.error('Result response web push error:', error); }
       }
     }
-    return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ ok: true, skipped:!saved.changed }), { headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
-    return new Response(JSON.stringify({ error: String(error) }), { status: 500 });
+    return new Response(JSON.stringify({ error: error.status?error.message:'service_unavailable' }), { status: error.status||503 });
   }
 }

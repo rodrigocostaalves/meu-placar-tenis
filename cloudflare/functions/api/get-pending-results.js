@@ -1,16 +1,17 @@
+import {privateContext} from '../lib/api-security.js';
 export async function onRequestPost(context) {
+  context = await privateContext(context);
   const { request, env } = context;
   try {
-    const { email } = await request.json();
+    const { email, cursor='' } = await request.json();
     if (!email) {
       return new Response(JSON.stringify({ error: 'Missing email' }), { status: 400 });
     }
     const key = email.trim().toLowerCase();
-    const list = await env.DEUCE_KV.list({ prefix: 'pending-results:' });
+    const list = await env.DEUCE_KV.related('pending-results',cursor);
     const results = [];
     const responses = [];
-    for (const k of list.keys) {
-      const data = await env.DEUCE_KV.get(k.name, 'json');
+    for (const data of list.records) {
       if (!data) continue;
       // waiting for MY confirmation
       if (data.toEmail === key && data.status === 'pending') {
@@ -23,7 +24,7 @@ export async function onRequestPost(context) {
         responses.push(data);
       }
     }
-    return new Response(JSON.stringify({ results, responses }), {
+    return new Response(JSON.stringify({ results, responses, migrationPending:list.migrationPending, more:list.more, cursor:list.cursor }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

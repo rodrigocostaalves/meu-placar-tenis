@@ -1,6 +1,8 @@
+import {privateContext} from '../lib/api-security.js';
 // Firebase can report the same token more than once. A no-op response avoids
 // rewriting players:<email> for an unchanged device.
 export async function onRequestPost(context) {
+  context = await privateContext(context);
   const { request, env } = context;
   try {
     const { email, token } = await request.json();

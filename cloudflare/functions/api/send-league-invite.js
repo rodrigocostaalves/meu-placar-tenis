@@ -1,3 +1,4 @@
+import {privateContext} from '../lib/api-security.js';
 import { buildPushPayload } from '@block65/webcrypto-web-push';
 import { sendFcmNotification } from './fcm.js';
 
@@ -41,6 +42,7 @@ async function sendDownloadEmail(env, recipient, fromName, leagueName) {
  * Registered players receive a push; new players receive a download e-mail.
  */
 export async function onRequestPost(context) {
+  context = await privateContext(context);
   const { request, env } = context;
   try {
     const { fromName, fromEmail, toEmail, leagueName } = await request.json();

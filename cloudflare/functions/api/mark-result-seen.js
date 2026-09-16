@@ -1,5 +1,7 @@
+import {privateContext} from '../lib/api-security.js';
 // Marks a result response as processed, so the sender's device only reacts once.
 export async function onRequestPost(context) {
+  context = await privateContext(context);
   const { request, env } = context;
   try {
     const { resultId } = await request.json();
@@ -9,11 +11,7 @@ export async function onRequestPost(context) {
         headers: { 'Content-Type': 'application/json' }
       });
     }
-    const data = await env.DEUCE_KV.get(`pending-results:${resultId}`, 'json');
-    if (data) {
-      data.senderSeen = true;
-      await env.DEUCE_KV.put(`pending-results:${resultId}`, JSON.stringify(data));
-    }
+    await env.DEUCE_KV.update(`pending-results:${resultId}`,data=>!data||data.senderSeen?data:{...data,senderSeen:true});
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
