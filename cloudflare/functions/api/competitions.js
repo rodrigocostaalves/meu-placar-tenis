@@ -86,10 +86,14 @@ export async function onRequestPost(context) {
     requireThat(!current.ownerDeleted,'organizer_deleted_read_only',409);
     const next = mutateCompetition(current,input,actor);
     if (next === current) return json({ok:true, competition:await safeView(db,row)});
+    // Leave space to resolve pending results and close/delete a near-full league.
+    const serialized=JSON.stringify(next);
+    if(next.leagueRules?.version===1 && ['submit','add','generate_round'].includes(input.action))
+      requireThat(new TextEncoder().encode(serialized).length<=1800000,'competition_capacity',409);
     requireThat(Number.isInteger(input.version) && input.version === row.version, 'changed_reload', 409);
     const op = input.requestId;
     const guard=await guards(next,actor,epoch);
-    const statements = [db.prepare('UPDATE ds_competitions SET data=?,version=version+1,last_op=?,deleted=? WHERE id=? AND version=? AND '+guard.sql).bind(JSON.stringify(next),op,next.deleted?1:0,input.id,row.version,...guard.args)];
+    const statements = [db.prepare('UPDATE ds_competitions SET data=?,version=version+1,last_op=?,deleted=? WHERE id=? AND version=? AND '+guard.sql).bind(serialized,op,next.deleted?1:0,input.id,row.version,...guard.args)];
     statements.push(db.prepare('DELETE FROM ds_competition_members WHERE competition_id=? AND EXISTS(SELECT 1 FROM ds_competitions WHERE id=? AND last_op=?)').bind(input.id,input.id,op));
     statements.push(db.prepare('INSERT OR IGNORE INTO ds_competition_members(competition_id,email) SELECT c.id,j.value FROM ds_competitions c,json_each(?) j WHERE c.id=? AND c.last_op=?').bind(JSON.stringify(members(next)),input.id,op));
     const result = await db.batch(statements); // Atomic compare-and-swap + membership; no lost simultaneous score.

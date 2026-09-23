@@ -1,6 +1,6 @@
 import {emailKey, json, readBody, requireActor, takeLimit} from '../lib/api-security.js';
 import {createPrivateStore} from '../lib/private-data.js';
-const publicRoutes = new Set(['send-verification','verify-email','request-account-deletion','verify-account-deletion']);
+const publicRoutes = new Set(['send-verification','verify-email','review-login','request-account-deletion','verify-account-deletion']);
 const accountFields = {
   'sync-pull':'email','sync-push':'email','save-player':'email','register-fcm-token':'email',
   'get-pending-results':'email','get-sent-results':'email','delete-pending-result':'email',
