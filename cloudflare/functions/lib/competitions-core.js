@@ -113,7 +113,8 @@ export function mutateCompetition(original, input, actor) {
     requireThat(['accepted','rejected'].includes(input.response), 'invalid_response');
     const result = c.results.find(m => m.id === input.resultId);
     requireThat(result, 'result_not_found', 404);
-    requireThat((result.pendingFor === actor || (c.kind==='league' && owner)) && result.reporter !== actor, 'opponent_only', 403);
+    // League organizers may resolve any pending score, including their own older submissions.
+    requireThat((c.kind === 'league' && owner) || (result.pendingFor === actor && result.reporter !== actor), 'opponent_only', 403);
     if (result.status === input.response) return original; // Safe retry; no second score/advance.
     requireThat(result.status === 'pending', 'result_already_resolved', 409);
     if (input.response === 'accepted') accept(c, result, owner?'organizer':'opponent');
@@ -168,7 +169,7 @@ export function mutateCompetition(original, input, actor) {
     requireThat(owner || live.length === 0, 'result_already_pending_or_accepted', 409);
     for (const m of live) m.status = 'superseded';
   }
-  const direct=owner && (c.kind!=='league'||!isMatchPlayer);
+  const direct=owner;
   requireThat(direct || (reviewer && reviewer!==actor) || (!owner && c.kind==='league'),'reviewer_required',403);
   const result = {id: input.requestId, a: one.id, b: two.id, winner: input.winner, sets: input.sets,
     slot: input.slot || '', signature, reporter: actor, pendingFor: direct ? '' : reviewer,
