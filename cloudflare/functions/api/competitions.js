@@ -1,4 +1,5 @@
 import {privateContext} from '../lib/api-security.js';
+import {encodeCompetition,decodeCompetition} from '../lib/competition-storage.js';
 import {authenticateSession} from '../lib/competition-auth.js';
 import {accountHash,collectEmails,redact} from '../lib/private-data.js';
 import {createCompetition, mutateCompetition, members, view, requireThat, emailKey} from '../lib/competitions-core.js';
@@ -12,7 +13,7 @@ async function guards(c,actor,epoch) {
     args:[await accountHash(actor),epoch,JSON.stringify(hashes)]};
 }
 async function safeViews(db,rows) {
-  const values=rows.map(row=>JSON.parse(row.data)),emails=[...collectEmails(values)],hashes=await Promise.all(emails.map(accountHash));
+  const values=await Promise.all(rows.map(row=>decodeCompetition(row.data))),emails=[...collectEmails(values)],hashes=await Promise.all(emails.map(accountHash));
   const {results}=await db.prepare("SELECT account_hash FROM ds_data_accounts WHERE account_hash IN (SELECT value FROM json_each(?)) AND state!='active'").bind(JSON.stringify(hashes)).all();
   const blocked=new Set(results.map(r=>r.account_hash));
   const erased=new Set(emails.filter((_,i)=>blocked.has(hashes[i])));
@@ -79,7 +80,7 @@ export async function onRequestPost(context) {
     requireThat(typeof input.id === 'string' && input.id.length <= 150, 'invalid_id');
     const row = await db.prepare('SELECT data,version,deleted,last_op FROM ds_competitions WHERE id=?').bind(input.id).first();
     requireThat(row, 'not_found', 404);
-    const current = JSON.parse(row.data);
+    const current = await decodeCompetition(row.data);
     requireThat(members(current).includes(actor), 'not_member', 403);
     if (row.last_op === input.requestId) return json({ok:true, competition:await safeView(db,row)});
     requireThat(!row.deleted, 'not_found', 404);
@@ -87,7 +88,7 @@ export async function onRequestPost(context) {
     const next = mutateCompetition(current,input,actor);
     if (next === current) return json({ok:true, competition:await safeView(db,row)});
     // Leave space to resolve pending results and close/delete a near-full league.
-    const serialized=JSON.stringify(next);
+    const serialized=await encodeCompetition(next);
     if(next.leagueRules?.version===1 && ['submit','add','generate_round'].includes(input.action))
       requireThat(new TextEncoder().encode(serialized).length<=1800000,'competition_capacity',409);
     requireThat(Number.isInteger(input.version) && input.version === row.version, 'changed_reload', 409);

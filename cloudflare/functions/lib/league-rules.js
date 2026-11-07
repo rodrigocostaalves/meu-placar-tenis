@@ -10,23 +10,24 @@ export function newLeagueRules(input, count) {
   check(['round_robin','swiss'].includes(system) && Number.isInteger(intervalDays) && intervalDays >= 1 && intervalDays <= 365 &&
     Number.isInteger(rounds) && rounds >= 1 && rounds <= maximum && /^\d{4}-\d{2}-\d{2}$/.test(startDate) &&
     Number.isFinite(Date.parse(startDate)) && new Date(startDate).toISOString().slice(0,10) === startDate, 'invalid_league_rules');
-  // Reserve storage for approval/correction history in the competition record.
-  check(Math.floor(count/2)*rounds<=2000,'league_schedule_limit');
+  // Generate only the requested round, never a 19,900-match fixture up front.
+  check(count >= 2 && count <= 200,'league_schedule_limit');
   return {version:1, scoring:'win3_lossset1', system, intervalDays, startDate, rounds};
 }
 export function completedLeagueScore(sets) {
-  // One set or best-of-three. A deciding match tie-break is allowed at one set all.
-  if (!Array.isArray(sets) || !sets.length || sets.length > 3) return false;
-  let a = 0, b = 0;
-  for (let i=0; i<sets.length; i++) {
-    if (a === 2 || b === 2) return false;
-    const s=sets[i], hi=Math.max(s.a,s.b), lo=Math.min(s.a,s.b);
-    const normal=(hi===6 && lo<=4)||(hi===7 && (lo===5||lo===6));
-    const matchTieBreak=i===2 && a===1 && b===1 && hi<=100 && ((hi===10&&lo<=8)||(hi>10&&hi-lo===2));
-    if (!normal && !matchTieBreak) return false;
-    if(s.a>s.b) a++; else b++;
-  }
-  return a!==b;
+  // Recorded sets may be shortened or unfinished. A tied match needs an
+  // explicit agreed winner, validated by competitions-core (never fake games).
+  return Array.isArray(sets) && sets.length >= 1 && sets.length <= 5 &&
+    sets.every(s => s && Number.isSafeInteger(s.a) && s.a >= 0 && s.a <= 999999 &&
+      Number.isSafeInteger(s.b) && s.b >= 0 && s.b <= 999999 && validSetTieBreak(s));
+}
+export function validSetTieBreak(s) {
+  if(s.tbA === undefined && s.tbB === undefined) return true;
+  return ((s.a === 7 && s.b === 6) || (s.a === 6 && s.b === 7)) &&
+    Number.isSafeInteger(s.tbA) && Number.isSafeInteger(s.tbB) &&
+    s.tbA >= 0 && s.tbA <= 999999 && s.tbB >= 0 && s.tbB <= 999999 &&
+    Math.max(s.tbA,s.tbB) >= 7 && Math.abs(s.tbA-s.tbB) >= 2 &&
+    (s.tbA > s.tbB) === (s.a > s.b);
 }
 export function leagueStandings(c) {
   const rows=c.players.map(p=>({...p,points:0,wins:0,losses:0,setsWon:0,setsLost:0,gamesWon:0,gamesLost:0}));
@@ -37,9 +38,9 @@ export function leagueStandings(c) {
     const winner=m.winner===a.id?a:b,loser=winner===a?b:a;
     winner.points+=3; winner.wins++; loser.losses++;
     for(const s of m.sets) {
-      if(s.a>s.b) {a.setsWon++;b.setsLost++;} else {b.setsWon++;a.setsLost++;}
+      if(s.a>s.b) {a.setsWon++;b.setsLost++;} else if(s.b>s.a) {b.setsWon++;a.setsLost++;}
       // A deciding match tie-break counts as a set, not 10+ ordinary games.
-      const tie=Math.max(s.a,s.b)>=10;
+      const tie=m.scoreFormat!=='free_v1' && Math.max(s.a,s.b)>=10;
       a.gamesWon+=tie?(s.a>s.b?1:0):s.a; a.gamesLost+=tie?(s.b>s.a?1:0):s.b;
       b.gamesWon+=tie?(s.b>s.a?1:0):s.b; b.gamesLost+=tie?(s.a>s.b?1:0):s.a;
     }

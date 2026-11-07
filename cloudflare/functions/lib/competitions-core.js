@@ -22,7 +22,7 @@ export function createCompetition(input, actor) {
   requireThat(Array.isArray(input.players), 'invalid_players');
   const players = input.players.map((p, i) => player(p, `p${i}`));
   uniquePlayers(players);
-  requireThat(input.kind === 'league' ? players.length >= 2 && players.length <= 100 : [4, 8, 16].includes(players.length), 'invalid_player_count');
+  requireThat(input.kind === 'league' ? players.length >= 2 && players.length <= 200 : [4, 8, 16].includes(players.length), 'invalid_player_count');
   const c = {id: input.requestId, kind: input.kind, name: cleanName(input.name), owner: actor,
     ownerName: cleanName(input.ownerName) || actor, players, results: [], createdAt: new Date().toISOString()};
   if(c.kind==='league') {
@@ -59,7 +59,9 @@ export function standings(c) {
     const winner = players.find(p => p.id === result.winner);
     if (winner) winner.points += Number(result.points) || 0;
   }
-  return players.sort((a,b) => b.points - a.points || a.name.localeCompare(b.name));
+  players.sort((a,b) => b.points - a.points || a.name.localeCompare(b.name));
+  players.forEach((p,i)=>{p.rank=i && players[i-1].points===p.points?players[i-1].rank:i+1;});
+  return players;
 }
 function accept(c, result, method) {
   // A proposed correction leaves the previously accepted score in force until approval.
@@ -98,13 +100,20 @@ export function mutateCompetition(original, input, actor) {
   }
   if(input.action==='finish') {
     requireThat(owner && c.kind==='league','creator_only',403);
-    requireThat(!c.results.some(m=>m.status==='pending') && (!scheduledLeague(c)||c.leagueRounds.every(r=>roundComplete(c,r))), 'round_incomplete',409);
+    const pending=c.results.filter(m=>m.status==='pending');
+    requireThat(!pending.length || input.discardPending===true,'pending_results',409);
+    for(const result of pending) {
+      result.status='discarded'; result.discardedAt=new Date().toISOString();
+      result.discardReason='league_finished';
+    }
+    // Persist only IDs/ranks: names remain covered by the existing erasure path.
+    c.finalRanks=standings(c).map((p,i)=>({id:p.id,rank:p.rank || i+1}));
     c.state='finished';c.finishedAt=new Date().toISOString();c.finishedOperation=input.requestId;return c;
   }
   if (input.action === 'add') {
     requireThat(owner && c.kind === 'league', 'creator_only', 403);
     requireThat(!scheduledLeague(c)||!c.leagueRounds.length,'roster_locked',409);
-    requireThat(c.players.length < 100, 'invalid_player_count');
+    requireThat(c.players.length < 200, 'invalid_player_count');
     c.players.push(player(input.player || {}, input.requestId)); uniquePlayers(c.players);
     if(scheduledLeague(c)) c.leagueRules=newLeagueRules(c.leagueRules,c.players.length);
     return c;
@@ -134,7 +143,7 @@ export function mutateCompetition(original, input, actor) {
     requireThat((input.outcome==='double_walkover'?input.winner==='':[one.id,two.id].includes(input.winner)) && Array.isArray(input.sets) && !input.sets.length,'invalid_score');
   } else {
     requireThat(!input.outcome || input.outcome==='played','invalid_score');
-    requireThat(Array.isArray(input.sets) && input.sets.length >= 1 && input.sets.length <= 5 && input.sets.every(s => s && Number.isSafeInteger(s.a) && s.a >= 0 && Number.isSafeInteger(s.b) && s.b >= 0), 'invalid_score');
+    requireThat(completedLeagueScore(input.sets), 'invalid_score');
   }
   // A replay of an already stored legacy operation is read-only. Preserve its
   // original outcome rather than recomputing history or trapping a retry.
@@ -142,10 +151,15 @@ export function mutateCompetition(original, input, actor) {
   if (replay && replay.reporter === actor &&
       replay.signature === JSON.stringify([input.a,input.b,input.winner,input.sets,input.slot || '']))
     return original;
-  // The server derives the same winner as Android; never trust a manual winner.
+  // Never override a non-tied score. A tied score may name an agreed winner,
+  // subject to exactly the same organizer/opponent approval as other results.
+  input = {...input, sets:input.sets.filter(s=>s.a !== 0 || s.b !== 0)};
+  requireThat(walkover || input.sets.length > 0, 'invalid_score');
   const balance = input.sets.reduce((sum, s) => sum + Math.sign(s.a - s.b), 0);
-  requireThat(walkover || balance !== 0, 'score_tied');
-  input = {...input, winner: walkover?input.winner:(balance > 0 ? one.id : two.id), sets:input.sets.map(s=>({a:s.a,b:s.b}))};
+  requireThat(walkover || balance !== 0 || (input.winnerConfirmed===true && [one.id,two.id].includes(input.winner)), 'score_tied');
+  const agreedWinner=!walkover && balance===0;
+  input = {...input, winner: walkover||agreedWinner?input.winner:(balance > 0 ? one.id : two.id),
+    sets:input.sets.map(s=>({a:s.a,b:s.b,...(s.tbA === undefined ? {} : {tbA:s.tbA,tbB:s.tbB})}))};
   const reviewer = one.email === actor ? two.email : one.email;
   requireThat(c.kind==='league' || owner || (reviewer && reviewer !== actor), 'creator_required_without_email', 403);
   const signature = JSON.stringify([input.a,input.b,input.winner,input.sets,input.slot || '']);
@@ -174,10 +188,20 @@ export function mutateCompetition(original, input, actor) {
   const result = {id: input.requestId, a: one.id, b: two.id, winner: input.winner, sets: input.sets,
     slot: input.slot || '', signature, reporter: actor, pendingFor: direct ? '' : reviewer,
     status: 'pending', createdAt: new Date().toISOString()};
+  if(input.bestOf === 3 || input.bestOf === 5) result.bestOf = input.bestOf;
   if(walkover) result.outcome=input.outcome;
+  else { result.scoreFormat='free_v1'; if(agreedWinner) result.winnerConfirmed=true; }
   if(scheduledLeague(c) && input.replacesId) result.replacesId=input.replacesId;
   c.results.push(result);
   if (direct) accept(c, result, 'creator');
   return c;
 }
-export function view(c, version) { return {...c, version, standings: standings(c), rounds: bracket(c)}; }
+export function view(c, version) {
+  const rows=standings(c);
+  if(c.state==='finished' && Array.isArray(c.finalRanks)) {
+    const ranks=new Map(c.finalRanks.map(p=>[p.id,p.rank]));
+    for(const p of rows) p.rank=ranks.get(p.id) ?? p.rank;
+    rows.sort((a,b)=>a.rank-b.rank || c.finalRanks.findIndex(p=>p.id===a.id)-c.finalRanks.findIndex(p=>p.id===b.id));
+  }
+  return {...c, version, standings: rows, rounds: bracket(c)};
+}

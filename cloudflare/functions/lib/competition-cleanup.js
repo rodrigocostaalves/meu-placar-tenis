@@ -1,3 +1,4 @@
+import {encodeCompetition,decodeCompetition} from './competition-storage.js';
 // A bounded, retryable part of the existing explicit account-deletion flow.
 export async function cleanupCompetitions(db, email) {
   const {results} = await db.prepare('SELECT c.id,c.owner,c.data,c.version FROM ds_competitions c JOIN ds_competition_members m ON m.competition_id=c.id WHERE m.email=? LIMIT 10').bind(email).all();
@@ -8,7 +9,7 @@ export async function cleanupCompetitions(db, email) {
         db.prepare('DELETE FROM ds_competitions WHERE id=? AND owner=?').bind(row.id,email)
       ]);
     } else {
-      const c = JSON.parse(row.data), names = new Set();
+      const c = await decodeCompetition(row.data), names = new Set();
       for (const player of c.players) if (player.email === email) {
         names.add(player.name); player.email = ''; player.name = `Deleted player ${player.id}`; player.deleted = true;
       }
@@ -23,7 +24,7 @@ export async function cleanupCompetitions(db, email) {
       }
       const op = crypto.randomUUID();
       const changed = await db.batch([
-        db.prepare('UPDATE ds_competitions SET data=?,version=version+1,last_op=? WHERE id=? AND version=?').bind(JSON.stringify(c),op,row.id,row.version),
+        db.prepare('UPDATE ds_competitions SET data=?,version=version+1,last_op=? WHERE id=? AND version=?').bind(await encodeCompetition(c),op,row.id,row.version),
         db.prepare('DELETE FROM ds_competition_members WHERE competition_id=? AND email=? AND EXISTS(SELECT 1 FROM ds_competitions WHERE id=? AND last_op=?)').bind(row.id,email,row.id,op)
       ]);
       if (changed[0].meta.changes !== 1) return false;
