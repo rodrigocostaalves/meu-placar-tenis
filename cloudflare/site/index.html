@@ -4,10 +4,10 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#061722">
 <title>Deuce Score · Seu jogo. Sua história.</title>
-<link rel="canonical" href="https://deucescore.app/">
-<meta name="description" content="Deuce Score beta para Android e Wear OS. Registre pontos no relógio, acompanhe suas partidas no celular e compartilhe seus resultados.">
-<link rel="icon" href="./img/logo-full.png"><link rel="stylesheet" href="./style.css">
-<script src="./site.js" defer></script>
+<link rel="canonical" href="https://www.deucescore.app/">
+<meta name="description" content="Deuce Score para Android e Wear OS: placar no relógio, gravação de partidas, melhores momentos, edição com enquadramento do jogador, estatísticas e ligas.">
+<link rel="icon" href="./img/logo-full.png"><link rel="stylesheet" href="./style-20261117-video.css">
+<script src="./site-20261117-video.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main" data-t="skip">Ir ao conteúdo</a>
@@ -15,13 +15,14 @@
   <a href="#main" class="brand"><img src="./img/logo-full.png" alt="" width="54" height="54"><span>DEUCE SCORE</span></a>
   <nav aria-label="Language" class="languages"><button data-lang="pt" aria-pressed="true">PT</button><button data-lang="en" aria-pressed="false">EN</button><button data-lang="es" aria-pressed="false">ES</button></nav>
 </header>
+<nav class="wrap section-nav" aria-label="Seções" data-aria="sectionNav"><a href="#videos" data-t="navVideo">Vídeos e melhores momentos</a><a href="#watch" data-t="navWatchNew">Relógio</a><a href="#statistics" data-t="navStats">Estatísticas</a><a href="#competitions" data-t="navLeague">Ligas e torneios</a></nav>
 <main id="main">
 <section class="wrap hero">
   <div class="hero-copy">
-    <p class="eyebrow"><span class="dot"></span> BETA · ANDROID + WEAR OS</p>
+    <p class="eyebrow"><span class="dot"></span> ANDROID + WEAR OS</p>
     <h1><span data-t="hero1">Viva o jogo.</span><br><em data-t="hero2">Guarde cada ponto.</em></h1>
     <p class="lead" data-t="intro">Menos “quanto está?”. Mais tênis. Marque os pontos no relógio e leve a história da partida para o celular.</p>
-    <div class="actions"><a href="#download" class="button primary" data-t="try">Ver disponibilidade</a><a href="#watch" class="text-link" data-t="seeWatch">Veja no relógio ↓</a></div>
+    <div class="actions"><a class="play-store-badge" href="https://play.google.com/store/apps/details?id=com.deucescore.nativeapp" aria-label="Baixar na Google Play" data-play-store-link><img src="https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png" alt="Baixar na Google Play" width="270" height="105" data-play-store-badge></a><a href="#watch" class="text-link" data-t="seeWatch">Veja no relógio ↓</a></div>
     <p class="small" data-t="compat">Android 8 ou superior · relógios com Wear OS compatível</p>
   </div>
   <figure class="hero-photo">
@@ -39,6 +40,11 @@
   </figure>
 </section>
 <div class="ribbon"><div class="wrap"><span>PLAY.</span><span>TRACK.</span><span>IMPROVE.</span><span class="ribbon-note" data-t="ribbon">SEU TÊNIS, SEM COMPLICAÇÃO.</span></div></div>
+<section id="videos" class="video-section"><div class="wrap section"><div class="video-heading"><p class="eyebrow" data-t="videoTag">NOVO / SEU JOGO MERECE REPLAY</p><h2 data-t="videoTitle">Jogue o ponto.
+Guarde o melhor momento.</h2><p class="lead" data-t="videoIntro">Grave a partida no celular, salve suas jogadas pelo relógio e transforme os melhores pontos em vídeos para rever e compartilhar.</p></div><article class="video-row"><figure class="video-poster"><img src="./img/video/record.webp" width="1000" height="1250" loading="lazy" decoding="async" data-alt="recordAlt" alt="Celular gravando uma partida de tênis e relógio Wear OS com o botão de salvar clipe."></figure><div><p class="eyebrow" data-t="recordTag">01 / GRAVE. MARQUE. GUARDE.</p><h3 class="video-title" data-t="recordTitle">A câmera no celular.
+O controle no seu pulso.</h3><p class="lead" data-t="recordBody">Posicione o celular com uma boa visão da quadra e inicie a gravação antes de jogar. Depois de marcar um ponto, use “Salvar clipe” no relógio para guardar aquele momento.</p><ul class="feature-list"><li data-t="record1">O atalho para salvar o clipe fica disponível por 10 segundos após marcar o ponto.</li><li data-t="record2">Gravação em até 4K nos aparelhos compatíveis, com opções Full HD e HD.</li><li data-t="record3">Continue jogando sem precisar voltar ao celular para salvar cada destaque.</li></ul></div></article><article class="video-row reverse"><div><p class="eyebrow" data-t="galleryTagNew">02 / SEUS MELHORES PONTOS, JUNTOS</p><h3 class="video-title" data-t="galleryTitleNew">Aquela jogada?
+Está na sua galeria.</h3><p class="lead" data-t="galleryBodyNew">Encontre os clipes da partida, reveja os pontos e marque seus favoritos. Seus melhores momentos ficam organizados para assistir de novo ou compartilhar.</p><ul class="feature-list"><li data-t="gallery1">Veja o placar, o resultado do ponto e os detalhes de cada vídeo.</li><li data-t="gallery2">Marque favoritos e selecione vários clipes com um toque longo.</li><li data-t="gallery3">Abra um clipe para editar, salvar uma cópia na galeria do celular ou compartilhar.</li></ul></div><figure class="video-poster"><img src="./img/video/highlights.webp" width="1000" height="1250" loading="lazy" decoding="async" data-alt="galleryAltNew" alt="Galeria de melhores momentos no celular ao lado do relógio com o botão Salvar clipe."></figure></article><article class="video-row" id="video-editor"><figure class="video-poster"><img src="./img/video/edit.webp" width="1000" height="1319" loading="lazy" decoding="async" data-alt="editAltNew" alt="Editor de vídeo no celular com linha do tempo, opção vertical e enquadramento automático do jogador."></figure><div><p class="eyebrow" data-t="editTagNew">03 / EDITE. ENQUADRE. COMPARTILHE.</p><h3 class="video-title" data-t="editTitleNew">Seu melhor momento.
+Do seu jeito.</h3><p class="lead" data-t="editBodyNew">Use a linha do tempo com miniaturas para ajustar o início e o fim do vídeo. Escolha o formato original ou vertical 9:16 e prepare o trecho para compartilhar.</p><ul class="feature-list"><li data-t="edit1New">Corte o início e o fim para destacar a jogada.</li><li data-t="edit2New">Escolha o enquadramento original ou vertical 9:16.</li></ul><aside class="tracking-callout"><h4 data-t="trackingTitle">O jogador no centro da ação.</h4><p data-t="trackingBody">Ative “Enquadrar jogador automaticamente” para acompanhar o jogador no enquadramento do vídeo. Confira a prévia e salve o resultado no formato escolhido.</p><p class="small" data-t="trackingNote">O enquadramento acompanha o jogador. Não é acompanhamento automático da bola.</p></aside></div></article><aside class="sensor-note"><strong data-t="videoLocalTitle">Seus vídeos ficam com você.</strong><p data-t="videoLocalBody">As gravações permanecem no aparelho. A sincronização da conta e das competições não envia os vídeos para a nuvem. Cópias salvas na galeria podem seguir as configurações de backup do seu celular.</p></aside><p class="small video-art-note" data-t="videoArt">Artes ilustrativas com telas em inglês. Recursos disponíveis na versão atual para Android e Wear OS compatível.</p></div></section>
 <section class="wrap section" id="watch">
   <div class="section-heading"><p class="eyebrow" data-t="watchTag">NA QUADRA / NO PULSO</p><h2 data-t="watchTitle">O celular descansa.<br>Seu jogo continua.</h2></div>
   <div class="watch-grid">
@@ -52,7 +58,7 @@
 <div class="wrap section split">
   <div><p class="eyebrow" data-t="phoneTag">DEPOIS DO MATCH POINT</p><h2 data-t="phoneTitle">Mais que um placar.<br>A sua trajetória.</h2><p class="lead" data-t="phoneIntro">No celular, cada partida vira uma lembrança organizada — e uma nova forma de acompanhar a sua evolução.</p>
   <ul class="feature-list"><li data-t="f1">Histórico local e backup na nuvem pela sua conta.</li><li data-t="f2">Estatísticas, aproveitamento e desempenho por superfície.</li><li data-t="f3">Ligas e torneios compartilhados com os participantes.</li><li data-t="f4">Busca de quadras, amigos e conquistas.</li><li data-t="f5">Relatórios para compartilhar por WhatsApp, SMS e outros apps.</li></ul></div>
-  <section class="feature-carousel" aria-label="Conheça o Deuce Score" aria-roledescription="carrossel" tabindex="0">
+  <section class="feature-carousel" id="gallery" aria-label="Conheça o Deuce Score" aria-roledescription="carrossel" tabindex="0">
     <div class="carousel-stage" id="feature-slides">
       <figure class="feature-slide" role="group" aria-label="1 / 4">
         <img src="./img/features/connected.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Deuce Score no celular e no relógio Wear OS, com placar e relatório da partida.">
@@ -85,21 +91,24 @@
     <p class="carousel-note small" data-t="galleryNote">Ilustrações com telas do app em inglês. Use as setas ou deslize para explorar.</p>
   </section>
 </div></section>
-<section class="wrap section compact">
+<section id="statistics" class="wrap section split"><div><p class="eyebrow" data-t="statsTagNew">CADA PONTO CONTA UMA HISTÓRIA</p><h2 data-t="statsTitleNew">Além do placar.
+Entenda sua evolução.</h2><p class="lead" data-t="statsBodyNew">Explore o histórico dos últimos 30 ou 90 dias, do ano ou de todo o período. Acompanhe suas vitórias, derrotas, aproveitamento e sequências de vitórias.</p><ul class="feature-list"><li data-t="stats1New">Compare sets e games ganhos e perdidos ao longo do tempo.</li><li data-t="stats2New">Consulte pontos ganhos no saque e na devolução, games de saque confirmados e quebras.</li><li data-t="stats3New">Veja seu desempenho por superfície e contra os adversários mais frequentes.</li></ul><p class="small stats-note" data-t="statsNoteNew">Estatísticas dependem das partidas e dos pontos registrados. Tempo ativo, passos e calorias dependem das leituras disponíveis no relógio.</p></div><figure class="stats-visual"><img src="./img/features/stats.webp" width="1080" height="1920" loading="lazy" decoding="async" data-alt="statsAltNew" alt="Relatório ilustrativo de estatísticas com pontos ganhos, saque, devolução e quebras."></figure></section>
+<section class="wrap section compact" id="competitions">
   <div class="section-heading"><p class="eyebrow" data-t="competitionTag">O JOGO TAMBÉM É COLETIVO</p><h2 data-t="competitionTitle">Sua turma. Sua competição.</h2></div>
   <div class="competition-grid"><article><h3 data-t="leagueTitle">Ligas</h3><p data-t="leagueText">Classificação organizada, pontos e histórico de confrontos em formato de tênis. Convide os participantes usando seus e-mails.</p></article><article><h3 data-t="tournamentTitle">Torneios</h3><p data-t="tournamentText">Chaves de 4, 8 ou 16 jogadores. Acompanhe os confrontos até a final, sem perder o caminho de cada resultado.</p></article></div>
   <p class="small" data-t="validation">O criador registra diretamente. Placar enviado por um jogador só conta após a validação do adversário. Partidas avulsas não precisam de validação.</p>
 </section>
 <section class="download-section" id="download"><div class="wrap section">
-  <p class="eyebrow" data-t="downloadTag">EM TESTES FECHADOS</p><h2 data-t="downloadTitle">A próxima partida<br>já pode ser diferente.</h2>
-  <p class="lead" data-t="beta">O Deuce Score está em testes fechados. O lançamento público na Google Play será anunciado aqui.</p>
-  <div class="actions"><span class="download-pending" data-t="pending">Google Play · lançamento público em breve</span></div>
-  <div class="install-grid"><article><h3 data-t="installPhone">No celular</h3><p data-t="installText">O app está em testes fechados. O link público da Google Play será disponibilizado aqui após o lançamento.</p></article><article><h3 data-t="installWatch">No relógio</h3><p data-t="wearInstall">A versão Wear OS acompanha o app Android. O acesso público pela Google Play será divulgado aqui.</p></article></div>
-  <div class="stores"><div><strong>Google Play</strong><span data-t="soon">Em breve · publicação planejada</span></div><div><strong>App Store</strong><span data-t="ios">Em breve · versão iPhone planejada, sem data definida</span></div></div>
+  <p class="eyebrow" data-t="downloadTag">DISPONÍVEL NA GOOGLE PLAY</p><h2 data-t="downloadTitle">A próxima partida<br>já pode ser diferente.</h2>
+  <p class="lead" data-t="beta">Baixe o Deuce Score pela Google Play e leve suas partidas para o celular.</p>
+  <div class="actions"><a class="play-store-badge" href="https://play.google.com/store/apps/details?id=com.deucescore.nativeapp" aria-label="Baixar na Google Play" data-play-store-link><img src="https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png" alt="Baixar na Google Play" width="270" height="105" data-play-store-badge></a></div>
+  <div class="install-grid"><article><h3 data-t="installPhone">No celular</h3><p data-t="installText">Toque em “Baixar na Google Play” e siga as instruções da loja para instalar no celular.</p></article><article><h3 data-t="installWatch">No relógio</h3><p data-t="wearInstall">Na Google Play, consulte a disponibilidade para seu relógio Wear OS compatível e instale a versão do relógio para marcar os pontos no pulso.</p></article></div>
+  <div class="stores"><div><strong>Google Play</strong><span data-t="soon">Disponível na Google Play</span></div><div><strong>App Store</strong><span data-t="ios">Em breve · versão iPhone planejada, sem data definida</span></div></div>
   <p class="small" data-t="appleWatch">A integração atual é Android + Wear OS. Não há suporte a Apple Watch nesta versão.</p>
 </div></section>
 </main>
 <footer class="wrap"><div class="footer-row"><a class="brand" href="#main"><img src="./img/logo-full.png" alt="" width="42" height="42"><span>DEUCE SCORE</span></a><a href="/privacy" data-t="privacy">Privacidade</a><a href="/excluir-conta" data-t="deleteAccount">Excluir conta</a><a href="mailto:suporte@deucescore.app" data-t="contact">Fale com a gente ↗</a></div>
 <p class="small">© 2026 Deuce Score · Play. Track. Improve.</p></footer>
-<noscript><p class="wrap">Ative o JavaScript para trocar o idioma e explorar as outras imagens. O lançamento público na Google Play será anunciado aqui.</p></noscript>
+<noscript><p class="wrap">Ative o JavaScript para trocar o idioma e explorar as outras imagens. O botão de download abre a página do Deuce Score na Google Play.</p></noscript>
+
 </body></html>
